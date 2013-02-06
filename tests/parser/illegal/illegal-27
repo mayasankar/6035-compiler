@@ -1,0 +1,6 @@
+int a;
+void func ( ) {
+}
+int b;
+// Fields must be declared before methods
+boolean b;

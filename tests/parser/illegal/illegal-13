@@ -1,0 +1,3 @@
+main ( ) {
+  // no return type
+}

@@ -1,0 +1,15 @@
+2 IDENTIFIER foo
+2 IDENTIFIER bar
+3 IDENTIFIER baz
+3 IDENTIFIER quux
+4 IDENTIFIER meep
+4 IDENTIFIER peem
+5 IDENTIFIER whaah
+ws1 line 5:6: unexpected char: 0xC
+5 IDENTIFIER boom
+6 IDENTIFIER doom
+ws1 line 9:1: unexpected char: 0xC
+ws1 line 9:17: unexpected char: 0xC
+10 IDENTIFIER gloom
+10 IDENTIFIER loom
+10 IDENTIFIER weave

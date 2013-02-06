@@ -1,0 +1,7 @@
+string2 line 2:6: expecting '"', found '''
+2 IDENTIFIER t
+2 IDENTIFIER you
+2 IDENTIFIER a
+2 IDENTIFIER string
+string2 line 2:21: unexpected char: '?'
+string2 line 2:23: expecting '"', found '\n'
