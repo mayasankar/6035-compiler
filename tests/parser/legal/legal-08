@@ -1,9 +1,0 @@
-void bar ( int a ) {
-  int i;
-  for ( i = 0; a ) {
-    a = a - 1;
-  }
-}
-void main ( ) {
-  bar ( 10 );
-}

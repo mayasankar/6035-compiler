@@ -1,6 +1,0 @@
-callout printf;
-void main ( ) {
-  int char;
-  char = 'a';
-  printf ( "%c\n", char );
-}
