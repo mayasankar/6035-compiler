@@ -1,7 +1,6 @@
 <project name="Compiler" default="jar" basedir=".">
 
   <property environment="env" />
-  <property name="phase" value="parser" />
   <property name="base_package_dir" value="edu/mit/compilers" />
   <property name="base_package_name" value="edu.mit.compilers" />
 
@@ -139,19 +138,19 @@
   </target>
 
   <target name="tar" depends="clean">
-    <delete file="${env.USER}-${phase}.tar.gz" />
-    <delete file="${env.USER}-${phase}.tar" />
-    <tar destfile="${env.USER}-${phase}.tar">
+    <delete file="${env.USER}-handin.tar.gz" />
+    <delete file="${env.USER}-handin.tar" />
+    <tar destfile="${env.USER}-handin.tar">
       <tarfileset dir="."
-                  prefix="${env.USER}-${phase}/">
+                  prefix="${env.USER}-handin/">
         <include name="**/*" />
         <exclude name="*.tar" />
         <exclude name="*.tar.gz" />
         <exclude name="**/.git/**" />
       </tarfileset>
     </tar>
-    <gzip destfile="${env.USER}-${phase}.tar.gz"
-          src="${env.USER}-${phase}.tar" />
+    <gzip destfile="${env.USER}-handin.tar.gz"
+          src="${env.USER}-handin.tar" />
   </target>
   
  <!-- to clean, delete everything in the autogen, classes, and dist
