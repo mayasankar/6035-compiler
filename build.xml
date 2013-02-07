@@ -138,10 +138,7 @@
           depends="test_scanner,test_parser,test_semantics,test_codegen,test_dataflow,test_opt">
   </target>
 
-  <target name="presubmit" depends="integrationtests,lint">
-  </target>
-
-  <target name="tar" depends="presubmit">
+  <target name="tar" depends="clean">
     <delete file="${env.USER}-${phase}.tar.gz" />
     <delete file="${env.USER}-${phase}.tar" />
     <tar destfile="${env.USER}-${phase}.tar">
@@ -150,6 +147,7 @@
         <include name="**/*" />
         <exclude name="*.tar" />
         <exclude name="*.tar.gz" />
+        <exclude name=".git/**" />
       </tarfileset>
     </tar>
     <gzip destfile="${env.USER}-${phase}.tar.gz"
