@@ -1,0 +1,9 @@
+int A[10];
+void bar ( ) {
+  forpar ( i = 0; 10 ) {
+    A[i] = i;
+  }
+}
+void main ( ) {
+  bar ( );
+}

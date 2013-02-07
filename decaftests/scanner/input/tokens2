@@ -1,0 +1,15 @@
+// Decaf keywords in uppercase.  This should be identifiers.
+BOOLEAN
+CALLOUT
+CLASS
+ELSE
+FALSE
+IF
+INT
+RETURN
+TRUE
+VOID
+FOR
+FORPAR
+BREAK
+CONTINUE

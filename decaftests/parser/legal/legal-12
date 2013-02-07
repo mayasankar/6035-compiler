@@ -1,0 +1,10 @@
+int A[0xA];
+void bar ( ) {
+  int i;
+  for ( i = 0; 0xA ) {
+    A[i] = i;
+  }
+}
+void main ( ) {
+  bar ( );
+}

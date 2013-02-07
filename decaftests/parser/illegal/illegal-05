@@ -1,0 +1,4 @@
+void main ( ) {
+}
+boolean a, b;
+// field decls must be first

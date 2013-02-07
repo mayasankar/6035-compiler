@@ -1,0 +1,13 @@
+int abs ( int a ) {
+  boolean b;
+  b = a < 0;
+  if ( b ) {
+    return -a;
+  }
+  else {
+    return a;
+  }
+}
+void main ( ) {
+  abs ( -5 );
+}
