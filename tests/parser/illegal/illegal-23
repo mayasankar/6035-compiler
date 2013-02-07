@@ -9,6 +9,6 @@ int fact ( int a ) {
 void main ( ) {
   int a, b;
   a = fact ( 5 );
-  //Error, strings can't be arg
-  fact ( "hello" );
+  // Obviously bogus.
+  fact ( if(x) { y } );
 }

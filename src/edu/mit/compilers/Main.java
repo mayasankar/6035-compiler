@@ -27,6 +27,7 @@ class Main {
               String type = "";
               String text = token.getText();
               switch (token.getType()) {
+               // TODO: add strings for the other types here...
                case DecafScannerTokenTypes.ID:
                 type = " IDENTIFIER";
                 break;
@@ -47,11 +48,13 @@ class Main {
         DecafParser parser = new DecafParser(scanner);
         parser.setTrace(CLI.debug);
         parser.program();
+        if(parser.getError()) {
+          System.exit(1);
+        }
       }
     } catch(Exception e) {
       // print the error:
       System.out.println(CLI.infile+" "+e);
-      System.exit(1);
     }
   }
 }

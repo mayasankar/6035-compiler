@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 runparser() {
   java -jar `dirname $0`/../../dist/Compiler.jar -target parse $1
@@ -7,7 +7,8 @@ runparser() {
 fail=0
 
 for file in `dirname $0`/illegal/*; do
-  if runparser $file; then
+  # If it prints something, it's wrong
+  if runparser $file && echo "success"; then
     echo "Illegal file $file parsed successfully.";
     fail=1
   fi
