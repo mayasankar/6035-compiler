@@ -138,10 +138,6 @@
           depends="test_scanner,test_parser,test_semantics,test_codegen,test_dataflow,test_opt">
   </target>
 
-  <target name="lint">
-    <exec executable="${bin}/lint.sh" failonerror="false" />
-  </target>
-
   <target name="presubmit" depends="integrationtests,lint">
   </target>
 
