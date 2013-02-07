@@ -13,10 +13,9 @@ import java.util.Vector;
  */
 public class CLI {
 
-  public static void printUsage(String message, String progName) {
+  public static void printUsage(String message) {
     System.err.println(message);
-    System.err.println("Usage: " + progName +
-" [options] <filename>\n" +
+    System.err.println("Usage: run.sh [options] <filename>\n" +
 "Summary of options:\n" +
 "  -t <stage>              --target=<stage>           compile to the given stage\n" +
 "  -o <outfile>            --output=<outfile>         write output to <outfile>\n" +
@@ -138,7 +137,7 @@ public class CLI {
           outfile = args[i + 1];
           i++;
         } else {
-          printUsage("No output file specified with option " + args[i], args[0]);
+          printUsage("No output file specified with option " + args[i]);
           throw new IllegalArgumentException("Incomplete option " + args[i]);
         }
       } else if (args[i].startsWith("--target=")) {
@@ -148,7 +147,7 @@ public class CLI {
           targetStr = args[i + 1];
           i++;
         } else {
-          printUsage("No target specified with option " + args[i], args[0]);
+          printUsage("No target specified with option " + args[i]);
           throw new IllegalArgumentException("Incomplete option " + args[i]);
         }
       } else if (args[i].startsWith("--opt=") || args[i].equals("-O")) {
@@ -158,7 +157,7 @@ public class CLI {
             optsList = args[i + 1].split(",");
             i++;
           } else {
-            printUsage("No optimizations spceified with option " + args[i], args[0]);
+            printUsage("No optimizations spceified with option " + args[i]);
             throw new IllegalArgumentException("Incomplete option " + args[i]);
           }
         } else {
@@ -192,7 +191,7 @@ public class CLI {
       else if (targetStr.equals("inter")) target = Action.INTER;
       else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
       else {
-        printUsage("Invalid target: " + targetStr, args[0]);
+        printUsage("Invalid target: " + targetStr);
         throw new IllegalArgumentException(targetStr);
       }
     }
