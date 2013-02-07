@@ -147,7 +147,7 @@
         <include name="**/*" />
         <exclude name="*.tar" />
         <exclude name="*.tar.gz" />
-        <exclude name=".git/**" />
+        <exclude name="**/.git/**" />
       </tarfileset>
     </tar>
     <gzip destfile="${env.USER}-${phase}.tar.gz"
