@@ -1,7 +1,6 @@
 #!/bin/sh
 
 runscanner() {
-  #cd `dirname $1`;
   java -jar `dirname $0`/../../dist/Compiler.jar \
     -target scan -compat $1
 }
