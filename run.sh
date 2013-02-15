@@ -1,2 +1,3 @@
 #!/bin/sh
-java -jar dist/Compiler.jar "$@"
+gitroot=$(git rev-parse --show-toplevel)
+java -jar $gitroot/dist/Compiler.jar "$@"
