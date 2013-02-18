@@ -207,37 +207,5 @@ public class CLI {
       i++;
     }
 
-    // create outfile name
-    switch (target) {
-     case SCAN:
-      ext = ".scan";
-      break;
-     case PARSE:
-      ext = ".parse";
-      break;
-     case INTER:
-      ext = ".ir";
-      break;
-     case ASSEMBLY:
-      ext = ".s";
-      break;
-     case DEFAULT:
-     default:
-      ext = ".out";
-      break;
-    }
-
-    if (outfile == null && infile != null) {
-      int dot = infile.lastIndexOf('.');
-      int slash = infile.lastIndexOf('/');
-      // Last dot comes after last slash means that the file
-      // has an extention.  Note that the base case where dot
-      // or slash are -1 also work.
-      if (dot <= slash) {
-        outfile = infile + ext;
-      } else {
-        outfile = infile.substring(0, dot) + ext;
-      }
-    }
   }
 }

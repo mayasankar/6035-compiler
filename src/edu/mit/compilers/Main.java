@@ -12,7 +12,7 @@ class Main {
       CLI.parse(args, new String[0]);
       InputStream inputStream = args.length == 0 ?
           System.in : new java.io.FileInputStream(CLI.infile);
-
+      PrintStream outputStream = CLI.outfile == null ? System.out : new java.io.PrintStream(new java.io.FileOutputStream(CLI.outfile));
       if (CLI.target == Action.SCAN) {
         DecafScanner scanner =
             new DecafScanner(new DataInputStream(inputStream));
@@ -32,12 +32,12 @@ class Main {
                 type = " IDENTIFIER";
                 break;
               }
-              System.out.println(token.getLine() + type + " " + text);
+              outputStream.println(token.getLine() + type + " " + text);
             }
             done = true;
           } catch(Exception e) {
             // print the error:
-            System.out.println(CLI.infile + " " + e);
+            System.err.println(CLI.infile + " " + e);
             scanner.consume();
           }
         }
@@ -54,7 +54,7 @@ class Main {
       }
     } catch(Exception e) {
       // print the error:
-      System.out.println(CLI.infile+" "+e);
+      System.err.println(CLI.infile+" "+e);
     }
   }
 }
