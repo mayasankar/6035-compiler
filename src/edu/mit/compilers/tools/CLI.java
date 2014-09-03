@@ -51,7 +51,7 @@ public class CLI {
    *        but you may wish to use it for your own purposes.
    * ASSEMBLY: produce assembly from the input.
    */
-  public enum Action {DEFAULT, SCAN, PARSE, INTER, ASSEMBLY};
+    public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY};
 
   /**
    * Array indicating which optimizations should be performed.  If
@@ -190,6 +190,11 @@ public class CLI {
       else if (targetStr.equals("parse")) target = Action.PARSE;
       else if (targetStr.equals("inter")) target = Action.INTER;
       else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
+      else if (targetStr.equals("about")) {
+	  printUsage("Test run successful. Command line parameters: ");
+	  System.exit(0);
+      }
+ 
       else {
         printUsage("Invalid target: " + targetStr);
         throw new IllegalArgumentException(targetStr);
