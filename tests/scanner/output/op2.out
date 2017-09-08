@@ -1,0 +1,10 @@
+2 IDENTIFIER a
+2 ++
+3 IDENTIFIER a
+3 +
+3 +
+4 IDENTIFIER b
+4 --
+5 IDENTIFIER b
+5 -
+5 -

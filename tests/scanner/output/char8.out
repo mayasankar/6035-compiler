@@ -1,0 +1,2 @@
+char8 line 2:3: expecting ''', found 'b'
+char8 line 2:5: unexpected char: 0xA

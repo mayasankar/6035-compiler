@@ -1,0 +1,6 @@
+import 5;
+// And this isn't an identifier
+void main ( ) {
+  5 ( );
+  // An integer isn't a function.
+}
