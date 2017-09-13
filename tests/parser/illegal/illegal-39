@@ -1,6 +1,0 @@
-int a;
-
-void main() {
-  a = sizeof(2, 3);
-   // invalid use of sizeof (sizeof is not a function call!)
-}
