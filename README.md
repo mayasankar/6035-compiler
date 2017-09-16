@@ -1,4 +1,1 @@
-java-skeleton
-=============
-
-Java Skeleton Code for 6.035
+Java Code for 6.035

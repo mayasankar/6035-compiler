@@ -1,0 +1,11 @@
+// Simple strings.  
+"A string walks into a bar and orders a beer."
+"The bartender looks at him and says, \"we don\'t serve strings here.\""
+"The string walks out to the street, and sits on the curb, dejected."
+"Then he has an idea: he ties himself into a bow, and loosens up his"
+"ends, making them up into nice tassels."
+"His confidence restored, he walks back into the bar, sits down, and orders"
+"another beer."
+"The bartender looks at him suspiciously: he looks a bit like the string"
+"that had just walked in.  \"Hey,\" he says, \"aren\'t you a string?\""
+"\"Nope,\" says the string.  \"I\'m a frayed knot.\""
