@@ -1,1 +1,2 @@
-hexlit3 line 2:3: unexpected char: 0xA
+3 INTLITERAL 0
+3 IDENTIFIER x

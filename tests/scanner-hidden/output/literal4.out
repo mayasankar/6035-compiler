@@ -1,0 +1,2 @@
+literal4 line 1:3: expecting ''', found 'b'
+literal4 line 1:5: unexpected char: 0xA

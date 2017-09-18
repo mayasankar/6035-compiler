@@ -1,0 +1,2 @@
+literal3 line 1:2: expecting '"', found '''
+literal3 line 1:4: expecting '"', found '\n'
