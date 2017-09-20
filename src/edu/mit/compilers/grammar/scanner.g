@@ -79,8 +79,7 @@ ID options { paraphrase = "an identifier"; } :
 // OPERATOR RULES
 // ================
 
-// TODO make sure whitespace after operator is a thing
-// Change print value of whitespace to '' so you can append it to end of operator
+// Past error: having '++'|'--' in one token and then it matching the first two tokens
 
 OP_EQ : "==" | "!=";
 OP_REL : ('<'|'>') ('='|);
@@ -97,18 +96,11 @@ OP_NOT : '!';
 OP_TERN_1 : '?';
 OP_TERN_2 : ':';
 
-// OLD CODE
-// OPERATOR : (('>'|'<'|'='|'!') ('='|))
-//          | ('+' ('='|'+'|)) | ('-' ('='|'-'|))
-//          | "&&"|"||"
-//          | '*'|'/'
-//          | '?'|':';
-// OPERATOR : ">="|"<="|"=="|"!="|"&&"|"||"|"++"|"--"|"+="|"-="|'-'|'*'|'/'|'+'|'>'|'<'|'!'|'?'|':';
-
 // ================
 // WHITESPACE AND COMMENTS
 // ================
 
+// TODO Change print value of whitespace to ''
 WS_ : (' ' | '\t' | NEWLINE ) { _ttype = Token.SKIP; };
 SL_COMMENT : "//" (~'\n')* '\n' { _ttype = Token.SKIP; newline(); };
 // TODO make this a nested inline comment

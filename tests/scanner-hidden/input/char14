@@ -1,0 +1,2 @@
+// Unterminated single quote.
+'\'''
