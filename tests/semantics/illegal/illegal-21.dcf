@@ -1,0 +1,4 @@
+import f;
+int f;
+void main() {
+}

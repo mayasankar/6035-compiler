@@ -1,0 +1,6 @@
+int a[10];
+void main ( ) {
+  if ( a[3] ) {
+  }
+  // condition should be a bool
+}

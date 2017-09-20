@@ -1,0 +1,8 @@
+int foo ( int i, bool b ) {
+  return true;
+  // return value has wrong type
+}
+void main ( ) {
+  int x;
+  x = foo ( 34, true );
+}

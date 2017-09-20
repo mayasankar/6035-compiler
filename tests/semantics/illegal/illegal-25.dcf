@@ -1,0 +1,7 @@
+void main ( ) {
+  int x;
+  bool y;
+  for ( x = false; x < 10; y ++ ) {
+    //increment must be an int
+  }
+}

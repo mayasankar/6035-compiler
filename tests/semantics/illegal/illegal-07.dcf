@@ -1,0 +1,6 @@
+void foo ( int i, bool b ) {
+  return 3;
+  // should not return value;
+}
+void main ( ) {
+}

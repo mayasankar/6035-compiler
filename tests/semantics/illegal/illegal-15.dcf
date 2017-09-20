@@ -1,0 +1,5 @@
+bool b;
+void main ( ) {
+  b = 5 == true;
+  // types of operands of == must be equal
+}
