@@ -7,14 +7,18 @@ runscanner() {
     cd $curdir;
 }
 
+tempfile() {
+  TMPDIR=`pwd` mktemp -t tmp
+}
+
 exitcode=0;
 fail=0;
 count=0;
 
+output=`tempfile`
 for file in `dirname $0`/input/*; do
-  output=`mktemp`;
   runscanner $file > $output 2>&1;
-  dos2unix -q "$DOS2UNIXROOT$output";
+  # dos2unix -q "$DOS2UNIXROOT$output";
   if ! diff -u $output `dirname $0`/output/`basename $file`.out; then
     echo "File $file scanner output mismatch.";
     exitcode=1;

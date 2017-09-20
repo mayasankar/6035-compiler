@@ -1,10 +1,10 @@
 #!/bin/bash
 
-echo "Scanner Tests";
-./scanner/test.sh;
+echo "Scanner Tests"
+./tests/scanner/test.sh
 echo "Parser Tests";
-./parser/test.sh
+./tests/parser/test.sh
 echo "Hidden Scanner Tests";
-./scanner-hidden/test.sh;
+./tests/scanner-hidden/test.sh;
 echo "Hidden Parser Tests";
-./parser-hidden/test.sh
+./tests/parser-hidden/test.sh
