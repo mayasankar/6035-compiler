@@ -12,7 +12,8 @@ class Main {
       CLI.parse(args, new String[0]);
       InputStream inputStream = args.length == 0 ?
           System.in : new java.io.FileInputStream(CLI.infile);
-      PrintStream outputStream = CLI.outfile == null ? System.out : new java.io.PrintStream(new java.io.FileOutputStream(CLI.outfile));
+      PrintStream outputStream = CLI.outfile == null ? System.out
+          : new java.io.PrintStream(new java.io.FileOutputStream(CLI.outfile));
       if (CLI.target == Action.SCAN) {
         DecafScanner scanner =
             new DecafScanner(new DataInputStream(inputStream));
@@ -28,9 +29,22 @@ class Main {
               String text = token.getText();
               switch (token.getType()) {
                // TODO: add strings for the other types here...
-               case DecafScannerTokenTypes.ID:
-                type = " IDENTIFIER";
-                break;
+                case DecafScannerTokenTypes.CHAR:
+                  type = " CHARLITERAL";
+                  break;
+                case DecafScannerTokenTypes.ID:
+                  type = " IDENTIFIER";
+                  break;
+                case DecafScannerTokenTypes.INT:
+                  type = " INTLITERAL";
+                  break;
+                case DecafScannerTokenTypes.STRING:
+                  type = " STRINGLITERAL";
+                  break;
+                case DecafScannerTokenTypes.TK_true:
+                case DecafScannerTokenTypes.TK_false:
+                  type = " BOOLEANLITERAL";
+                  break;
               }
               outputStream.println(token.getLine() + type + " " + text);
             }

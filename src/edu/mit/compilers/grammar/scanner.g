@@ -15,9 +15,23 @@ options
   k = 2;
 }
 
-tokens 
+tokens
 {
+  "bool";
+  "break";
   "class";
+  "continue";
+  "else";
+  "false";
+  "for";
+  "if";
+  "import";
+  "int";
+  "len";
+  "return";
+  "true";
+  "void";
+  "while";
 }
 
 // Selectively turns on debug tracing mode.
@@ -41,22 +55,95 @@ tokens
       super.traceOut(rname);
     }
   }
+
 }
 
 LCURLY options { paraphrase = "{"; } : "{";
 RCURLY options { paraphrase = "}"; } : "}";
-
-ID options { paraphrase = "an identifier"; } : 
-  ('a'..'z' | 'A'..'Z')+;
-
-// Note that here, the {} syntax allows you to literally command the lexer
-// to skip mark this token as skipped, or to advance to the next line
-// by directly adding Java commands.
-WS_ : (' ' | '\n' {newline();}) {_ttype = Token.SKIP; };
-SL_COMMENT : "//" (~'\n')* '\n' {_ttype = Token.SKIP; newline (); };
-
-CHAR : '\'' (ESC|~'\'') '\'';
-STRING : '"' (ESC|~'"')* '"';
+LBRACKET options { paraphrase = "["; } : '[';
+RBRACKET options { paraphrase = "]"; } : ']';
+LPAREN options { paraphrase = "("; } : '(';
+RPAREN options { paraphrase = ")"; } : ')';
+SEMICOLON options { paraphrase = ";"; } : ';';
+COMMA options { paraphrase = ","; } : ',';
 
 protected
-ESC :  '\\' ('n'|'"');
+ID_START_CHAR : ('a'..'z' | 'A'..'Z' | '_');
+protected
+ID_ANY_CHAR : ID_START_CHAR | DIGIT;
+ID options { paraphrase = "an identifier"; } :
+  ID_START_CHAR (ID_ANY_CHAR)*;
+
+
+// ================
+// OPERATOR RULES
+// ================
+
+// TODO make sure whitespace after operator is a thing
+// Change print value of whitespace to '' so you can append it to end of operator
+
+OP_EQ : "==" | "!=";
+OP_REL : ('<'|'>') ('='|);
+OP_AND : "&&";
+OP_OR : "||";
+OP_INC : "++";
+OP_DEC : "--";
+OP_ASSIGN_EQ : '=';
+OP_COMPOUND_ASSIGN : "+=" | "-=";
+OP_NEG : '-';
+OP_ADD : '+';
+OP_MUL : '*' | '/' | '%';
+OP_NOT : '!';
+OP_TERN_1 : '?';
+OP_TERN_2 : ':';
+
+// OLD CODE
+// OPERATOR : (('>'|'<'|'='|'!') ('='|))
+//          | ('+' ('='|'+'|)) | ('-' ('='|'-'|))
+//          | "&&"|"||"
+//          | '*'|'/'
+//          | '?'|':';
+// OPERATOR : ">="|"<="|"=="|"!="|"&&"|"||"|"++"|"--"|"+="|"-="|'-'|'*'|'/'|'+'|'>'|'<'|'!'|'?'|':';
+
+// ================
+// WHITESPACE AND COMMENTS
+// ================
+
+WS_ : (' ' | '\t' | NEWLINE ) { _ttype = Token.SKIP; };
+SL_COMMENT : "//" (~'\n')* '\n' { _ttype = Token.SKIP; newline(); };
+// TODO make this a nested inline comment
+IL_COMMENT : "/*" (~('\n'|'*') | NEWLINE | '*' ~'/')* "*/" { _ttype = Token.SKIP; };
+
+// ================
+// INT RULES
+// ================
+
+protected
+DIGIT : ('0'..'9');
+protected
+HEX_DIGIT : DIGIT | ('a'..'f') | ('A'..'F');
+
+INT : (DIGIT)+ | "0x" (HEX_DIGIT)+;
+
+// ================
+// STRING RULES
+// ================
+
+protected
+// done like this instead of with ~ because why?
+STRING_CHARACTER : ESC|' '|'!'|('#'..'&')|('('..'[')|(']'..'~');
+protected
+NEWLINE : '\n' { newline(); };
+protected
+ESC :  '\\' ('\''|'"'|'\\'|'n'|'t');
+
+CHAR : '\'' (STRING_CHARACTER
+exception
+catch [NoViableAltForCharException ex] {
+  if (ex.foundChar == '\n'){
+    newline();
+    setColumn(0);
+  }
+  throw ex;
+}) '\'';
+STRING : '"' (STRING_CHARACTER)* '"';
