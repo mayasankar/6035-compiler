@@ -1,0 +1,6 @@
+// too large literal
+
+int a;
+void main() {
+a = 9223372036854775808;
+}

@@ -1,0 +1,5 @@
+bool b[10];
+void main ( ) {
+  int i;
+  i = len(main); // can take only the size of a variable, not function
+}

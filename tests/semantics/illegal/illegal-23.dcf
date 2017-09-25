@@ -1,0 +1,5 @@
+// wrong main function declaration
+
+void main(int a) {
+
+}

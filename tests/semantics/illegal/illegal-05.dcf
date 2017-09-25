@@ -1,0 +1,8 @@
+int foo ( int i, bool b ) {
+  return 4;
+}
+void main ( ) {
+  int x;
+  x = foo ( 34, true, true );
+  // argument mismatch
+}
