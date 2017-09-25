@@ -1,0 +1,15 @@
+2 bool
+3 import
+4 else
+5 BOOLEANLITERAL false
+6 if
+7 int
+8 return
+9 BOOLEANLITERAL true
+10 void
+11 for
+12 IDENTIFIER forpar
+13 break
+14 continue
+15 len
+16 IDENTIFIER extern

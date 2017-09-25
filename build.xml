@@ -1,0 +1,164 @@
+<project name="Compiler" default="jar" basedir=".">
+
+  <property environment="env" />
+  <property name="base_package_dir" value="edu/mit/compilers" />
+  <property name="base_package_name" value="edu.mit.compilers" />
+
+  <!-- Manually generated java files -->
+  <property name="src"     location="src"     />
+  <!-- Auto-generated java files -->
+  <property name="autogen" location="autogen" />
+  <!-- Target Dir for compile -->
+  <property name="classes" location="classes" />
+  <!-- Jar directory -->
+  <property name="dist"    location="dist"    />
+  <!-- Runtime libraries -->
+  <property name="lib"     location="lib"     />
+  <!-- Binaries for tools, etc. -->
+  <property name="bin"     location="bin"     />
+  <!-- Directory containing tests -->
+  <property name="tests"   location="tests"   />
+
+  <!-- We rely on ANTLR 2.7.7  -->
+  
+  <!-- Build up a path structure for a classpath 
+       that includes the binaries (jars) in bin/ and 
+       the existing classpath.  Not used now, 
+       because the jflex and cup task define their own cp, 
+       but could come in handly later. -->
+  <path id="binaries">
+    <pathelement location="${bin}" />
+    <fileset dir="${bin}">
+      <include name="**/*.jar" />
+      <include name="**/*.zip" />
+    </fileset>
+    <pathelement path="${java.class.path}" />
+    <pathelement path="${classes}" />
+  </path>
+
+  <!-- Build up a path structure for a classpath 
+       that includes the libraries and the existing classpath -->
+  <path id="libraries">
+    <pathelement location="${lib}" />
+    <fileset dir="${lib}">
+      <include name="**/*.jar" />
+      <include name="**/*.zip" />
+    </fileset>
+    <pathelement path="${java.class.path}" />
+  </path>
+
+  <target name="init">
+    <mkdir dir="${classes}" />
+    <mkdir dir="${dist}" />
+    <mkdir dir="${autogen}/${base_package_dir}/grammar" />
+  </target>
+
+  <target name="scanner" depends="init">
+    <antlr
+      target="${src}/${base_package_dir}/grammar/scanner.g"
+      outputdirectory="${autogen}/${base_package_dir}/grammar"
+      trace="yes">
+      <classpath>
+        <pathelement location="${lib}/antlr.jar" />
+      </classpath>
+    </antlr>
+  </target>
+
+  <target name="parser" depends="scanner">
+    <antlr
+      target="${src}/${base_package_dir}/grammar/parser.g"
+      outputdirectory="${autogen}/${base_package_dir}/grammar"
+      trace="yes">
+      <classpath>
+        <pathelement location="${lib}/antlr.jar" />
+      </classpath>
+    </antlr>
+  </target>
+
+  <target name="compile" depends="parser">
+    <javac srcdir="${autogen}:${src}" destdir="${classes}"
+           debug="on" includeantruntime="false">
+      <classpath refid="libraries" />
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${dist}/Compiler.jar" basedir="${classes}">
+     <manifest>
+       <attribute name="Main-Class" value="${base_package_name}.Main" />
+       <!-- ANTLR runtime is needed for parsing! -->
+       <attribute name="Class-Path" value="antlr.jar" />
+     </manifest>
+    </jar>
+    <!-- Third party libraries can only be found by java -jar if they
+         reside in the same dir but we don't a billion copies floating around,
+         so use symlinks instead. -->
+    <symlink link="${dist}/antlr.jar" resource="${lib}/antlr.jar"
+             overwrite="true" />
+  </target>
+
+  <target name="test_scanner" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/scanner/test.sh" />
+  </target>
+
+  <target name="test_parser" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/parser/test.sh" />
+  </target>
+
+  <target name="test_semantics" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/semantics/test.sh" />
+  </target>
+
+  <target name="test_codegen" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/codegen/test.sh" />
+  </target>
+
+  <target name="test_dataflow" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/dataflow/test.sh" />
+  </target>
+
+  <target name="test_opt" depends="jar">
+    <!-- Set failonerror="true" when you're confident you're correct
+         and want to prevent accidentally regressing. -->
+    <exec executable="${tests}/optimizer/test.sh" />
+  </target>
+
+  <target name="integrationtests"
+          depends="test_scanner,test_parser,test_semantics,test_codegen,test_dataflow,test_opt">
+  </target>
+
+  <target name="tar" depends="clean">
+    <delete file="${env.USER}-handin.tar.gz" />
+    <delete file="${env.USER}-handin.tar" />
+    <tar destfile="${env.USER}-handin.tar">
+      <tarfileset dir="."
+                  prefix="${env.USER}-handin/">
+        <include name="**/*" />
+        <exclude name="*.tar" />
+        <exclude name="*.tar.gz" />
+        <exclude name="**/.git/**" />
+      </tarfileset>
+    </tar>
+    <gzip destfile="${env.USER}-handin.tar.gz"
+          src="${env.USER}-handin.tar" />
+  </target>
+  
+ <!-- to clean, delete everything in the autogen, classes, and dist
+  directory -->
+  <target name="clean">
+     <delete dir="${autogen}" />
+     <delete dir="${classes}" />
+     <delete dir="${dist}" />
+  </target>
+
+</project>

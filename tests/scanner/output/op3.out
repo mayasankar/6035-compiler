@@ -1,0 +1,20 @@
+1 int
+1 IDENTIFIER a
+1 [
+1 INTLITERAL 3
+1 ]
+1 ;
+2 void
+2 IDENTIFIER main
+2 (
+2 )
+2 {
+3 int
+3 IDENTIFIER b
+3 ;
+4 IDENTIFIER b
+4 =
+op3 line 4:7: unexpected char: '@'
+4 IDENTIFIER a
+4 ;
+6 }

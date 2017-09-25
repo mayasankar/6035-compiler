@@ -1,0 +1,45 @@
+2 {
+2 -
+2 INTLITERAL 123
+2 -
+2 IDENTIFIER a35
+2 ,
+2 IDENTIFIER id3a
+2 ,
+2 +
+2 *
+2 ;
+2 }
+2 [
+2 ||
+2 ==
+2 =
+2 !=
+2 (
+2 )
+2 &&
+2 ]
+2 <
+2 >
+2 <=
+2 >=
+2 =
+3 IDENTIFIER a
+3 [
+3 INTLITERAL 24
+3 ]
+3 =
+3 CHARLITERAL '7'
+3 ;
+3 IDENTIFIER n
+3 !=
+3 if
+3 ;
+4 BOOLEANLITERAL false
+4 ,
+4 -
+4 if
+4 ;
+4 IDENTIFIER true32
+4 ;
+5 IDENTIFIER forpar
