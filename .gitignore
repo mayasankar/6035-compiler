@@ -1,3 +1,5 @@
 *.sw*
 migrate.sh
-
+autogen/*
+classes/*
+dist/*

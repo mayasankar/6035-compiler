@@ -60,15 +60,13 @@ options
   }
 }
 
-// TODO figure out what needs protecting
-
 program : (import_decl)* (field_decl)* (method_decl)* EOF;
 import_decl : TK_import ID SEMICOLON;
 type : TK_int | TK_bool;
 id_decl : ID | ID LBRACKET INT RBRACKET;
 field_decl : type id_decl (COMMA id_decl)* SEMICOLON;
 
-method_decl : (type | TK_void) ID LPAREN (| type ID (COMMA type ID)*) RPAREN block;
+method_decl : (type | TK_void) ID LPAREN (type ID (COMMA type ID)*)? RPAREN block;
 block : LCURLY (field_decl)* (statement)* RCURLY;
 
 statement : assign_expr
@@ -99,7 +97,7 @@ protected op_pm : OP_NEG | OP_ADD;
 expr_0 : location | method_call | literal
        | TK_len LPAREN ID RPAREN
        | LPAREN expr RPAREN;
-expr_1 : (OP_NOT)* (OP_NEG)* expr_0;
+expr_1 : (OP_NOT | OP_NEG)* expr_0;
 expr_2 : expr_1 (OP_MUL expr_1)*;
 expr_3 : expr_2 (op_pm expr_2)*;
 expr_4 : expr_3 (OP_REL expr_3)*;

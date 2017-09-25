@@ -82,7 +82,7 @@ ID options { paraphrase = "an identifier"; } :
 // Past error: having '++'|'--' in one token and then it matching the first two tokens
 
 OP_EQ : "==" | "!=";
-OP_REL : ('<'|'>') ('='|);
+OP_REL : ('<'|'>') ('=')?;
 OP_AND : "&&";
 OP_OR : "||";
 OP_INC : "++";
@@ -100,7 +100,6 @@ OP_TERN_2 : ':';
 // WHITESPACE AND COMMENTS
 // ================
 
-// TODO Change print value of whitespace to ''
 WS_ : (' ' | '\t' | NEWLINE ) { _ttype = Token.SKIP; };
 SL_COMMENT : "//" (~'\n')* '\n' { _ttype = Token.SKIP; newline(); };
 // TODO make this a nested inline comment
@@ -122,7 +121,6 @@ INT : (DIGIT)+ | "0x" (HEX_DIGIT)+;
 // ================
 
 protected
-// done like this instead of with ~ because why?
 STRING_CHARACTER : ESC|' '|'!'|('#'..'&')|('('..'[')|(']'..'~');
 protected
 NEWLINE : '\n' { newline(); };
