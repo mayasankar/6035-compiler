@@ -3,6 +3,7 @@ package edu.mit.compilers.symbol_tables;
 import java.util.List;
 import java.util.Collections;
 import edu.mit.compilers.symbol_tables.Descriptor;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class MethodDescriptor extends Descriptor {
 	protected TypeDescriptor returnType;

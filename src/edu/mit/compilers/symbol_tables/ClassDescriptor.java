@@ -3,29 +3,31 @@ package edu.mit.compilers.symbol_tables;
 import java.util.List;
 import java.util.Collections;
 import edu.mit.compilers.symbol_tables.Descriptor;
+import edu.mit.compilers.symbol_tables.MethodTable;
+import edu.mit.compilers.symbol_tables.VariablesScope;
 
 public class ClassDescriptor extends Descriptor {
 	protected ClassDescriptor parentClass;
-	protected int codeLocation;  // TODO should this be stored elsehow?
-	protected List<String> methodVariables;  // TODO we should keep things other than name ? like type ?
+	protected MethodTable methods;  // TODO should this be stored elsehow?
+	protected VariablesScope fields;  // TODO we should keep things other than name ? like type ?
 
-	Variable(String name, TypeDescriptor type, int location, List<String> variables){
+	Variable(String name, ClassDescriptor parent){
 		super(name);
-		this.returnType = type;
-		this.codeLocation = location;
-		this.methodVariables = variables;
+		this.parentClass = parent;
+		this.methods = new MethodTable(parent.getMethodTable());
+		this.fields = new VariablesScope(parent.getFields());
 	}
 
 	public ClassDescriptor getParent() {
 		return parentClass;
 	}
 
-	public int getCodeLocation() {
-		return codeLocation;
+	public MethodTable getMethodTable() {
+		return methods;
 	}
 
-	public List<String> getMethodVariables() {
-		return Collections.unmodifiableList(methodVariables);
+	public VariablesScope getFields() {
+		return fields;
 	}
 
 }
