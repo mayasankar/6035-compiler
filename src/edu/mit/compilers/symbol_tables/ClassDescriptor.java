@@ -11,9 +11,16 @@ public class ClassDescriptor extends Descriptor {
 	protected MethodTable methods;  // TODO should this be stored elsehow?
 	protected VariablesScope fields;  // TODO we should keep things other than name ? like type ?
 
-	Variable(String name, ClassDescriptor parent){
+	ClassDescriptor(String name, ClassDescriptor parent){
 		super(name);
 		this.parentClass = parent;
+		this.methods = new MethodTable(parent.getMethodTable());
+		this.fields = new VariablesScope(parent.getFields());
+	}
+
+	ClassDescriptor(String name){
+		super(name);
+		this.parentClass = null;
 		this.methods = new MethodTable(parent.getMethodTable());
 		this.fields = new VariablesScope(parent.getFields());
 	}
@@ -28,6 +35,14 @@ public class ClassDescriptor extends Descriptor {
 
 	public VariablesScope getFields() {
 		return fields;
+	}
+
+	public void addMethod(MethodDescriptor m){
+		this.methods.add(m);
+	}
+
+	public void addField(Variable v){
+		this.fields.add(v);
 	}
 
 }
