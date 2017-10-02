@@ -5,10 +5,10 @@ import java.util.Collections;
 import edu.mit.compilers.symbol_tables.ClassDescriptor;
 
 
-public class ProgramTable extends ClassDescriptor {
+public class ProgramDescriptor extends ClassDescriptor {
 	protected List<String> imports;
 
-	ProgramTable(){
+	ProgramDescriptor(){
 		String name = "__PROGRAM_TABLE__";
 		super(name);
 		imports = new List<String>();

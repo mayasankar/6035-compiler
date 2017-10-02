@@ -5,21 +5,21 @@ import java.util.HashMap;
 import java.util.Map;
 import edu.mit.compilers.symbol_tables.Variable;
 
-public class VariablesScope {
-	protected VariablesScope parent;
+public class VariableTable {
+	protected VariableTable parent;
 	protected Map<String, Variable> variables; // lookup variable by string name
 
-	VariablesScope(VariablesScope parent){
+	VariableTable(VariableTable parent){
 		this.parent = parent;
 		this.variables = new HashMap<>();
 	}
 
-	VariablesScope(){
+	VariableTable(){
 		this.parent = null;
 		this.variables = new HashMap<>();
 	}
 
-	public VariablesScope getParent() {
+	public VariableTable getParent() {
 		return parent;
 	}
 

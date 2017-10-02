@@ -1,16 +1,15 @@
 package edu.mit.compilers.symbol_tables;
 
-import java.util.List;
-import java.util.Collections;
+import edu.mit.compilers.symbol_tables.VariableTable;
 import edu.mit.compilers.symbol_tables.Descriptor;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class MethodDescriptor extends Descriptor {
 	protected TypeDescriptor returnType;
 	protected int codeLocation;  // TODO should this be stored elsehow?
-	protected List<String> methodVariables;  // TODO we should keep things other than name ? like type ?
+	protected VariableTable methodVariables;
 
-	Variable(String name, TypeDescriptor type, int location, List<String> variables){
+	Variable(String name, TypeDescriptor type, int location, VariableTable variables){
 		super(name);
 		this.returnType = type;
 		this.codeLocation = location;
@@ -25,8 +24,8 @@ public class MethodDescriptor extends Descriptor {
 		return codeLocation;
 	}
 
-	public List<String> getMethodVariables() {
-		return Collections.unmodifiableList(methodVariables);
+	public VariableTable getMethodVariables() {
+		return methodVariables;
 	}
 
 }

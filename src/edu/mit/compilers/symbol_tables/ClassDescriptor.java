@@ -4,25 +4,25 @@ import java.util.List;
 import java.util.Collections;
 import edu.mit.compilers.symbol_tables.Descriptor;
 import edu.mit.compilers.symbol_tables.MethodTable;
-import edu.mit.compilers.symbol_tables.VariablesScope;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class ClassDescriptor extends Descriptor {
 	protected ClassDescriptor parentClass;
 	protected MethodTable methods;  // TODO should this be stored elsehow?
-	protected VariablesScope fields;  // TODO we should keep things other than name ? like type ?
+	protected VariableTable fields;  // TODO we should keep things other than name ? like type ?
 
 	ClassDescriptor(String name, ClassDescriptor parent){
 		super(name);
 		this.parentClass = parent;
 		this.methods = new MethodTable(parent.getMethodTable());
-		this.fields = new VariablesScope(parent.getFields());
+		this.fields = new VariableTable(parent.getFields());
 	}
 
 	ClassDescriptor(String name){
 		super(name);
 		this.parentClass = null;
 		this.methods = new MethodTable(parent.getMethodTable());
-		this.fields = new VariablesScope(parent.getFields());
+		this.fields = new VariableTable(parent.getFields());
 	}
 
 	public ClassDescriptor getParent() {
@@ -33,7 +33,7 @@ public class ClassDescriptor extends Descriptor {
 		return methods;
 	}
 
-	public VariablesScope getFields() {
+	public VariableTable getFields() {
 		return fields;
 	}
 
