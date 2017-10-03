@@ -1,4 +1,4 @@
 void main() {
-  foo();	// semanitcally bad, but gramatically ok
+  foo();	// semantically bad, but gramatically ok
 }
 void foo() {}

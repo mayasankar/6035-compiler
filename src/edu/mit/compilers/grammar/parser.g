@@ -1,5 +1,7 @@
 header {
 package edu.mit.compilers.grammar;
+
+import edu.mit.compilers.trees.ConcreteTree;
 }
 
 options
@@ -38,6 +40,16 @@ options
     return error;
   }
 
+  private ConcreteTree parseTree = ConcreteTree.root();
+
+  public ConcreteTree getParseTree() { return parseTree; }
+
+  @Override
+  public void match(int t) throws MismatchedTokenException, TokenStreamException {
+    parseTree.addNode(LT(1));
+    super.match(t);
+  }
+
   // Selectively turns on debug mode.
 
   /** Whether to display debug information. */
@@ -48,12 +60,14 @@ options
   }
   @Override
   public void traceIn(String rname) throws TokenStreamException {
+    parseTree = parseTree.addChild(rname);
     if (trace) {
       super.traceIn(rname);
     }
   }
   @Override
   public void traceOut(String rname) throws TokenStreamException {
+    parseTree = parseTree.getParent();
     if (trace) {
       super.traceOut(rname);
     }
