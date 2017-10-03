@@ -14,15 +14,15 @@ public class ClassDescriptor extends Descriptor {
 	ClassDescriptor(String name, ClassDescriptor parent){
 		super(name);
 		this.parentClass = parent;
-		this.methods = new MethodTable(parent.getMethodTable());
-		this.fields = new VariableTable(parent.getFields());
+		this.methods = new MethodTable(parentClass.getMethodTable());
+		this.fields = new VariableTable(parentClass.getFields());
 	}
 
 	ClassDescriptor(String name){
 		super(name);
 		this.parentClass = null;
-		this.methods = new MethodTable(parent.getMethodTable());
-		this.fields = new VariableTable(parent.getFields());
+		this.methods = new MethodTable(parentClass.getMethodTable());
+		this.fields = new VariableTable(parentClass.getFields());
 	}
 
 	public ClassDescriptor getParent() {

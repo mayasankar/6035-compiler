@@ -2,6 +2,7 @@ package edu.mit.compilers;
 
 import java.io.*;
 import antlr.Token;
+import antlr.collections.AST;
 import edu.mit.compilers.grammar.*;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
@@ -55,16 +56,25 @@ class Main {
             scanner.consume();
           }
         }
-      } else if (CLI.target == Action.PARSE ||
-                 CLI.target == Action.DEFAULT) {
+      } else if (CLI.target == Action.PARSE) {
         DecafScanner scanner =
             new DecafScanner(new DataInputStream(inputStream));
         DecafParser parser = new DecafParser(scanner);
         parser.setTrace(CLI.debug);
         parser.program();
-        if(parser.getError()) {
+        if (parser.getError()) {
           System.exit(1);
         }
+      } else if (CLI.target == Action.INTER ||
+                 CLI.target == Action.DEFAULT) { // TODO do something if CLI.debug
+        DecafScanner scanner =
+            new DecafScanner(new DataInputStream(inputStream));
+        DecafParser parser = new DecafParser(scanner);
+        parser.program();
+        if (parser.getError()) {
+          System.exit(1);
+        }
+        AST tree = parser.getAST();
       }
     } catch(Exception e) {
       // print the error:

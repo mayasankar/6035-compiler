@@ -49,6 +49,7 @@ public class CLI {
    * INTER: produce a high-level intermediate representation from the input,
    *        and stop. This is not one of the segment targets for Fall 2006,
    *        but you may wish to use it for your own purposes.
+   *        NOTE: INTER also does semantic checking.
    * ASSEMBLY: produce assembly from the input.
    */
     public enum Action {DEFAULT, ABOUT, SCAN, PARSE, INTER, ASSEMBLY};
@@ -172,7 +173,7 @@ public class CLI {
             for (int k = 0; k < optnames.length; k++) {
               if (optsList[j].equals(optnames[k])) {
                 opts[j] = true;
-              } else if (optsList[j].charAt(0) == '-' || 
+              } else if (optsList[j].charAt(0) == '-' ||
                          optsList[j].substring(1).equals(optnames[k])) {
                 opts[j] = false;
               }
@@ -194,13 +195,13 @@ public class CLI {
 	  printUsage("Test run successful. Command line parameters: ");
 	  System.exit(0);
       }
- 
+
       else {
         printUsage("Invalid target: " + targetStr);
         throw new IllegalArgumentException(targetStr);
       }
     }
-  
+
     // grab infile and lose extra args
     int i = 0;
     while (infile == null && i < extras.size()) {

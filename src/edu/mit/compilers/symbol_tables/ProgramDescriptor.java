@@ -1,6 +1,7 @@
 package edu.mit.compilers.symbol_tables;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import edu.mit.compilers.symbol_tables.ClassDescriptor;
 
@@ -9,9 +10,8 @@ public class ProgramDescriptor extends ClassDescriptor {
 	protected List<String> imports;
 
 	ProgramDescriptor(){
-		String name = "__PROGRAM_TABLE__";
-		super(name);
-		imports = new List<String>();
+		super("__PROGRAM_TABLE__");
+		imports = new ArrayList<String>(); // List can't be instantiated, it's abstract
 	}
 
 	public List<String> getImports() {

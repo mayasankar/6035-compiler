@@ -9,7 +9,7 @@ public class MethodDescriptor extends Descriptor {
 	protected int codeLocation;  // TODO should this be stored elsehow?
 	protected VariableTable methodVariables;
 
-	Variable(String name, TypeDescriptor type, int location, VariableTable variables){
+	MethodDescriptor(String name, TypeDescriptor type, int location, VariableTable variables){
 		super(name);
 		this.returnType = type;
 		this.codeLocation = location;
