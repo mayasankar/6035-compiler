@@ -7,6 +7,7 @@ public class ConcreteTree {
   private ConcreteTree parent;
   private ConcreteTree firstChild;
   private ConcreteTree lastChild;
+  private ConcreteTree leftSibling;
   private ConcreteTree rightSibling;
 
   ConcreteTree(String nn) {
@@ -40,6 +41,7 @@ public class ConcreteTree {
       firstChild = child;
     } else {
       lastChild.rightSibling = child;
+      child.leftSibling = lastChild;
     }
     lastChild = child;
     return lastChild;
@@ -47,7 +49,9 @@ public class ConcreteTree {
 
   public ConcreteTree getParent() { return parent; }
 
-  public ConcreteTree getNextSibling() { return rightSibling; }
+  public ConcreteTree getLeftSibling() { return leftSibling; }
+
+  public ConcreteTree getRightSibling() { return rightSibling; }
 
   public ConcreteTree getFirstChild() { return firstChild; }
 
@@ -72,6 +76,71 @@ public class ConcreteTree {
     if (rightSibling != null) {
       rightSibling.print(indent);
     }
+  }
+
+  // deletes any nodes of the given tokentype. TODO test that it is correct
+  public void deleteNodes(int tokentype) {
+    if (isNode() && tokentype == ((ConcreteTreeNode) this).getToken().getType()) {
+      if (leftSibling == null) {
+        if (parent != null) {
+          parent.firstChild = rightSibling;
+        }
+      } else {
+        leftSibling.rightSibling = rightSibling;
+      }
+      if (rightSibling == null) {
+        if (parent != null) {
+          parent.lastChild = leftSibling;
+        }
+      } else {
+        rightSibling.leftSibling = leftSibling;
+      }
+    } else {
+      ConcreteTree child = firstChild;
+      while(child != null) {
+        child.deleteNodes(tokentype);
+        child = child.rightSibling;
+      }
+    }
+  }
+
+  // Any node with the given name will be replaced by its child if it has only
+  // one child. Useful for the case of expr -> expr_8 -> ... -> expr_2 when
+  // parsing, for example, a * b as an expr.
+  public void compressNodes(String name) {
+    if (nodeName.equals(name)) {
+      if (firstChild != null && firstChild == lastChild) {
+        firstChild.parent = parent;
+        firstChild.leftSibling = leftSibling;
+        firstChild.rightSibling = rightSibling;
+        if (leftSibling == null) {
+          parent.firstChild = firstChild;
+        } else {
+          leftSibling.rightSibling = firstChild;
+        }
+        if (rightSibling == null) {
+          parent.lastChild = firstChild;
+        } else {
+          rightSibling.leftSibling = firstChild;
+        }
+      }
+    }
+    ConcreteTree child = firstChild;
+    while (child != null) {
+      child.compressNodes(name);
+      child = child.rightSibling;
+    }
+  }
+
+
+  // use for testing only
+  public static ConcreteTree testTree() {
+    ConcreteTree root = new ConcreteTree("root");
+    root.addChild("grandparent");
+    root.firstChild.addChild("parent");
+    root.firstChild.firstChild.addChild("child1");
+    root.firstChild.firstChild.addChild("child2");
+    return root;
   }
 
 }

@@ -6,7 +6,7 @@ public class ConcreteTreeNode extends ConcreteTree {
   private Token tk;
 
   ConcreteTreeNode(Token t) {
-    super(t.getText());
+    super("TOKEN " + t.getText());
     tk = t;
   }
 
@@ -19,4 +19,7 @@ public class ConcreteTreeNode extends ConcreteTree {
   public boolean isNode() {
     return true;
   }
+
+  public Token getToken() { return tk; }
+  
 }

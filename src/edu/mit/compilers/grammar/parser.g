@@ -14,7 +14,7 @@ class DecafParser extends Parser;
 options
 {
   importVocab = DecafScanner;
-  k = 3;
+  k = 3; // TODO mayars should it be 2?
   buildAST = true;
 }
 
@@ -74,6 +74,13 @@ options
   }
 }
 
+
+// Notes on AST
+// Program can be implemented as 3 lists
+// method_decl has type, name, arg list, block
+// block is a list of statements
+// statement is an abstract class with a lot of subclasses
+
 program : (import_decl)* (field_decl)* (method_decl)* EOF;
 import_decl : TK_import ID SEMICOLON;
 type : TK_int | TK_bool;
@@ -107,10 +114,10 @@ literal : INT | CHAR | bool_literal;
 bool_literal : TK_true | TK_false;
 
 // expr by order of operations
-protected op_pm : OP_NEG | OP_ADD;
-expr_0 : location | method_call | literal
-       | TK_len LPAREN ID RPAREN
-       | LPAREN expr RPAREN;
+op_pm : OP_NEG | OP_ADD;
+expr_base : location | method_call | literal
+       | TK_len LPAREN ID RPAREN;
+expr_0 : expr_base | LPAREN expr RPAREN;
 expr_1 : (OP_NOT | OP_NEG)* expr_0;
 expr_2 : expr_1 (OP_MUL expr_1)*;
 expr_3 : expr_2 (op_pm expr_2)*;

@@ -6,6 +6,7 @@ import antlr.collections.AST;
 import edu.mit.compilers.grammar.*;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
+import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
 
 class Main {
@@ -76,6 +77,9 @@ class Main {
           System.exit(1);
         }
         ConcreteTree tree = parser.getParseTree();
+        tree.print();
+        ASTCreator.simplifyTree(tree);
+        System.out.println();
         tree.print();
       }
     } catch(Exception e) {
