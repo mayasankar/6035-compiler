@@ -14,9 +14,9 @@ public abstract class IRBinaryOperator extends IROperator {
 	static {
 		Map<String, IRBinaryOperator> map = new HashMap<>();
 		
-		map.putAll(IRArithmeticOperator.arithmeticStringToOperatorMap);
-		map.putAll(IRBooleanOperator.booleanStringToOperatorMap);
-		map.putAll(IREqualityOperator.equalityStringToOperatorMap);
+		map.putAll(IRBinaryArithmeticOperator.arithmeticStringToOperatorMap);
+		map.putAll(IRBooleanBinaryOperator.booleanStringToOperatorMap);
+		map.putAll(IREqualityBinaryOperator.equalityStringToOperatorMap);
 		
 		stringToBinaryOperatorMap = Collections.unmodifiableMap(map);
 		

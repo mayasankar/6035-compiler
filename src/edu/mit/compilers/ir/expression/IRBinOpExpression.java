@@ -8,13 +8,13 @@ import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.operator.IRBinaryOperator;
 
 public class IRBinOpExpression extends IRExpression{
-	private final IRNode leftExpr;
+	private final IRExpression leftExpr;
 	
-	private final IRNode rightExpr;
+	private final IRExpression rightExpr;
 	
 	private final IRBinaryOperator operator;
 	
-	public IRBinOpExpression(IRNode leftExpr, IRNode rightExpr, IRBinaryOperator operator) {
+	public IRBinOpExpression(IRExpression leftExpr, IRExpression rightExpr, IRBinaryOperator operator) {
 		this.leftExpr = leftExpr;
 		this.rightExpr = rightExpr;
 		this.operator = operator;
@@ -27,7 +27,7 @@ public class IRBinOpExpression extends IRExpression{
 	}
 
 	@Override
-	public List<IRNode> getChildren() {
+	public List<? extends IRNode> getChildren() {
 		return Arrays.asList(leftExpr, rightExpr);
 	}
 

@@ -18,7 +18,7 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
 	}
 
 	@Override
-	public List<IRNode> getChildren() {
+	public List<? extends IRNode> getChildren() {
 		return new ArrayList<IRNode>();
 	}
 }

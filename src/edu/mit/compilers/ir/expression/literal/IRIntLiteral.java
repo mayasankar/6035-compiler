@@ -18,7 +18,7 @@ public class IRIntLiteral extends IRLiteral<Integer> {
 	}
 
 	@Override
-	public List<IRNode> getChildren() {
+	public List<? extends IRNode> getChildren() {
 		return new ArrayList<IRNode>();
 	}
 }
