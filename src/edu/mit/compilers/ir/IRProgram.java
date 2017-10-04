@@ -56,7 +56,7 @@ public class IRProgram extends IRNode {
 		}
 		answer += "\nMethods: ";
 		for (IRMethodDecl method : methods) {
-			answer += "" + " "; // TODO fix
+			answer += method.toString() + "\n";
 		}
 		return answer;
 	}

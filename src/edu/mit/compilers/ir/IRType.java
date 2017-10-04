@@ -9,13 +9,28 @@ import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRType extends IRNode {
-	enum Type {
+	public enum Type {
 		UNSPECIFIED,
 		INT,
 		BOOL,
 		INT_ARRAY,
 		BOOL_ARRAY,
 		VOID
+	}
+
+	public static Type getType(Token t) {
+		switch(t.getType()) {
+			case DecafParserTokenTypes.TK_int: {
+				return Type.INT;
+			}
+			case DecafParserTokenTypes.TK_bool: {
+				return Type.BOOL;
+			}
+			case DecafParserTokenTypes.TK_void: {
+				return Type.VOID;
+			}
+		}
+		return Type.UNSPECIFIED;
 	}
 
 	private Type type = Type.UNSPECIFIED;
@@ -49,6 +64,10 @@ public class IRType extends IRNode {
 
 	public boolean isArray() {
 		return type == Type.INT_ARRAY || type == Type.BOOL_ARRAY;
+	}
+
+	public boolean isVoid() {
+		return type == Type.VOID;
 	}
 
 	// @Override
