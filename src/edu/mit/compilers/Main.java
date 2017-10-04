@@ -8,6 +8,7 @@ import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.ir.*;
 
 class Main {
   public static void main(String[] args) {
@@ -77,8 +78,10 @@ class Main {
           System.exit(1);
         }
         ConcreteTree tree = parser.getParseTree();
-        System.out.println(ASTCreator.getIR(tree));
-        //tree.print();
+        // ASTCreator.simplifyTree(tree);
+        // tree.print();
+        IRProgram ir = ASTCreator.getIR(tree);
+        System.out.println(ir);
       }
     } catch(Exception e) {
       // print the error:

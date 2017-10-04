@@ -54,7 +54,7 @@ public class IRProgram extends IRNode {
 		for (IRFieldDecl field : fields) {
 			answer += field.toString() + ", ";
 		}
-		answer += "\nMethods: ";
+		answer += "\nMethods: \n";
 		for (IRMethodDecl method : methods) {
 			answer += method.toString() + "\n";
 		}

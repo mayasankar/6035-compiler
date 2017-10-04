@@ -51,7 +51,7 @@ public class IRMethodDecl {
         answer += parameter.toString() + ", ";
       }
     }
-    // TODO add a print block statement
+    answer += code.toString(1);
     return answer;
   }
 }
