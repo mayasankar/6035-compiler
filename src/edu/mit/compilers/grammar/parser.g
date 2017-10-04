@@ -42,7 +42,7 @@ options
 
   private ConcreteTree parseTree = ConcreteTree.root();
 
-  public ConcreteTree getParseTree() { return parseTree; }
+  public ConcreteTree getParseTree() { return parseTree.getFirstChild(); }
 
   @Override
   public void match(int t) throws MismatchedTokenException, TokenStreamException {

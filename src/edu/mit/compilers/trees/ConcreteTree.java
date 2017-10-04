@@ -36,6 +36,10 @@ public class ConcreteTree {
     addChild(new ConcreteTreeNode(t, this));
   }
 
+  public Token getToken() {
+    return null;
+  }
+
   private ConcreteTree addChild(ConcreteTree child) {
     if (firstChild == null) {
       firstChild = child;
@@ -80,7 +84,7 @@ public class ConcreteTree {
 
   // deletes any nodes of the given tokentype. TODO test that it is correct
   public void deleteNodes(int tokentype) {
-    if (isNode() && tokentype == ((ConcreteTreeNode) this).getToken().getType()) {
+    if (isNode() && tokentype == getToken().getType()) {
       if (leftSibling == null) {
         if (parent != null) {
           parent.firstChild = rightSibling;

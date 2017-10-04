@@ -20,6 +20,7 @@ public class ConcreteTreeNode extends ConcreteTree {
     return true;
   }
 
+  @Override
   public Token getToken() { return tk; }
-  
+
 }

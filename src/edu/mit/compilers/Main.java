@@ -77,10 +77,7 @@ class Main {
           System.exit(1);
         }
         ConcreteTree tree = parser.getParseTree();
-        tree.print();
-        ASTCreator.simplifyTree(tree);
-        System.out.println();
-        tree.print();
+        System.out.println(ASTCreator.getIR(tree).toString());
       }
     } catch(Exception e) {
       // print the error:
