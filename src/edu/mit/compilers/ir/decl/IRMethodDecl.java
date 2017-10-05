@@ -18,7 +18,6 @@ public class IRMethodDecl {
   VariableTable parameters;  // TODO make this an actual thing
 
   public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
-    System.out.println("It's a method!");
     parameters = new VariableTable(parentScope);
 
     ConcreteTree child = tree.getFirstChild();

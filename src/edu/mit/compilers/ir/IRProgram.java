@@ -16,9 +16,7 @@ public class IRProgram extends IRNode {
 
 	public IRProgram(ConcreteTree tree) {
 
-		System.out.println("It's a program!");
 		table = new ProgramTable();
-		System.out.println("Initialized programTable");
 
 		ConcreteTree child = tree.getFirstChild(); // TODO do I need to instantiate these?
 		//imports = new ArrayList<Token>();
@@ -27,8 +25,6 @@ public class IRProgram extends IRNode {
 			//imports.add(child.getFirstChild().getToken());
 			child = child.getRightSibling();
 		}
-
-		System.out.println("-import_decls handled");
 
 		//fields = new ArrayList<IRFieldDecl>();
 		while (child != null && child.getName().equals("field_decl")) {
@@ -50,8 +46,6 @@ public class IRProgram extends IRNode {
 			}
 			child = child.getRightSibling();
 		}
-
-		System.out.println("-fields handled");
 
 		//methods = new ArrayList<IRMethodDecl>();
 		while (child != null && child.getName().equals("method_decl")) {

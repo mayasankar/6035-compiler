@@ -22,7 +22,6 @@ public class ClassDescriptor extends Descriptor {
 
 	public ClassDescriptor(String name){
 		super(name);
-		System.out.println("Called ClassDescriptor constructor");
 		this.parentClass = null;
 		this.methods = new MethodTable();
 		this.fields = new VariableTable();
