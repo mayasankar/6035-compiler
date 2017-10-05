@@ -5,10 +5,10 @@ import java.util.ArrayList;
 
 import antlr.Token;
 import java.util.Collections;
-import edu.mit.compilers.symbol_tables.ClassDescriptor;
+import edu.mit.compilers.symbol_tables.ClassTable;
 
 
-public class ProgramTable extends ClassDescriptor {
+public class ProgramTable extends ClassTable {
 	protected List<Token> imports;
 
 	public ProgramTable(){
