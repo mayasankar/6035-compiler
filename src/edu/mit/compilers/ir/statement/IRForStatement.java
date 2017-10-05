@@ -9,25 +9,39 @@ import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRForStatement extends IRStatement {
 
-	private  IRStatement initializer;
+	private  IRAssignStatement initializer;
 
 	private  IRExpression condition;
 
-	private  IRStatement stepFunction;
+	private  IRAssignStatement stepFunction;
 
 	private  IRBlock block;
 
 	public IRForStatement(ConcreteTree tree) {
 		statementType = IRStatement.StatementType.FOR_BLOCK;
-		//TODO initialize
+		ConcreteTree child = tree.getFirstChild();
+		initializer = IRAssignStatement.makeForLoopInitializer(child);
+		child = child.getRightSibling().getRightSibling().getRightSibling();
+		condition = IRExpression.makeIRExpression(child);
+		child = child.getRightSibling();
+		stepFunction = IRAssignStatement.makeForLoopStepFunction(child);
+		while (!child.getName().equals("block")) {
+			child = child.getRightSibling();
+		}
+		block = new IRBlock(child);
 	}
 
-	public IRForStatement(IRStatement initializer, IRExpression condition, IRStatement stepFunction, IRBlock block) {
-		this.initializer = initializer;
-		this.condition = condition;
-		this.stepFunction = stepFunction;
-		this.block = block;
+	@Override
+	String toString(int indent) {
+		String whitespace = "";
+		for (int i = 0; i < indent; ++i) {
+			whitespace += "  ";
+		}
+		return whitespace + "for " // TODO + initializer + condition + stepFunction
+						+ block.toString(indent + 1);
 	}
+
+
 
 	//@Override
 	public List<? extends IRNode> getChildren() {

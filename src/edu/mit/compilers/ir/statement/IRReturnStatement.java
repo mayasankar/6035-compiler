@@ -16,4 +16,9 @@ public class IRReturnStatement extends IRStatement {
       expr = null;
     }
   }
+
+  @Override
+  public String toString() {
+    return ""; // TODO replace by expr.toString.
+  }
 }

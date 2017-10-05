@@ -78,8 +78,8 @@ class Main {
           System.exit(1);
         }
         ConcreteTree tree = parser.getParseTree();
-        // ASTCreator.simplifyTree(tree);
-        // tree.print();
+        ASTCreator.simplifyTree(tree);
+        tree.print();
         IRProgram ir = ASTCreator.getIR(tree);
         System.out.println(ir);
       }

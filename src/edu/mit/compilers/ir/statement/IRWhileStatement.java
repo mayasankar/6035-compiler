@@ -10,17 +10,29 @@ import edu.mit.compilers.trees.ConcreteTree;
 public class IRWhileStatement extends IRStatement {
 
 	private IRExpression condition;
-
 	private IRBlock block;
 
 	public IRWhileStatement(ConcreteTree tree) {
 		statementType = IRStatement.StatementType.WHILE_BLOCK;
-		//TODO implement
+		ConcreteTree child = tree.getFirstChild();
+		condition = IRExpression.makeIRExpression(child);
+		child = child.getRightSibling();
+		block = new IRBlock(child);
 	}
 
 	public IRWhileStatement(IRExpression condition, IRBlock block) {
 		this.condition = condition;
 		this.block = block;
+	}
+
+	@Override
+	String toString(int indent) {
+		String whitespace = "";
+		for (int i = 0; i < indent; ++i) {
+			whitespace += "  ";
+		}
+		return whitespace + "while " // TODO + expr
+						+ block.toString(indent + 1);
 	}
 
 	//@Override

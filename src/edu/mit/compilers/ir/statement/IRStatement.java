@@ -41,9 +41,9 @@ public abstract class IRStatement extends IRNode {
     } else {
       String name = child.getName();
       if (name.equals("assign_expr")) {
-        return new IRAssignStatement();
+        return new IRAssignStatement(child);
       } else if (name.equals("method_call")) {
-        return new IRMethodCallStatement();
+        return new IRMethodCallStatement(child);
       } else if (name.equals("if_block")) {
         return new IRIfStatement(child);
       } else if (name.equals("for_block")) {

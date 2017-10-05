@@ -8,16 +8,16 @@ import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.operator.IRUnaryOperator;
 
 public class IRUnaryOpExpression extends IRExpression {
-	
-	private final IRExpression argument;
-	
-	private final IRUnaryOperator operator;
-	
-	public IRUnaryOpExpression(IRExpression argument, IRUnaryOperator operator) {
-		this.argument = argument;
-		this.operator = operator;
-	}
-	
+
+	private IRExpression argument;
+
+	private IRUnaryOperator operator;
+
+	// public IRUnaryOpExpression(IRExpression argument, IRUnaryOperator operator) {
+	// 	this.argument = argument;
+	// 	this.operator = operator;
+	// }
+
 	@Override
 	public IRType getType() {
 		return operator.outputType();

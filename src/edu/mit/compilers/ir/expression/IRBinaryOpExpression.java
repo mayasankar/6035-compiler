@@ -7,19 +7,19 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.operator.IRBinaryOperator;
 
-public class IRBinOpExpression extends IRExpression{
-	private final IRExpression leftExpr;
-	
-	private final IRExpression rightExpr;
-	
-	private final IRBinaryOperator operator;
-	
-	public IRBinOpExpression(IRExpression leftExpr, IRExpression rightExpr, IRBinaryOperator operator) {
-		this.leftExpr = leftExpr;
-		this.rightExpr = rightExpr;
-		this.operator = operator;
-	}
-	
+public class IRBinaryOpExpression extends IRExpression{
+	private IRExpression leftExpr;
+
+	private IRExpression rightExpr;
+
+	private IRBinaryOperator operator;
+
+	// public IRBinaryOpExpression(IRExpression leftExpr, IRExpression rightExpr, IRBinaryOperator operator) {
+	// 	this.leftExpr = leftExpr;
+	// 	this.rightExpr = rightExpr;
+	// 	this.operator = operator;
+	// }
+
 	@Override
 	public IRType getType() {
 		// TODO Where are we static checking types???
