@@ -3,11 +3,11 @@ package edu.mit.compilers.symbol_tables;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import edu.mit.compilers.ir.decl.IRFieldDecl;
+import edu.mit.compilers.ir.decl.IRMemberDecl;
 
 public class VariableTable {
 	protected VariableTable parent;
-	protected Map<String, IRFieldDecl> variables; // lookup variable by string name
+	protected Map<String, IRMemberDecl> variables; // lookup variable by string name
 
 	public VariableTable(VariableTable parent){
 		this.parent = parent;
@@ -23,11 +23,11 @@ public class VariableTable {
 		return parent;
 	}
 
-	public void add(IRFieldDecl v){
+	public void add(IRMemberDecl v){
 		variables.put(v.getName(), v);
 	}
 
-	public IRFieldDecl get(String name){
+	public IRMemberDecl get(String name){
 		if (variables.containsKey(name)){
 			return variables.get(name);
 		}
@@ -39,12 +39,16 @@ public class VariableTable {
 
 	@Override
 	public String toString() {
-		String answer = "Variables: \n";
+		return toString("Variables");
+	}
+
+	public String toString(String var_setting) {
+		String answer = var_setting + ": ";
 		if (variables.values().size() == 0) {
 			answer += "none";
 		} else {
-			for (IRFieldDecl field : variables.values()) {
-				answer += field.toString() + ", ";
+			for (IRMemberDecl var : variables.values()) {
+				answer += var.toString() + ", ";
 			}
 		}
 		return answer;
