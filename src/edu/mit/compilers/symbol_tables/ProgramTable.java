@@ -13,6 +13,7 @@ public class ProgramTable extends ClassDescriptor {
 
 	public ProgramTable(){
 		super("__PROGRAM_TABLE__");
+		System.out.println("Called ProgramTable constructor");
 		imports = new ArrayList<Token>();
 	}
 
@@ -21,6 +22,7 @@ public class ProgramTable extends ClassDescriptor {
 	}
 
 	public void addImport(Token i){
+		System.out.println("added import:");
 		imports.add(i);
 	}
 

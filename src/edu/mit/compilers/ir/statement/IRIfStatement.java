@@ -6,6 +6,7 @@ import java.util.List;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRIfStatement extends IRStatement {
 
@@ -13,17 +14,17 @@ public class IRIfStatement extends IRStatement {
 	private IRBlock thenBlock;
 	private IRBlock elseBlock;
 
-	public IRIfStatement(ConcreteTree tree) {
+	public IRIfStatement(ConcreteTree tree, VariableTable parentScope) {
 		statementType = IRStatement.StatementType.IF_BLOCK;
 		ConcreteTree child = tree.getFirstChild();
 		ifCondition = IRExpression.makeIRExpression(child);
 		child = child.getRightSibling();
-		thenBlock = new IRBlock(child);
+		thenBlock = new IRBlock(child, parentScope);
 		child = child.getRightSibling();
 		if (child == null) {
 			elseBlock = null;
 		} else {
-			elseBlock = new IRBlock(child);
+			elseBlock = new IRBlock(child, parentScope);
 		}
 	}
 

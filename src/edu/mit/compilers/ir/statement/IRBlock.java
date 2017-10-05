@@ -18,6 +18,7 @@ public class IRBlock extends IRNode {
 	private VariableTable fields;  // TODO construct
 
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
+		System.out.println("It's a block!");
 		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {
@@ -38,7 +39,7 @@ public class IRBlock extends IRNode {
 			child = child.getRightSibling();
 		}
 		while (child != null) {
-			statements.add(IRStatement.makeIRStatement(child));
+			statements.add(IRStatement.makeIRStatement(child, parentScope));
 			child = child.getRightSibling();
 		}
 	}
