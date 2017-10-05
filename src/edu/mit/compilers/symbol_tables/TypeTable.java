@@ -8,11 +8,11 @@ import edu.mit.compilers.symbol_tables.SymbolTable;
 
 public class TypeTable extends SymbolTable {
 
-	TypeTable(TypeTable parent){
+	public TypeTable(TypeTable parent){
 		super(parent);
 	}
 
-	TypeTable(){
+	public TypeTable(){
 		super();
 	}
 

@@ -9,13 +9,16 @@ import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRBlock extends IRNode {
 
-	private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
+	//private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
 	private ArrayList<IRStatement> statements = new ArrayList<IRStatement>();
+	private VariableTable fields;  // TODO construct
 
-	public IRBlock(ConcreteTree tree) {
+	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
+		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree grandchild = child.getFirstChild();
@@ -50,14 +53,7 @@ public class IRBlock extends IRNode {
 		for (int i = 0; i < indent; ++i) {
 			answer += "  ";
 		}
-		answer += "Fields: ";
-		if (fields.size() == 0) {
-			answer += "none";
-		} else {
-			for (IRFieldDecl field : fields) {
-				answer += field.toString() + ", ";
-			}
-		}
+		answer += fields.toString();
 		for (IRStatement statement : statements) {
 			answer += "\n" + statement.toString(indent);
 		}

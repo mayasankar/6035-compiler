@@ -6,7 +6,7 @@ import java.util.Collections;
 public abstract class Descriptor {
 	protected String name;
 
-	Descriptor (String name){
+	public Descriptor (String name){
 		this.name = name;
 	}
 

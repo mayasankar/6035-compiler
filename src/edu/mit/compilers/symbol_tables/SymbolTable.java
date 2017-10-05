@@ -10,12 +10,12 @@ public abstract class SymbolTable {
 	protected SymbolTable parent;
 	protected Map<String, Descriptor> lookupObjects; // lookup method by string name
 
-	SymbolTable(SymbolTable parent){
+	public SymbolTable(SymbolTable parent){
 		this.parent = parent;
 		this.lookupObjects = new HashMap<>();
 	}
 
-	SymbolTable(){
+	public SymbolTable(){
 		this.parent = null;
 		this.lookupObjects = new HashMap<>();
 	}

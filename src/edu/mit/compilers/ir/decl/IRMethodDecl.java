@@ -8,12 +8,14 @@ import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRMethodDecl {
   IRType.Type returnType = IRType.Type.UNSPECIFIED;
   Token id;
   ArrayList<IRParameterDecl> parameters = new ArrayList<IRParameterDecl>();
   IRBlock code;
+  VariableTable parameterTable = new VariableTable();  // TODO make this an actual thing
 
   public IRMethodDecl(ConcreteTree tree) {
     ConcreteTree child = tree.getFirstChild();
@@ -38,7 +40,11 @@ public class IRMethodDecl {
       parameters.add(new IRParameterDecl(parameterType, parameterId));
       child = child.getRightSibling();
     }
-    code = new IRBlock(child);
+    code = new IRBlock(child, parameterTable);
+  }
+
+  public String getName() {
+    return id.getText();
   }
 
   @Override
