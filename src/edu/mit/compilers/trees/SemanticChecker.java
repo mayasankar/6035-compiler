@@ -274,12 +274,14 @@ public class SemanticChecker {
     // ------- STATEMENT CHECKS ----------
 
     private void checkIRAssignStatement(IRAssignStatement statement) {
-        // 18
+        // 18, 19
         IRVariableExpression varAssigned = statement.getVarAssigned();
         checkIRVariableExpression(varAssigned);
         String op = statement.getOperator();
         IRExpression value = statement.getValue();
-        checkIRExpression(value);
+        if (op != "++" && op != "--"){
+            checkIRExpression(value);
+        }
 
         String varName = varAssigned.getName();
         IRExpression arrayIndex = varAssigned.getIndexExpression();
@@ -288,27 +290,49 @@ public class SemanticChecker {
         if (assignee == null) {
             notifyError("Cannot assign to uninstantiated variable '" + varName + "'.", varAssigned);
         }
-        if (arrayIndex == null) {
-            // we should have an int or bool, not an array
-            if (assignee.getType() != value.getType()) {
-                notifyError("Cannot assign a value of type " + value.getType().toString() +
-                " to a variable of type " + assignee.getType() + ".", value);
+        if (op == "=") {
+            if (arrayIndex == null) {
+                // we should have an int or bool, not an array
+                if (assignee.getType() != value.getType()) {
+                    notifyError("Cannot assign a value of type " + value.getType().toString() +
+                    " to a variable of type " + assignee.getType() + ".", value);
+                }
+                if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
+                    notifyError("Cannot assign to variable '" + varName + "' of type " + assignee.getType().toString() +
+                    ".", varAssigned);
+                }
             }
-            if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
-                notifyError("Cannot assign to variable '" + varName + "' of type " + assignee.getType().toString() +
-                ".", varAssigned);
+            else {
+                // we should have an array
+                if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
+                    notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
+                }
+                if (!((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT)
+                   || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) {
+                       notifyError("Cannot assign a value of type " + value.getType().toString() +
+                       " to an array location of type " + assignee.getType() + ".", value);
+                   }
             }
         }
         else {
-            // we should have an array
-            if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
-                notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
+            if ((op == "+=" || op == "-=") && value.getType() != IRType.Type.INT) {
+                notifyError("Cannot increment by a value of type " + value.getType().toString() + ".", value);
             }
-            if (!((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT)
-               || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) {
-                   notifyError("Cannot assign a value of type " + value.getType().toString() +
-                   " to an array location of type " + assignee.getType() + ".", value);
-               }
+            if (arrayIndex == null) {
+                // we should have an int or bool, not an array
+                if (assignee.getType() != IRType.Type.INT) {
+                    notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
+                }
+            }
+            else {
+                // we should have an array
+                if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
+                    notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
+                }
+                if (assignee.getType() != IRType.Type.INT_ARRAY) {
+                    notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
+                }
+            }
         }
 
     }
