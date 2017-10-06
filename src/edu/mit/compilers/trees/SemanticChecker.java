@@ -26,7 +26,7 @@ public class SemanticChecker {
         env.push(tree.methods);
         env.push(tree.fields);
         env.push(IRType.Type.VOID);
-        checkImports(tree.imports);
+        checkImportsAndGlobals(tree.imports, tree.fields);
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
@@ -56,27 +56,51 @@ public class SemanticChecker {
         }
     }
 
-    private void checkImports(List<IRImportDecl> imports){
+    private void checkImportsAndGlobals(List<IRImportDecl> imports, VariableTable varTable){
         // first part of 1
         // check that they're all distinct
-        HashSet<IRImportDecl> importsSet = new HashSet<>();
+        List<IRMemberDecl> variables = varTable.getVariableList();
+        HashSet<String> namesSet = new HashSet<>();
         for (IRImportDecl imp : imports){
-            if (importsSet.contains(imp)){
+            if (namesSet.contains(imp.getName())){
                 notifyError("Attempted to import an identifier previously imported.", imp);
             }
-        importsSet.add(imp);
+            namesSet.add(imp.getName());
         }
-        // TODO maybe we also need to check these against global variables?
+        for (IRMemberDecl imp : variables){
+            if (namesSet.contains(imp.getName())){
+                notifyError("Attempted to declare a global variable that conflicts with an import name.", imp);
+            }
+            namesSet.add(imp.getName());
+        }
     }
 
     // ------- TABLE CHECKS ----------
 
     private void checkMethodTable(MethodTable table){
-        // TODO
+        // part of 1
+        List<IRMethodDecl> methods = table.getMethodList();
+        HashSet<IRMethodDecl> methodsSet = new HashSet<>();
+        for (IRMethodDecl met : methods){
+            if (methodsSet.contains(met)){
+                notifyError("Attempted to declare method " + met.getName() +
+                " but a method of that name already exists in the same scope.", met);
+            }
+            methodsSet.add(met);
+        }
     }
 
     private void checkVariableTable(VariableTable table){
-        // TODO
+        // part of 1
+        List<IRMemberDecl> variables = table.getVariableList();
+        HashSet<IRMemberDecl> variablesSet = new HashSet<>();
+        for (IRMemberDecl var : variables){
+            if (variablesSet.contains(var)){
+                notifyError("Attempted to declare variable " + var.getName() +
+                " but a variable of that name already exists in the same scope.", var);
+            }
+            variablesSet.add(var);
+        }
     }
 
     private void checkClassTable(ClassTable table) {
