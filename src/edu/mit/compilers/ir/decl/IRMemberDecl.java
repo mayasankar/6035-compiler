@@ -12,6 +12,7 @@ public abstract class IRMemberDecl extends IRNode {
 
 	protected Token id;
 	protected IRType.Type irType;
+	protected int length;
 
 	@Override
 	public List<? extends IRNode> getChildren() {
@@ -22,14 +23,20 @@ public abstract class IRMemberDecl extends IRNode {
 		setLineNumbers(id);
 		this.id = id;
 		this.irType = irType;
+		this.length = 0;
 	}
 
-	public IRType.Type getType() {
-		return irType;
+	public IRMemberDecl(IRType.Type irType, Token id, int length) {
+		setLineNumbers(id);
+		this.id = id;
+		this.irType = irType;
+		this.length = length;
 	}
 
-	public String getName() {
-		return id.getText();
-	}
+	public IRType.Type getType() { return irType; }
+
+	public int getLength() { return length; }
+
+	public String getName() { return id.getText(); }
 
 }

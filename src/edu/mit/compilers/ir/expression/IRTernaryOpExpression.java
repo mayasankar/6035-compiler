@@ -31,6 +31,10 @@ public class IRTernaryOpExpression extends IRExpression {
 		falseExpression = IRExpression.makeIRExpression(child);
 	}
 
+	public IRExpression getCondition() { return condition; }
+	public IRExpression getTrueExpression() { return trueExpression; }
+	public IRExpression getFalseExpression() { return falseExpression; }
+
 	@Override
 	public IRType.Type getType() {
 		return trueExpression.getType();

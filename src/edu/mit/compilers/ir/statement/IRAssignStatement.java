@@ -36,6 +36,11 @@ public class IRAssignStatement extends IRStatement {
 		this.value = value;
 	}
 
+	public String getVariableName(){
+		return varAssigned.getVariableName();
+	}
+	public IRExpression getValue() { return value; }
+
 	public static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
 		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
 		child = child.getRightSibling();
