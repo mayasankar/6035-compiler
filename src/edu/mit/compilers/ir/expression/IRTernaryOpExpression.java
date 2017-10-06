@@ -21,7 +21,7 @@ public class IRTernaryOpExpression extends IRExpression {
 		this.falseExpression = falseExpression;
 	}
 
-	public IRTernaryOpExpression(ConcreteTree tree) {
+	public IRTernaryOpExpression(ConcreteTree tree) { // TODO make recursive
 		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
 		condition = IRExpression.makeIRExpression(child);

@@ -11,8 +11,8 @@ import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRVariableExpression extends IRExpression {
 
-	private String variableName; // TODO remove eventually
-	private IRExpression arrayIndex = null; // TODO remove eventually
+	private String variableName;
+	private IRExpression arrayIndex = null;
 
 	public static IRVariableExpression makeIRVariableExpression(ConcreteTree tree) { // TODO make constructor
 		if (tree == null) {
@@ -46,7 +46,8 @@ public class IRVariableExpression extends IRExpression {
 		arrayIndex = expression;
 	}
 
-	public String getVariableName() { return variableName; }
+	public String getName() { return variableName; }
+	public IRExpression getIndexExpression() { return arrayIndex; }
 
 	@Override
 	public IRType.Type getType() {

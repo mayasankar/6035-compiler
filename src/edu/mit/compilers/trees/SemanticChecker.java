@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,10,11,14,18,19,20
+// write semantic checks 1,2,14,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -36,7 +36,7 @@ public class SemanticChecker {
     }
 
     private void notifyError(String error, IRNode problematicNode){
-        System.out.println("ERROR " + problematicNode.location() + ": " + error);
+        System.err.println("ERROR " + problematicNode.location() + ": " + error);
     }
 
     // ------- PROGRAM HELPER CHECKS ----------
@@ -249,8 +249,26 @@ public class SemanticChecker {
         }
     }
 
-    private void checkIRVariableExpression(IRVariableExpression expr) {
-        // TODO
+    private void checkIRVariableExpression(IRVariableExpression var) {
+        // 10, 11
+        VariableTable table = env.getVariableTable();
+        IRMemberDecl decl = table.get(var.getName());
+        IRExpression idxExpr = var.getIndexExpression();
+        if (decl == null) {
+          notifyError("Variable " + var.getName() + " used but not declared", var);
+        } else if (idxExpr != null) {
+          IRType.Type declType = decl.getType();
+          if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
+            notifyError("Cannot index into non-array variable " + var.getName(), var);
+          }
+        }
+        if (idxExpr != null) {
+          IRType.Type exprType = idxExpr.getType();
+          if (exprType != IRType.Type.INT) {
+            notifyError("Array index must be an integer", idxExpr);
+          }
+        }
+
     }
 
     // ------- STATEMENT CHECKS ----------
