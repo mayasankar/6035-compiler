@@ -16,7 +16,7 @@ public class IRUnaryOpExpression extends IRExpression {
 	private Token operator;
 	private IRExpression argument;
 
-	private IRUnaryOpExpression(Token operator, IRExpression argument) {
+	public IRUnaryOpExpression(Token operator, IRExpression argument) {
 		this.operator = operator;
 		this.argument = argument;
 	}

@@ -18,7 +18,7 @@ public class IRBinaryOpExpression extends IRExpression{
 	//private IRBinaryOperator operator;
 	private Token operator;
 
-	private IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
+	public IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
 		this.leftExpr = leftExpr;
 		this.operator = operator;
 		this.rightExpr = rightExpr;

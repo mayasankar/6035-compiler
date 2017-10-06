@@ -18,8 +18,9 @@ public class IRMethodCallExpression extends IRExpression {
 
 	private String functionName;
 
-	public IRMethodCallExpression(String descriptorName, IRExpression... arguments) {
-		this.arguments = Collections.unmodifiableList(Arrays.asList(arguments));
+	public IRMethodCallExpression(String descriptorName, List<IRExpression> arguments) {
+		this.arguments = Collections.unmodifiableList(arguments);
+		this.functionName = descriptorName;
 		//TODO: some code to get the method descriptor
 	}
 

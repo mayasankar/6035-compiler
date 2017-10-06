@@ -33,12 +33,12 @@ public class IRVariableExpression extends IRExpression {
 		variableName = id.getText();
 	}
 
-	private IRVariableExpression(String variableName) {
+	public IRVariableExpression(String variableName) {
 		this.variableName = variableName;
 		// TODO: make a variable or look one up here
 	}
 
-	private IRVariableExpression(String variableName, IRExpression expression) {
+	public IRVariableExpression(String variableName, IRExpression expression) {
 		this.variableName = variableName;
 		arrayIndex = expression;
 	}
