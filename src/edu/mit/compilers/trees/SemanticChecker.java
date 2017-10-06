@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,14,18,19,20
+// write semantic checks 1,2,14,18,19
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -93,7 +93,7 @@ public class SemanticChecker {
         // low priority because we don't seem to be using this?
     }
 
-    private void checkIRMemberDecl(IRMemberDecl variable){
+    private void checkIRMemberDecl(IRMemberDecl variable) {
         // 4
         String name = variable.getName();
         IRType.Type type = variable.getType();
@@ -279,13 +279,16 @@ public class SemanticChecker {
     }
 
     private void checkIRBlock(IRBlock block){
+      env.push(block.getFields());
       for (IRStatement s : block.getStatements()){
         checkIRStatement(s);
       }
+      env.popVariableTable();
     }
 
     private void checkIRForStatement(IRForStatement statement) {
         // 21
+        env.push(statement);
         checkIRAssignStatement(statement.getStepFunction());
         checkIRAssignStatement(statement.getInitializer());
         IRExpression cond = statement.getCondition();
@@ -294,6 +297,7 @@ public class SemanticChecker {
             notifyError("For loop condition expression must have type bool.", cond);
         }
         checkIRBlock(statement.getBlock());
+        env.popLoopStatement();
     }
 
     private void checkIRIfStatement(IRIfStatement statement) {
@@ -335,12 +339,27 @@ public class SemanticChecker {
 
     private void checkIRWhileStatement(IRWhileStatement statement) {
         // part of 13
+        env.push(statement);
         checkIRBlock(statement.getBlock());
         IRExpression cond = statement.getCondition();
         checkIRExpression(cond);
         if (cond.getType() != IRType.Type.BOOL){
             notifyError("While statement condition expression must have type bool.", cond);
         }
+        env.popLoopStatement();
+    }
+
+    private void checkIRLoopStatement(IRLoopStatement statement) {
+      IRStatement loop = env.getLoopStatement();
+      if (loop == null) {
+        notifyError(
+          statement.getStatementType().name().toLowerCase() +
+          "statement not within a while or for loop",
+          statement
+        );
+      } else {
+        statement.setLoop(loop);
+      }
     }
 
 }

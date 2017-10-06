@@ -6,8 +6,14 @@ import java.util.List;
 import edu.mit.compilers.ir.IRNode;
 
 public class IRLoopStatement extends IRStatement {
+  IRStatement loop;
+
   public IRLoopStatement(IRStatement.StatementType st) {
     statementType = st;
+  }
+
+  public void setLoop(IRStatement loop) {
+    this.loop = loop;
   }
 
   @Override
