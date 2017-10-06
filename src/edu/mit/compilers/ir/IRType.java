@@ -14,7 +14,8 @@ public class IRType {
 		BOOL,
 		INT_ARRAY,
 		BOOL_ARRAY,
-		VOID
+		VOID,
+		STRING
 	}
 
 	public static Type getType(Token t) {

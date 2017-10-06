@@ -12,6 +12,12 @@ public abstract class IRExpression extends IRNode {
 	public abstract IRType.Type getType();
 
 	public static IRExpression makeIRExpression(ConcreteTree tree) {
+		if (tree.isNode()) { // TODO deal with case that string has escaped characters
+			String text = tree.getToken().getText();
+			IRExpression toReturn = new IRStringLiteral(text.substring(1, text.length()-1));
+			toReturn.setLineNumbers(tree);
+			return toReturn;
+		}
 		String exprType = tree.getName();
 		if (exprType.equals("expr_base")) {
 			ConcreteTree child = tree.getFirstChild();
