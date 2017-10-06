@@ -34,7 +34,7 @@ public class IRIfStatement extends IRStatement {
 		for (int i = 0; i < indent; ++i) {
 			whitespace += "  ";
 		}
-		String answer = whitespace + "if " // TODO + expr
+		String answer = whitespace + "if " + ifCondition
 						+ thenBlock.toString(indent + 1);
 		if (elseBlock != null) {
 			answer += "\n" + whitespace + "else" + elseBlock.toString(indent + 1);
