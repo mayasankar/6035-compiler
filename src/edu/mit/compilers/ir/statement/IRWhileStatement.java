@@ -32,7 +32,7 @@ public class IRWhileStatement extends IRStatement {
 		for (int i = 0; i < indent; ++i) {
 			whitespace += "  ";
 		}
-		return whitespace + "while " // TODO + expr
+		return whitespace + "while " + condition
 						+ block.toString(indent + 1);
 	}
 

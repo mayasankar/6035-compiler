@@ -23,6 +23,6 @@ public class IRReturnStatement extends IRStatement {
 
   @Override
   public String toString() {
-    return ""; // TODO replace by expr.toString.
+    return expr == null ? "void" : expr.toString();
   }
 }
