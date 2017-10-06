@@ -6,7 +6,7 @@ import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
 public abstract class IRStatement extends IRNode {
-  protected enum StatementType {
+  public enum StatementType {
     UNSPECIFIED,
     ASSIGN_EXPR,
     METHOD_CALL,
@@ -27,6 +27,8 @@ public abstract class IRStatement extends IRNode {
     }
     return answer + statementType.name() + " " + this.toString();
   }
+
+  public StatementType getStatementType() { return statementType; }
 
   public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable parentScope) {
     IRStatement toReturn = null;
