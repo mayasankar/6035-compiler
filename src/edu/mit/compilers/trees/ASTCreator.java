@@ -23,6 +23,8 @@ public abstract class ASTCreator {
     tree.deleteNodes(DecafParserTokenTypes.TK_else);
     tree.deleteNodes(DecafParserTokenTypes.TK_for);
     tree.deleteNodes(DecafParserTokenTypes.TK_while);
+    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_1);
+    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_2);
     // contract along unnecessary edges
     tree.compressNodes("type");
     tree.compressNodes("expr");

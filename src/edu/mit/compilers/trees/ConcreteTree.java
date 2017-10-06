@@ -27,6 +27,10 @@ public class ConcreteTree {
     return false;
   }
 
+  public boolean isOperator() { // overriden in subclasses
+    return false;
+  }
+
   public ConcreteTree addChild(String newName) {
     ConcreteTree child = new ConcreteTree(newName, this);
     return addChild(child);
