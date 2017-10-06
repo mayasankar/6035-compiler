@@ -3,6 +3,8 @@ package edu.mit.compilers.ir.expression;
 import java.util.Arrays;
 import java.util.List;
 
+import antlr.Token;
+
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.trees.ConcreteTree;
@@ -25,6 +27,10 @@ public class IRVariableExpression extends IRExpression {
 			child = child.getRightSibling();
 			return new IRVariableExpression(name, makeIRExpression(child));
 		}
+	}
+
+	public IRVariableExpression(Token id) {
+		variableName = id.getText();
 	}
 
 	private IRVariableExpression(String variableName) {

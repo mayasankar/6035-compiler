@@ -5,6 +5,7 @@ import java.util.List;
 
 import antlr.Token;
 
+import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
@@ -14,7 +15,7 @@ public class IRAssignStatement extends IRStatement {
 
 	private IRVariableExpression varAssigned;
 	private Token operator;
-	private IRExpression value;
+	private IRExpression value; // NOTE null if operator is ++ or --
 
 	public IRAssignStatement(ConcreteTree tree) {
 		statementType = IRStatement.StatementType.ASSIGN_EXPR;
@@ -29,14 +30,34 @@ public class IRAssignStatement extends IRStatement {
 		value = IRExpression.makeIRExpression(child);
 	}
 
-	public static IRAssignStatement makeForLoopInitializer(ConcreteTree firstToken) {
-		//TODO fix
-		return new IRAssignStatement(firstToken);
+	private IRAssignStatement(IRVariableExpression varAssigned, Token operator, IRExpression value) {
+		this.varAssigned = varAssigned;
+		this.operator = operator;
+		this.value = value;
 	}
 
-	public static IRAssignStatement makeForLoopStepFunction(ConcreteTree firstToken) {
-		//TODO fix
-		return new IRAssignStatement(firstToken);
+	public static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
+		//TODO test
+		System.out.println("Initializer called");
+		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
+		child = child.getRightSibling();
+		Token operator = child.getToken();
+		child = child.getRightSibling();
+		IRExpression value = IRExpression.makeIRExpression(child);
+		return new IRAssignStatement(varAssigned, operator, value);
+	}
+
+	public static IRAssignStatement makeForLoopStepFunction(ConcreteTree child) {
+		//TODO test
+		System.out.println("Step function creating");
+		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
+		child = child.getRightSibling();
+		Token operator = child.getToken();
+		if (operator.getType() == DecafParserTokenTypes.OP_INC || operator.getType() == DecafParserTokenTypes.OP_DEC) {
+			return new IRAssignStatement(varAssigned, operator, null);
+		}
+		child = child.getRightSibling();
+		return new IRAssignStatement(varAssigned, operator, IRExpression.makeIRExpression(child));
 	}
 
 	//@Override
@@ -46,7 +67,7 @@ public class IRAssignStatement extends IRStatement {
 
 	@Override
 	public String toString() {
-		return varAssigned + " " + operator.getText() + " " + value;
+		return varAssigned + " " + operator.getText() + (value == null ? "" : " " + value);
 	}
 
 }
