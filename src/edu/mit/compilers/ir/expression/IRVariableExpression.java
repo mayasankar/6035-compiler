@@ -5,13 +5,10 @@ import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.symbol_tables.TypeDescriptor;
-import edu.mit.compilers.symbol_tables.Variable;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRVariableExpression extends IRExpression {
 
-	private Variable variable;
 	private String variableName; // TODO remove eventually
 	private IRExpression arrayIndex = null; // TODO remove eventually
 

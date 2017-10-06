@@ -6,7 +6,6 @@ import java.util.List;
 import antlr.Token;
 
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
-import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRType extends IRNode {
 	public enum Type {
@@ -78,10 +77,6 @@ public class IRType extends IRNode {
 	// public List<? extends IRNode> getChildren() {
 	// 	return new ArrayList<IRNode>();
 	// }
-
-	public static IRType getTypeFromDescriptor(TypeDescriptor descriptor) {
-		return new IRType(new Token());
-	}
 
 	// TODO: int and bool need type descriptors
 	public static IRType intType() {

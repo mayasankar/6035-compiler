@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,7,10,11,12,13,14,15,16,17,18,19,20,21
+// write semantic checks 1,2,4,7,10,11,12,13,14,15,16,17,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -144,7 +144,7 @@ public class SemanticChecker {
 
     private void checkIRForStatement(IRForStatement statement) {
         // 21
-        // TODO forloops need to store the assigned variable somewhere
+        // TODO forloops need to store the assigned variable somewhere, like in the block scope or a parent of it
         checkIRAssignStatement(statement.getStepFunction());
         checkIRAssignStatement(statement.getInitializer());
         IRExpression cond = statement.getCondition();

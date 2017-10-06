@@ -13,8 +13,8 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
 	}
 
 	@Override
-	public IRType getType() {
-		return IRType.boolType();
+	public IRType.Type getType() {
+		return IRType.Type.BOOL;
 	}
 
 	@Override
