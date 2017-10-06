@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,7,10,11,12,13,14,15,16,17,18,19,20
+// write semantic checks 1,2,4,7,10,11,12,13,14,16,17,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -170,6 +170,19 @@ public class SemanticChecker {
             }
             if (right.getType() != IRType.Type.INT) {
                 notifyError("Second argument to operator " + op + " must be of type INT.", right);
+            }
+        }
+    }
+
+    private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
+        // part of 15
+        IRExpression arg = expr.getArgument();
+        checkIRExpression(arg);
+        Token opToken = expr.getOperator();
+        String op = opToken.getText();
+        if (op == "-") {
+            if (arg.getType() != IRType.Type.INT) {
+                notifyError("Argument for unary minus must be of type INT.", arg);
             }
         }
     }
