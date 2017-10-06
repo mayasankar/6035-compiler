@@ -39,6 +39,8 @@ public class SemanticChecker {
         System.out.println("ERROR " + problematicNode.location() + ": " + error);
     }
 
+    // ------- PROGRAM HELPER CHECKS ----------
+
     private void checkHasMain(IRProgram program){
         // 3
         IRMethodDecl mainMethod = program.methods.get("main");
@@ -67,6 +69,8 @@ public class SemanticChecker {
         // TODO maybe we also need to check these against global variables?
     }
 
+    // ------- TABLE CHECKS ----------
+
     private void checkMethodTable(MethodTable table){
         // TODO
     }
@@ -75,85 +79,33 @@ public class SemanticChecker {
         // TODO
     }
 
-    private void checkVariable(IRMemberDecl variable){
+    private void checkClassTable(ClassTable table) {
+        // not actually todo because we don't need to do classes
+    }
+
+    // ------- DECL CHECKS ----------
+
+    private void checkIRFieldDecl(IRFieldDecl param) {
+        // low priority because we don't seem to be using this?
+    }
+
+    private void checkIRLocalDecl(IRLocalDecl param) {
+        // low priority because we don't seem to be using this?
+    }
+
+    private void checkIRMemberDecl(IRMemberDecl variable){
         // TODO
     }
 
-    private void checkMethod(IRMethodDecl method){
+    private void checkIRMethodDecl(IRMethodDecl method){
         // TODO
     }
 
-    private void checkIRBlock(IRBlock block){
-      for (IRStatement s : block.getStatements()){
-        checkIRStatement(s);
-      }
+    private void checkIRParameterDecl(IRParameterDecl param) {
+        // low priority because we don't seem to be using this?
     }
 
-    private void checkIRStatement(IRStatement statement){
-        // TODO
-    }
-
-    private void checkIRReturnStatement(IRReturnStatement statement){
-        // 8, 9
-        IRType.Type desiredReturnType = env.getReturnType();
-        IRType.Type actualReturnType = statement.getReturnExpr().getType();
-        if (desiredReturnType != actualReturnType){
-            if (desiredReturnType == IRType.Type.VOID){
-                notifyError("Attempted to return value from a void function.", statement);
-            }
-            else {
-                notifyError("Attempted to return value of type " + actualReturnType.toString() +
-                " from function of type " + desiredReturnType.toString() + ".", statement);
-            }
-        }
-    }
-
-    private void checkIRAssignStatement(IRAssignStatement statement) {
-        // TODO
-    }
-
-    private void checkIRExpression(IRExpression expr) {
-        // TODO
-    }
-
-    private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
-        // 5, 6
-        IRMethodDecl md = expr.getIRMethodDecl();
-        if (md.getReturnType() == IRType.Type.VOID) {
-            notifyError("Expression uses return value of void method.", expr);
-        }
-        List<IRMemberDecl> parameters = md.getParameters().getVariableList();
-        List<IRExpression> arguments = expr.getArguments();
-        if (parameters.size() != arguments.size()) {
-            notifyError("Method " + md.getName() + " called with " + arguments.size() +
-            " parameters; needs " + parameters.size() + ".", expr);
-        }
-        for (int i = 0; i < parameters.size(); i++) {
-            IRType.Type parType = parameters.get(i).getType();
-            IRType.Type argType = arguments.get(i).getType();
-            if (parType != argType) {
-                notifyError("Method " + md.getName() + "requires parameter " + parameters.get(i).getName() +
-                " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
-            }
-        }
-    }
-
-    private void checkIRVariableExpression(IRVariableExpression expr) {
-        // TODO
-    }
-
-    private void checkIRForStatement(IRForStatement statement) {
-        // 21
-        // TODO forloops need to store the assigned variable somewhere, like in the block scope or a parent of it
-        checkIRAssignStatement(statement.getStepFunction());
-        checkIRAssignStatement(statement.getInitializer());
-        IRExpression cond = statement.getCondition();
-        checkIRExpression(cond);
-        if (cond.getType() != IRType.Type.BOOL){
-            notifyError("For loop condition expression must have type bool.", cond);
-        }
-        checkIRBlock(statement.getBlock());
-    }
+    // ------- EXPRESSION CHECKS ----------
 
     private void checkIRBinaryOpExpression(IRBinaryOpExpression expr) {
         // 16, part of 15, part of 17
@@ -191,6 +143,40 @@ public class SemanticChecker {
         }
     }
 
+    private void checkIRExpression(IRExpression expr) {
+        // TODO
+    }
+
+    private void checkIRLenExpression(IRLenExpression expr) {
+        // TODO
+    }
+
+    private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
+        // 5, 6
+        IRMethodDecl md = expr.getIRMethodDecl();
+        if (md.getReturnType() == IRType.Type.VOID) {
+            notifyError("Expression uses return value of void method.", expr);
+        }
+        List<IRMemberDecl> parameters = md.getParameters().getVariableList();
+        List<IRExpression> arguments = expr.getArguments();
+        if (parameters.size() != arguments.size()) {
+            notifyError("Method " + md.getName() + " called with " + arguments.size() +
+            " parameters; needs " + parameters.size() + ".", expr);
+        }
+        for (int i = 0; i < parameters.size(); i++) {
+            IRType.Type parType = parameters.get(i).getType();
+            IRType.Type argType = arguments.get(i).getType();
+            if (parType != argType) {
+                notifyError("Method " + md.getName() + "requires parameter " + parameters.get(i).getName() +
+                " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
+            }
+        }
+    }
+
+    private void checkIRTernaryOpExpression(IRTernaryOpExpression expr) {
+        // TODO
+    }
+
     private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
         // part of 15, part of 17
         IRExpression arg = expr.getArgument();
@@ -209,6 +195,65 @@ public class SemanticChecker {
         }
     }
 
-      // TODO probably lots more of these?
+    private void checkIRVariableExpression(IRVariableExpression expr) {
+        // TODO
+    }
+
+    // ------- STATEMENT CHECKS ----------
+
+    private void checkIRAssignStatement(IRAssignStatement statement) {
+        // TODO
+    }
+
+    private void checkIRBlock(IRBlock block){
+      for (IRStatement s : block.getStatements()){
+        checkIRStatement(s);
+      }
+    }
+
+    private void checkIRForStatement(IRForStatement statement) {
+        // 21
+        // TODO add scope to stack
+        // TODO forloops need to store the assigned variable somewhere, like in the block scope or a parent of it
+        checkIRAssignStatement(statement.getStepFunction());
+        checkIRAssignStatement(statement.getInitializer());
+        IRExpression cond = statement.getCondition();
+        checkIRExpression(cond);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("For loop condition expression must have type bool.", cond);
+        }
+        checkIRBlock(statement.getBlock());
+    }
+
+    private void checkIRIfStatement(IRIfStatement statement) {
+        // TODO
+    }
+
+    private void checkIRMethodCallStatement(IRMethodCallStatement statement) {
+        // TODO
+    }
+
+    private void checkIRReturnStatement(IRReturnStatement statement){
+        // 8, 9
+        IRType.Type desiredReturnType = env.getReturnType();
+        IRType.Type actualReturnType = statement.getReturnExpr().getType();
+        if (desiredReturnType != actualReturnType){
+            if (desiredReturnType == IRType.Type.VOID){
+                notifyError("Attempted to return value from a void function.", statement);
+            }
+            else {
+                notifyError("Attempted to return value of type " + actualReturnType.toString() +
+                " from function of type " + desiredReturnType.toString() + ".", statement);
+            }
+        }
+    }
+
+    private void checkIRStatement(IRStatement statement){
+        // TODO
+    }
+
+    private void checkIRWhileStatement(IRWhileStatement statement) {
+        // TODO
+    }
 
 }
