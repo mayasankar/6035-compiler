@@ -29,13 +29,9 @@ public abstract class IRStatement extends IRNode {
   }
 
   public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable parentScope) {
-      System.out.println("Making IRStatement");
     ConcreteTree child = tree.getFirstChild();
-    System.out.println("Step?");
     if (child.isNode()) {
-        System.out.println("Test: should fail after this");
       int tokentype = child.getToken().getType();
-      System.out.println("Nope, didn't");
       if (tokentype == DecafParserTokenTypes.TK_return) {
         return new IRReturnStatement(tree);
       } else if (tokentype == DecafParserTokenTypes.TK_break) {
@@ -45,7 +41,6 @@ public abstract class IRStatement extends IRNode {
       }
     } else {
       String name = child.getName();
-      System.out.println("Got name: " + name);
       if (name.equals("assign_expr")) {
         return new IRAssignStatement(child);
       } else if (name.equals("method_call")) {

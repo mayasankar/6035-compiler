@@ -16,18 +16,15 @@ public class IRVariableExpression extends IRExpression {
 	private IRExpression arrayIndex = null; // TODO remove eventually
 
 	public static IRVariableExpression makeIRVariableExpression(ConcreteTree tree) { // TODO make constructor
-		System.out.println("w1");
+		if (tree == null) {
+			System.out.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
+		}
 		ConcreteTree child = tree.getFirstChild();
-		System.out.println("w1.5");
 		String name = child.getToken().getText();
-		System.out.println("w2");
 		child = child.getRightSibling();
-		System.out.println("w3");
 		if (child == null) {
-			System.out.println("w4");
 			return new IRVariableExpression(name);
 		} else {
-			System.out.println("w5");
 			child = child.getRightSibling();
 			return new IRVariableExpression(name, makeIRExpression(child));
 		}

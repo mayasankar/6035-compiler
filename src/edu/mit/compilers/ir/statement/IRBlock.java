@@ -19,17 +19,14 @@ public class IRBlock extends IRNode {
 	private VariableTable fields;
 
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
-		System.out.println("Starting Block");
 		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
-		System.out.println("starting loop");
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree grandchild = child.getFirstChild();
 			Token typeToken = grandchild.getToken();
 			grandchild = grandchild.getRightSibling();
 			while (grandchild != null) {
 				Token id = grandchild.getFirstChild().getToken();
-				System.out.println("adding fields");
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
@@ -41,12 +38,10 @@ public class IRBlock extends IRNode {
 			}
 			child = child.getRightSibling();
 		}
-		System.out.println("ended loop");
 		while (child != null) {
 			statements.add(IRStatement.makeIRStatement(child, parentScope));
 			child = child.getRightSibling();
 		}
-		System.out.println("Added statement");
 	}
 
 	public ArrayList<IRStatement> getStatements(){
