@@ -41,6 +41,10 @@ public class IRBinaryOpExpression extends IRExpression{
 		rightExpr = makeIRExpression(exprChild);
 	}
 
+	public IRExpression getLeftExpr() { return leftExpr; }
+	public IRExpression getRightExpr() { return rightExpr; }
+	public Token getOperator() { return operator; }
+
 	@Override
 	public IRType.Type getType() {
 		// TODO Where are we static checking types???

@@ -34,6 +34,9 @@ public class IRUnaryOpExpression extends IRExpression {
 		this.argument = expression;
 	}
 
+	public Token getOperator() { return operator; }
+	public IRExpression getArgument() { return argument; }
+
 	@Override
 	public IRType.Type getType() {
 		return null;
