@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,14,20
+// write semantic checks 1,2,14
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -26,7 +26,7 @@ public class SemanticChecker {
         env.push(tree.methods);
         env.push(tree.fields);
         env.push(IRType.Type.VOID);
-        checkImportsAndGlobals(tree.imports, tree.fields);
+        checkImports(tree.imports);
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
@@ -56,51 +56,27 @@ public class SemanticChecker {
         }
     }
 
-    private void checkImportsAndGlobals(List<IRImportDecl> imports, VariableTable varTable){
+    private void checkImports(List<IRImportDecl> imports){
         // first part of 1
         // check that they're all distinct
-        List<IRMemberDecl> variables = varTable.getVariableList();
-        HashSet<String> namesSet = new HashSet<>();
+        HashSet<IRImportDecl> importsSet = new HashSet<>();
         for (IRImportDecl imp : imports){
-            if (namesSet.contains(imp.getName())){
+            if (importsSet.contains(imp)){
                 notifyError("Attempted to import an identifier previously imported.", imp);
             }
-            namesSet.add(imp.getName());
+        importsSet.add(imp);
         }
-        for (IRMemberDecl imp : variables){
-            if (namesSet.contains(imp.getName())){
-                notifyError("Attempted to declare a global variable that conflicts with an import name.", imp);
-            }
-            namesSet.add(imp.getName());
-        }
+        // TODO maybe we also need to check these against global variables?
     }
 
     // ------- TABLE CHECKS ----------
 
     private void checkMethodTable(MethodTable table){
-        // part of 1
-        List<IRMethodDecl> methods = table.getMethodList();
-        HashSet<IRMethodDecl> methodsSet = new HashSet<>();
-        for (IRMethodDecl met : methods){
-            if (methodsSet.contains(met)){
-                notifyError("Attempted to declare method " + met.getName() +
-                " but a method of that name already exists in the same scope.", met);
-            }
-            methodsSet.add(met);
-        }
+        // TODO
     }
 
     private void checkVariableTable(VariableTable table){
-        // part of 1
-        List<IRMemberDecl> variables = table.getVariableList();
-        HashSet<IRMemberDecl> variablesSet = new HashSet<>();
-        for (IRMemberDecl var : variables){
-            if (variablesSet.contains(var)){
-                notifyError("Attempted to declare variable " + var.getName() +
-                " but a variable of that name already exists in the same scope.", var);
-            }
-            variablesSet.add(var);
-        }
+        // TODO
     }
 
     private void checkClassTable(ClassTable table) {
@@ -117,7 +93,7 @@ public class SemanticChecker {
         // low priority because we don't seem to be using this?
     }
 
-    private void checkIRMemberDecl(IRMemberDecl variable){
+    private void checkIRMemberDecl(IRMemberDecl variable) {
         // 4
         IRType.Type type = variable.getType();
         int length = variable.getLength();
@@ -362,13 +338,16 @@ public class SemanticChecker {
     }
 
     private void checkIRBlock(IRBlock block){
+      env.push(block.getFields());
       for (IRStatement s : block.getStatements()){
         checkIRStatement(s);
       }
+      env.popVariableTable();
     }
 
     private void checkIRForStatement(IRForStatement statement) {
         // 21
+        env.push(statement);
         checkIRAssignStatement(statement.getStepFunction());
         checkIRAssignStatement(statement.getInitializer());
         IRExpression cond = statement.getCondition();
@@ -377,6 +356,7 @@ public class SemanticChecker {
             notifyError("For loop condition expression must have type bool.", cond);
         }
         checkIRBlock(statement.getBlock());
+        env.popLoopStatement();
     }
 
     private void checkIRIfStatement(IRIfStatement statement) {
@@ -413,17 +393,50 @@ public class SemanticChecker {
     }
 
     private void checkIRStatement(IRStatement statement){
-        // TODO
+        switch(statement.getStatementType()) {
+          case ASSIGN_EXPR: {
+            checkIRAssignStatement((IRAssignStatement) statement); break;
+          } case METHOD_CALL: {
+            checkIRMethodCallStatement((IRMethodCallStatement) statement); break;
+          } case IF_BLOCK: {
+            checkIRIfStatement((IRIfStatement) statement); break;
+          } case FOR_BLOCK: {
+            checkIRForStatement((IRForStatement) statement); break;
+          } case WHILE_BLOCK: {
+            checkIRWhileStatement((IRWhileStatement) statement); break;
+          } case RETURN_EXPR: {
+            checkIRReturnStatement((IRReturnStatement) statement); break;
+          } case BREAK: case CONTINUE: {
+            checkIRLoopStatement((IRLoopStatement) statement); break;
+          } default: {
+            notifyError("IR error: UNSPECIFIED statement", statement);
+          }
+        }
     }
 
     private void checkIRWhileStatement(IRWhileStatement statement) {
         // part of 13
+        env.push(statement);
         checkIRBlock(statement.getBlock());
         IRExpression cond = statement.getCondition();
         checkIRExpression(cond);
         if (cond.getType() != IRType.Type.BOOL){
             notifyError("While statement condition expression must have type bool.", cond);
         }
+        env.popLoopStatement();
+    }
+
+    private void checkIRLoopStatement(IRLoopStatement statement) {
+      IRStatement loop = env.getLoopStatement();
+      if (loop == null) {
+        notifyError(
+          statement.getStatementType().name().toLowerCase() +
+          "statement not within a while or for loop",
+          statement
+        );
+      } else {
+        statement.setLoop(loop);
+      }
     }
 
 }
