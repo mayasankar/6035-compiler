@@ -18,7 +18,9 @@ public class IRMethodDecl extends IRNode {
   VariableTable parameters;
 
   public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
+      System.out.println("Starting MethodDecl");
     parameters = new VariableTable(parentScope);
+    System.out.println("Parameters done");
 
     ConcreteTree child = tree.getFirstChild();
     switch (child.getToken().getType()) {
@@ -35,6 +37,7 @@ public class IRMethodDecl extends IRNode {
     child = child.getRightSibling();
     id = child.getToken();
     child = child.getRightSibling();
+    System.out.println("Here");
     while(child.isNode()) {
       IRType.Type parameterType = IRType.getType(child.getToken());
       child = child.getRightSibling();
@@ -42,6 +45,7 @@ public class IRMethodDecl extends IRNode {
       parameters.add(new IRParameterDecl(parameterType, parameterId));
       child = child.getRightSibling();
     }
+    System.out.println("About to start block");
     code = new IRBlock(child, parameters);
   }
 

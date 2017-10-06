@@ -25,7 +25,7 @@ public class IRTernaryOpExpression extends IRExpression {
 	}
 
 	@Override
-	public IRType getType() {
+	public IRType.Type getType() {
 		return trueExpression.getType();
 	}
 

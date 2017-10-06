@@ -21,7 +21,9 @@ public class IRForStatement extends IRStatement {
 	public IRForStatement(ConcreteTree tree, VariableTable parentScope) {
 		statementType = IRStatement.StatementType.FOR_BLOCK;
 		ConcreteTree child = tree.getFirstChild();
+		System.out.println("t2");
 		initializer = IRAssignStatement.makeForLoopInitializer(child);
+		System.out.println("t2.5");
 		child = child.getRightSibling().getRightSibling().getRightSibling();
 		condition = IRExpression.makeIRExpression(child);
 		child = child.getRightSibling();

@@ -12,7 +12,7 @@ public class IRLenExpression extends IRExpression {
   }
 
   @Override
-  public IRType getType() {
+  public IRType.Type getType() {
     return null;
   }
 }

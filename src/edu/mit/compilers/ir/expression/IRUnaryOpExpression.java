@@ -35,7 +35,7 @@ public class IRUnaryOpExpression extends IRExpression {
 	}
 
 	@Override
-	public IRType getType() {
+	public IRType.Type getType() {
 		return null;
 		//return operator.outputType();
 	}

@@ -42,7 +42,7 @@ public class IRBinaryOpExpression extends IRExpression{
 	}
 
 	@Override
-	public IRType getType() {
+	public IRType.Type getType() {
 		// TODO Where are we static checking types???
 		//return operator.outputType();
 		return null;
