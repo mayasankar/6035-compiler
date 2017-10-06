@@ -7,7 +7,7 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 
 public class IRIntLiteral extends IRLiteral<Integer> {
-	
+
 	public IRIntLiteral(Integer value) {
 		super(value);
 	}
