@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,7,10,11,14,18,19,20
+// write semantic checks 1,2,4,10,11,14,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -98,7 +98,27 @@ public class SemanticChecker {
     }
 
     private void checkIRMethodDecl(IRMethodDecl method){
-        // TODO
+        // 7
+        IRType.Type returnType = method.getReturnType();
+        VariableTable parameters = method.getParameters();
+
+        env.push(parameters);
+        env.push(returnType);
+        IRBlock code = method.getCode();
+        checkIRBlock(code);
+        env.popVariableTable();
+        env.popReturnType();
+
+        checkVariableTable(parameters);
+        for (IRMemberDecl param : parameters.getVariableList()) {
+            if (param.getType() != IRType.Type.BOOL && param.getType() != IRType.Type.INT) {
+                notifyError("Parameter " + param.getName() + " for method " + method.getName() +
+                " is not of type int or bool.", param);
+            }
+        }
+        if (returnType != IRType.Type.BOOL && returnType != IRType.Type.INT && returnType != IRType.Type.VOID) {
+            notifyError("Return type for method " + method.getName() + " is not int, bool, or void.", method);
+        }
     }
 
     private void checkIRParameterDecl(IRParameterDecl param) {
