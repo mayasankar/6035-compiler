@@ -42,18 +42,24 @@ public class IRAssignStatement extends IRStatement {
 		Token operator = child.getToken();
 		child = child.getRightSibling();
 		IRExpression value = IRExpression.makeIRExpression(child);
-		return new IRAssignStatement(varAssigned, operator, value);
+		IRAssignStatement toReturn = new IRAssignStatement(varAssigned, operator, value);
+		toReturn.setLineNumbers(child);
+		return toReturn;
 	}
 
 	public static IRAssignStatement makeForLoopStepFunction(ConcreteTree child) {
 		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
 		child = child.getRightSibling();
 		Token operator = child.getToken();
+		IRAssignStatement toReturn;
 		if (operator.getType() == DecafParserTokenTypes.OP_INC || operator.getType() == DecafParserTokenTypes.OP_DEC) {
-			return new IRAssignStatement(varAssigned, operator, null);
+			toReturn = new IRAssignStatement(varAssigned, operator, null);
+		} else {
+			child = child.getRightSibling();
+			toReturn = new IRAssignStatement(varAssigned, operator, IRExpression.makeIRExpression(child));
 		}
-		child = child.getRightSibling();
-		return new IRAssignStatement(varAssigned, operator, IRExpression.makeIRExpression(child));
+		toReturn.setLineNumbers(child);
+		return toReturn;
 	}
 
 	//@Override

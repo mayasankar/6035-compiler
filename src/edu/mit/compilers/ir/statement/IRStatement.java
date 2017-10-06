@@ -29,29 +29,34 @@ public abstract class IRStatement extends IRNode {
   }
 
   public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable parentScope) {
+    IRStatement toReturn = null;
     ConcreteTree child = tree.getFirstChild();
     if (child.isNode()) {
       int tokentype = child.getToken().getType();
       if (tokentype == DecafParserTokenTypes.TK_return) {
-        return new IRReturnStatement(tree);
+        toReturn = new IRReturnStatement(tree);
       } else if (tokentype == DecafParserTokenTypes.TK_break) {
-        return new IRLoopStatement(StatementType.BREAK);
+        toReturn = new IRLoopStatement(StatementType.BREAK);
       } else if (tokentype == DecafParserTokenTypes.TK_continue) {
-        return new IRLoopStatement(StatementType.CONTINUE);
+        toReturn = new IRLoopStatement(StatementType.CONTINUE);
       }
     } else {
       String name = child.getName();
       if (name.equals("assign_expr")) {
-        return new IRAssignStatement(child);
+        toReturn = new IRAssignStatement(child);
       } else if (name.equals("method_call")) {
-        return new IRMethodCallStatement(child);
+        toReturn = new IRMethodCallStatement(child);
       } else if (name.equals("if_block")) {
-        return new IRIfStatement(child, parentScope);
+        toReturn = new IRIfStatement(child, parentScope);
       } else if (name.equals("for_block")) {
-        return new IRForStatement(child, parentScope);
+        toReturn = new IRForStatement(child, parentScope);
       } else if (name.equals("while_block")) {
-        return new IRWhileStatement(child, parentScope);
+        toReturn = new IRWhileStatement(child, parentScope);
       }
+    }
+    if (toReturn != null) {
+      toReturn.setLineNumbers(tree);
+      return toReturn;
     }
     return null;
   }

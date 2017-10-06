@@ -10,6 +10,10 @@ public class ConcreteTree {
   private ConcreteTree leftSibling;
   private ConcreteTree rightSibling;
 
+  // initialized by adding the first child for nontokens.
+  protected int lineNumber;
+  protected int columnNumber;
+
   ConcreteTree(String nn) {
     nodeName = nn;
   }
@@ -19,17 +23,10 @@ public class ConcreteTree {
     parent = p;
   }
 
-  public boolean isRoot() {
-    return parent == null;
-  }
+  public boolean isRoot() { return parent == null; }
 
-  public boolean isNode() { // overriden in subclasses
-    return false;
-  }
-
-  public boolean isOperator() { // overriden in subclasses
-    return false;
-  }
+  public boolean isNode() { return false; } // overriden in subclasses
+  public boolean isOperator() { return false; } // overriden in subclasses
 
   public ConcreteTree addChild(String newName) {
     ConcreteTree child = new ConcreteTree(newName, this);
@@ -38,10 +35,6 @@ public class ConcreteTree {
 
   public void addNode(Token t) {
     addChild(new ConcreteTreeNode(t, this));
-  }
-
-  public Token getToken() {
-    return null;
   }
 
   private ConcreteTree addChild(ConcreteTree child) {
@@ -56,16 +49,17 @@ public class ConcreteTree {
   }
 
   public ConcreteTree getParent() { return parent; }
-
   public ConcreteTree getLeftSibling() { return leftSibling; }
-
   public ConcreteTree getRightSibling() { return rightSibling; }
-
   public ConcreteTree getFirstChild() { return firstChild; }
-
   public ConcreteTree getLastChild() { return lastChild; }
 
+  public int getLine() { return lineNumber; }
+  public int getColumn() { return columnNumber; }
+
   public String getName() { return nodeName; }
+
+  public Token getToken() { return null; } // overriden in subclasses
 
   public static ConcreteTree root() {
     return new ConcreteTree("__PROGRAM_ROOT__");
@@ -84,6 +78,17 @@ public class ConcreteTree {
     if (rightSibling != null) {
       rightSibling.print(indent);
     }
+  }
+
+  // initializes line and column numbers. To be called after tree is built.
+  public void initializeLineNumbers() {
+    ConcreteTree child = firstChild;
+    while (child != null) {
+      child.initializeLineNumbers();
+      child = child.rightSibling;
+    }
+    lineNumber = firstChild.lineNumber;
+    columnNumber = firstChild.columnNumber;
   }
 
   // deletes any nodes of the given tokentype. TODO test that it is correct
@@ -139,7 +144,6 @@ public class ConcreteTree {
       child = child.rightSibling;
     }
   }
-
 
   // use for testing only
   public static ConcreteTree testTree() {

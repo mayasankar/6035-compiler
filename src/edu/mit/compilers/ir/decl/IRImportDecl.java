@@ -12,6 +12,7 @@ public class IRImportDecl extends IRNode {
 	protected Token id;
 
 	public IRImportDecl(Token id) {
+		setLineNumbers(id);
 		this.id = id;
 	}
 

@@ -10,6 +10,7 @@ import edu.mit.compilers.ir.*;
 public abstract class ASTCreator {
 
   public static void simplifyTree(ConcreteTree tree) {
+    tree.initializeLineNumbers();
     // delete tokens only necessary for parsing
     tree.deleteNodes(DecafParserTokenTypes.EOF);
     tree.deleteNodes(DecafParserTokenTypes.COMMA);

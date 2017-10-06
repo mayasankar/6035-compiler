@@ -25,6 +25,7 @@ public class IRBinaryOpExpression extends IRExpression{
 	}
 
 	public IRBinaryOpExpression(ConcreteTree tree) {
+		setLineNumbers(tree);
 		ConcreteTree exprChild = tree.getFirstChild();
 		IRExpression lexpr = IRExpression.makeIRExpression(exprChild);
 		ConcreteTree opChild = exprChild.getRightSibling();

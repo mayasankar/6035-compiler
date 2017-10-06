@@ -21,12 +21,15 @@ public class IRVariableExpression extends IRExpression {
 		ConcreteTree child = tree.getFirstChild();
 		String name = child.getToken().getText();
 		child = child.getRightSibling();
+		IRVariableExpression toReturn;
 		if (child == null) {
-			return new IRVariableExpression(name);
+			toReturn = new IRVariableExpression(name);
 		} else {
 			child = child.getRightSibling();
-			return new IRVariableExpression(name, makeIRExpression(child));
+			toReturn = new IRVariableExpression(name, makeIRExpression(child));
 		}
+		toReturn.setLineNumbers(tree);
+		return toReturn;
 	}
 
 	public IRVariableExpression(Token id) {

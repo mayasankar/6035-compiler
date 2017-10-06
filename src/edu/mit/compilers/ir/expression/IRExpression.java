@@ -16,7 +16,9 @@ public abstract class IRExpression extends IRNode {
 		if (exprType.equals("expr_base")) {
 			ConcreteTree child = tree.getFirstChild();
 			if (child.isNode()) {
-				return new IRLenExpression(child.getRightSibling().getToken());
+				IRExpression answer = new IRLenExpression(child.getRightSibling().getToken());
+				answer.setLineNumbers(child);
+				return answer;
 			} else {
 				exprType = child.getName();
 				if (exprType.equals("method_call")) {
@@ -25,9 +27,10 @@ public abstract class IRExpression extends IRNode {
 					ConcreteTree grandchild = child.getFirstChild();
 					Token token = grandchild.getToken();
 					int tokentype = token.getType();
+					IRExpression toReturn = null;
 					if (tokentype == DecafParserTokenTypes.INT) {
 						// TODO make sure this never throws an error parsing
-						return new IRIntLiteral(Integer.parseInt(token.getText()));
+						toReturn = new IRIntLiteral(Integer.parseInt(token.getText()));
 					} else if (tokentype == DecafParserTokenTypes.CHAR) {
 						String charstring = token.getText();
 						charstring = charstring.substring(1, charstring.length()-1);
@@ -41,11 +44,15 @@ public abstract class IRExpression extends IRNode {
 								character = charstring.charAt(1);
 							}
 						}
-						return new IRIntLiteral((int) character);
+						toReturn = new IRIntLiteral((int) character);
 					} else if (tokentype == DecafParserTokenTypes.TK_true) {
-						return new IRBoolLiteral(true);
+						toReturn =  new IRBoolLiteral(true);
 					} else if (tokentype == DecafParserTokenTypes.TK_false) {
-						return new IRBoolLiteral(false);
+						toReturn = new IRBoolLiteral(false);
+					}
+					if (toReturn != null) {
+						toReturn.setLineNumbers(token);
+						return toReturn;
 					}
 				} else if (exprType.equals("location")) {
 					return IRVariableExpression.makeIRVariableExpression(child);

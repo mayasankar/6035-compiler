@@ -7,7 +7,7 @@ import antlr.Token;
 
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 
-public class IRType extends IRNode {
+public class IRType {
 	public enum Type {
 		UNSPECIFIED,
 		INT,

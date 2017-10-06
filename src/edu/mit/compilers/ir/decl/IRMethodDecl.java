@@ -18,6 +18,8 @@ public class IRMethodDecl extends IRNode {
   VariableTable parameters;
 
   public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
+    setLineNumbers(tree);
+
     parameters = new VariableTable(parentScope);
 
     ConcreteTree child = tree.getFirstChild();

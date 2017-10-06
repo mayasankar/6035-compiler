@@ -14,6 +14,8 @@ public class IRProgram extends IRNode {
 	public MethodTable methods;
 
 	public IRProgram(ConcreteTree tree) {
+		setLineNumbers(tree);
+
 		imports = new ArrayList<>();
 		fields = new VariableTable();
 		methods = new MethodTable();

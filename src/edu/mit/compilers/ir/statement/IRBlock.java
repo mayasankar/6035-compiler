@@ -19,6 +19,7 @@ public class IRBlock extends IRNode {
 	private VariableTable fields;
 
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
+		setLineNumbers(tree);
 		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {

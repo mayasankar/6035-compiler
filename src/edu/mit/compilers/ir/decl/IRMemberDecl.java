@@ -19,6 +19,7 @@ public abstract class IRMemberDecl extends IRNode {
 	// }
 
 	public IRMemberDecl(IRType.Type irType, Token id) {
+		setLineNumbers(id);
 		this.id = id;
 		this.irType = irType;
 	}
