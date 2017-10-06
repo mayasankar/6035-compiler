@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,7,10,11,12,13,14,16,17,18,19,20
+// write semantic checks 1,2,4,7,10,11,12,13,14,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -156,7 +156,7 @@ public class SemanticChecker {
     }
 
     private void checkIRBinaryOpExpression(IRBinaryOpExpression expr) {
-        // part of 15
+        // 16, part of 15, part of 17
         IRExpression left = expr.getLeftExpr();
         checkIRExpression(left);
         IRExpression right = expr.getRightExpr();
@@ -172,10 +172,27 @@ public class SemanticChecker {
                 notifyError("Second argument to operator " + op + " must be of type INT.", right);
             }
         }
+        if (op == "&&" || op == "||") {
+            if (left.getType() != IRType.Type.BOOL) {
+                notifyError("First argument to operator " + op + " must be of type BOOL.", left);
+            }
+            if (right.getType() != IRType.Type.BOOL) {
+                notifyError("Second argument to operator " + op + " must be of type BOOL.", right);
+            }
+        }
+        if (op == "==" || op == "!=") {
+            if (left.getType() != right.getType()) {
+                notifyError("Cannot compare types " + left.getType() + " and " +
+                right.getType() + " with operator " + op + ".", right);
+            }
+            if (left.getType() != IRType.Type.INT && left.getType() != IRType.Type.BOOL) {
+                notifyError("Can only compare objects of type INT or BOOL with operator " + op + ".", left);
+            }
+        }
     }
 
     private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
-        // part of 15
+        // part of 15, part of 17
         IRExpression arg = expr.getArgument();
         checkIRExpression(arg);
         Token opToken = expr.getOperator();
@@ -183,6 +200,11 @@ public class SemanticChecker {
         if (op == "-") {
             if (arg.getType() != IRType.Type.INT) {
                 notifyError("Argument for unary minus must be of type INT.", arg);
+            }
+        }
+        if (op == "!") {
+            if (arg.getType() != IRType.Type.BOOL) {
+                notifyError("Argument for ! operator must be of type BOOL.", arg);
             }
         }
     }
