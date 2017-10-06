@@ -393,7 +393,25 @@ public class SemanticChecker {
     }
 
     private void checkIRStatement(IRStatement statement){
-        // TODO
+        switch(statement.getStatementType()) {
+          case ASSIGN_EXPR: {
+            checkIRAssignStatement((IRAssignStatement) statement); break;
+          } case METHOD_CALL: {
+            checkIRMethodCallStatement((IRMethodCallStatement) statement); break;
+          } case IF_BLOCK: {
+            checkIRIfStatement((IRIfStatement) statement); break;
+          } case FOR_BLOCK: {
+            checkIRForStatement((IRForStatement) statement); break;
+          } case WHILE_BLOCK: {
+            checkIRWhileStatement((IRWhileStatement) statement); break;
+          } case RETURN_EXPR: {
+            checkIRReturnStatement((IRReturnStatement) statement); break;
+          } case BREAK: case CONTINUE: {
+            checkIRLoopStatement((IRLoopStatement) statement); break;
+          } default: {
+            notifyError("IR error: UNSPECIFIED statement", statement);
+          }
+        }
     }
 
     private void checkIRWhileStatement(IRWhileStatement statement) {
