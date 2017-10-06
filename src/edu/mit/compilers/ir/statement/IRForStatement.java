@@ -41,7 +41,7 @@ public class IRForStatement extends IRStatement {
 		for (int i = 0; i < indent; ++i) {
 			whitespace += "  ";
 		}
-		return whitespace + "for " // TODO + initializer + condition + stepFunction
+		return whitespace + "for " + " (" + initializer + "; " + condition + "; " + stepFunction + ")"
 						+ block.toString(indent + 1);
 	}
 

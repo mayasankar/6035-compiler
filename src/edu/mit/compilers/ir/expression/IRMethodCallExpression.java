@@ -16,7 +16,6 @@ public class IRMethodCallExpression extends IRExpression {
 
 	private final List<IRExpression> arguments;
 
-
 	private String functionName;
 
 	public IRMethodCallExpression(String descriptorName, IRExpression... arguments) {
@@ -27,6 +26,7 @@ public class IRMethodCallExpression extends IRExpression {
 	public IRMethodCallExpression(ConcreteTree tree) {
 		ConcreteTree child = tree.getFirstChild();
 		functionName = child.getToken().getText();
+		child = child.getRightSibling();
 		arguments = new ArrayList<IRExpression>();
 		while (child != null) {
 			arguments.add(IRExpression.makeIRExpression(child));
@@ -49,6 +49,16 @@ public class IRMethodCallExpression extends IRExpression {
 	@Override
 	public List<? extends IRNode> getChildren() {
 		return arguments;
+	}
+
+	@Override
+	public String toString() {
+		String answer = functionName + "(";
+		for (IRExpression arg : arguments) {
+			answer += (arg == null ? "null" : arg.toString()) + ", ";
+		}
+		answer += ")";
+		return answer;
 	}
 
 }
