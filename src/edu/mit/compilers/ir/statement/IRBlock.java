@@ -23,7 +23,7 @@ public class IRBlock extends IRNode {
 		setLineNumbers(tree);
 		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
-		while (child != null && child.getName().equals("field_decl")) {
+		while (child != null && child.getName().equals("field_decl")) { // TODO for mayars: should these be locals?
 			ConcreteTree grandchild = child.getFirstChild();
 			Token typeToken = grandchild.getToken();
 			grandchild = grandchild.getRightSibling();
