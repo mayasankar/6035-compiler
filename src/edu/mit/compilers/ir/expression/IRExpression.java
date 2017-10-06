@@ -76,8 +76,6 @@ public abstract class IRExpression extends IRNode {
 		} else if (exprType.equals("expr_8")) {
 			return new IRTernaryOpExpression(tree);
 		}
-		//TODO can also be called on string tokens
-		//TODO throw an error if control reaches here.
-		return null;
+		throw new RuntimeException("Cannot parse ConcreteTree of type " + tree.getName());
 	}
 }
