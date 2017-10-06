@@ -1,22 +1,26 @@
 package edu.mit.compilers.symbol_tables;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
 
 public class MethodTable {
 	protected MethodTable parent;
+	protected List<IRMethodDecl> orderedMethods; // allows printing in order
 	protected Map<String, IRMethodDecl> methods; // lookup Method by string name
 
 	public MethodTable(MethodTable parent){
 		this.parent = parent;
 		this.methods = new HashMap<>();
+		this.orderedMethods = new ArrayList<>();
 	}
 
 	public MethodTable(){
 		this.parent = null;
 		this.methods = new HashMap<>();
+		this.orderedMethods = new ArrayList<>();
 	}
 
 	public MethodTable getParent() {
@@ -25,6 +29,7 @@ public class MethodTable {
 
 	public void add(IRMethodDecl v){
 		methods.put(v.getName(), v);
+		orderedMethods.add(v);
 	}
 
 	public IRMethodDecl get(String name){
@@ -40,7 +45,7 @@ public class MethodTable {
 	@Override
 	public String toString() {
 		String answer = "Methods: \n";
-		for (IRMethodDecl method : methods.values()) {
+		for (IRMethodDecl method : orderedMethods) {
 			answer += method.toString() + "\n";
 		}
 		return answer;

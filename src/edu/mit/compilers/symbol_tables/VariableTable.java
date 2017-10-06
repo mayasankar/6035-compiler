@@ -58,10 +58,10 @@ public class VariableTable {
 
 	public String toString(String var_setting) {
 		String answer = var_setting + ": ";
-		if (variables.values().size() == 0) {
+		if (orderedVariables.size() == 0) {
 			answer += "none";
 		} else {
-			for (IRMemberDecl var : variables.values()) {
+			for (IRMemberDecl var : orderedVariables) {
 				answer += var.toString() + ", ";
 			}
 		}
