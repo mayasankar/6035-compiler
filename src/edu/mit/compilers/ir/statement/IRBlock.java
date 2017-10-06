@@ -2,6 +2,7 @@ package edu.mit.compilers.ir.statement;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import antlr.Token;
 
@@ -51,6 +52,13 @@ public class IRBlock extends IRNode {
 
 	public VariableTable getFields(){
 		return this.fields;
+	}
+
+	@Override
+	public List<? extends IRNode> getChildren() {
+		ArrayList<IRNode> children = new ArrayList<IRNode>(statements);
+		children.addAll(fields.getVariableList());
+		return children;
 	}
 
 	@Override

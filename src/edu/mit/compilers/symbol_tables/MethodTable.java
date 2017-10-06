@@ -42,6 +42,10 @@ public class MethodTable {
 		return null;
 	}
 
+	public List<IRMethodDecl> getMethodList() {
+		return orderedMethods;
+	}
+
 	@Override
 	public String toString() {
 		String answer = "Methods: \n";

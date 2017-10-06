@@ -36,7 +36,7 @@ public class IRWhileStatement extends IRStatement {
 						+ block.toString(indent + 1);
 	}
 
-	//@Override
+	@Override
 	public List<? extends IRNode> getChildren() {
 		return Arrays.asList(condition, block);
 	}

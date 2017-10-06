@@ -1,6 +1,7 @@
 package edu.mit.compilers.ir.decl;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
 import antlr.Token;
 
@@ -52,6 +53,10 @@ public class IRMethodDecl extends IRNode {
   public IRBlock getCode() { return code; }
   public VariableTable getParameters() { return parameters; }
 
+  @Override
+  public List<? extends IRNode> getChildren() {
+    return Arrays.asList(code);
+  }
 
   @Override
   public String toString() {

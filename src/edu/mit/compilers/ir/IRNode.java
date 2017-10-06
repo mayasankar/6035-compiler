@@ -29,5 +29,5 @@ public abstract class IRNode {
 		column = tk.getColumn();
 	}
 
-	public /*abstract*/ List<? extends IRNode> getChildren() { return null; };
+	public abstract List<? extends IRNode> getChildren();
 }

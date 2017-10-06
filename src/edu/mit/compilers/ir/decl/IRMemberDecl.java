@@ -13,10 +13,10 @@ public abstract class IRMemberDecl extends IRNode {
 	protected Token id;
 	protected IRType.Type irType;
 
-	// @Override
-	// public List<? extends IRNode> getChildren() {
-	// 	return Arrays.asList();
-	// }
+	@Override
+	public List<? extends IRNode> getChildren() {
+		return Arrays.asList();
+	}
 
 	public IRMemberDecl(IRType.Type irType, Token id) {
 		setLineNumbers(id);

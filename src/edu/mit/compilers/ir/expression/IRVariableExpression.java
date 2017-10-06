@@ -16,7 +16,7 @@ public class IRVariableExpression extends IRExpression {
 
 	public static IRVariableExpression makeIRVariableExpression(ConcreteTree tree) { // TODO make constructor
 		if (tree == null) {
-			System.out.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
+			System.err.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
 		}
 		ConcreteTree child = tree.getFirstChild();
 		String name = child.getToken().getText();

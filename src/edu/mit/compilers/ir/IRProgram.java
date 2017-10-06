@@ -6,6 +6,7 @@ import edu.mit.compilers.symbol_tables.*;
 
 import antlr.Token;
 
+import java.util.List;
 import java.util.ArrayList;
 
 public class IRProgram extends IRNode {
@@ -59,5 +60,13 @@ public class IRProgram extends IRNode {
 		answer += "\n" + fields.toString();
 		answer += "\n" + methods.toString();
 		return answer;
+	}
+
+	@Override
+	public List<? extends IRNode> getChildren() {
+		ArrayList<IRNode> children = new ArrayList<IRNode>(imports);
+		children.addAll(fields.getVariableList());
+		children.addAll(methods.getMethodList());
+		return children;
 	}
 }

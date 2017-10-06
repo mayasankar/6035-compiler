@@ -1,6 +1,10 @@
 package edu.mit.compilers.ir.statement;
 
+import java.util.Arrays;
+import java.util.List;
+
 import edu.mit.compilers.ir.expression.IRMethodCallExpression;
+import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRMethodCallStatement extends IRStatement {
@@ -14,5 +18,10 @@ public class IRMethodCallStatement extends IRStatement {
   @Override
   public String toString() {
     return methodCall.toString();
+  }
+
+  @Override
+  public List<? extends IRNode> getChildren() {
+    return Arrays.asList(methodCall);
   }
 }

@@ -43,7 +43,7 @@ public class IRIfStatement extends IRStatement {
 	}
 
 
-	//@Override
+	@Override
 	public List<? extends IRNode> getChildren() {
 		return Arrays.asList(ifCondition, thenBlock, elseBlock);
 	}
