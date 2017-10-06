@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,10,11,14,18,19,20
+// write semantic checks 1,2,10,11,14,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -94,7 +94,21 @@ public class SemanticChecker {
     }
 
     private void checkIRMemberDecl(IRMemberDecl variable){
-        // TODO
+        // 4
+        String name = variable.getName();
+        IRType.Type type = variable.getType();
+        int length = variable.getLength();
+        if (type == IRType.Type.BOOL_ARRAY || type == IRType.Type.INT_ARRAY) {
+            if (length == 0) {
+                notifyError("Cannot declare an array of size 0.", variable);
+            }
+        }
+        else {
+            if (length != 0) {
+                notifyError("Something has gone seriously wrong in the compiler," +
+                "and a variable thinks it's an array. This should never happen.", variable);
+            }
+        }
     }
 
     private void checkIRMethodDecl(IRMethodDecl method){
@@ -203,7 +217,19 @@ public class SemanticChecker {
     }
 
     private void checkIRTernaryOpExpression(IRTernaryOpExpression expr) {
-        // TODO
+        // 14
+        IRExpression trueExpr = expr.getTrueExpression();
+        checkIRExpression(trueExpr);
+        IRExpression falseExpr = expr.getFalseExpression();
+        checkIRExpression(falseExpr);
+        IRExpression cond = expr.getCondition();
+        checkIRExpression(cond);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("Ternary operator condition expression must have type bool.", cond);
+        }
+        if (trueExpr.getType() != falseExpr.getType()) {
+            notifyError("Ternary operator should return same type in true or false cases.", expr);
+        }
     }
 
     private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
@@ -242,8 +268,6 @@ public class SemanticChecker {
 
     private void checkIRForStatement(IRForStatement statement) {
         // 21
-        // TODO add scope to stack
-        // TODO forloops need to store the assigned variable somewhere, like in the block scope or a parent of it
         checkIRAssignStatement(statement.getStepFunction());
         checkIRAssignStatement(statement.getInitializer());
         IRExpression cond = statement.getCondition();

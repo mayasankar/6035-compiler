@@ -36,7 +36,7 @@ public class IRProgram extends IRNode {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id));
+					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
 				} else {
 					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
 				}

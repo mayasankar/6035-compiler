@@ -20,7 +20,7 @@ public class IRTernaryOpExpression extends IRExpression {
 		this.trueExpression = trueExpression;
 		this.falseExpression = falseExpression;
 	}
-	
+
 	public IRTernaryOpExpression(ConcreteTree tree) {
 		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
@@ -30,6 +30,10 @@ public class IRTernaryOpExpression extends IRExpression {
 		child = child.getRightSibling();
 		falseExpression = IRExpression.makeIRExpression(child);
 	}
+
+	public IRExpression getCondition() { return condition; }
+	public IRExpression getTrueExpression() { return trueExpression; }
+	public IRExpression getFalseExpression() { return falseExpression; }
 
 	@Override
 	public IRType.Type getType() {

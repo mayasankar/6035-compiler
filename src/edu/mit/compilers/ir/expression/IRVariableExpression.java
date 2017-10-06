@@ -46,6 +46,8 @@ public class IRVariableExpression extends IRExpression {
 		arrayIndex = expression;
 	}
 
+	public String getVariableName() { return variableName; }
+
 	@Override
 	public IRType.Type getType() {
 		return  null;//IRType.getTypeFromDescriptor(variable.getType()); TODO: This will complain until Variables have the right type
