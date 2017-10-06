@@ -11,6 +11,10 @@ public class IRLenExpression extends IRExpression {
     this.id = id;
   }
 
+  public String getArgument() {
+      return id.getText();
+  }
+
   @Override
   public IRType.Type getType() {
     return null;

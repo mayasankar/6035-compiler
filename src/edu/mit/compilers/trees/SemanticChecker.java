@@ -30,8 +30,8 @@ public class SemanticChecker {
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
-        env.popMethods();
-        env.popVariables();
+        env.popMethodTable();
+        env.popVariableTable();
         env.popReturnType();
     }
 
@@ -148,7 +148,16 @@ public class SemanticChecker {
     }
 
     private void checkIRLenExpression(IRLenExpression expr) {
-        // TODO
+        // 12
+        String argumentName = expr.getArgument();
+        VariableTable lookupTable = env.getVariableTable();
+        IRMemberDecl argument = lookupTable.get(argumentName);
+        if (argument == null) {
+            notifyError("Cannot apply len() to uninstantiated variable '" + argumentName + "'.", expr);
+        }
+        else if (argument.getType() != IRType.Type.INT_ARRAY && argument.getType() != IRType.Type.BOOL_ARRAY) {
+            notifyError("Cannot apply len() to non-array-type variable '" + argumentName + "'.", expr);
+        }
     }
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
