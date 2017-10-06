@@ -25,21 +25,22 @@ public class SemanticChecker {
         notifyError("DEBUG: Checking program for semantic errors.", tree);
         env.push(tree.methods);
         env.push(tree.fields);
+        env.push(IRType.Type.VOID);
         checkImports(tree.imports);
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
         env.popMethods();
         env.popVariables();
+        env.popReturnType();
     }
 
     private void notifyError(String error, IRNode problematicNode){
-      // TODO make this better; have location and whatnot
-      System.out.println("ERROR " + problematicNode.location() + ": " + error);
+        System.out.println("ERROR " + problematicNode.location() + ": " + error);
     }
 
-
     private void checkHasMain(IRProgram program){
+        // 3
         IRMethodDecl mainMethod = program.methods.get("main");
         if (mainMethod == null) {
             notifyError("Program has no main method.", program);
@@ -54,31 +55,32 @@ public class SemanticChecker {
     }
 
     private void checkImports(List<IRImportDecl> imports){
-      // check that they're all distinct
-      HashSet<IRImportDecl> importsSet = new HashSet<>();
-      for (IRImportDecl imp : imports){
-        if (importsSet.contains(imp)){
-          notifyError("Attempted to import an identifier previously imported.", imp);
-        }
+        // first part of 1
+        // check that they're all distinct
+        HashSet<IRImportDecl> importsSet = new HashSet<>();
+        for (IRImportDecl imp : imports){
+            if (importsSet.contains(imp)){
+                notifyError("Attempted to import an identifier previously imported.", imp);
+            }
         importsSet.add(imp);
-      }
-      // TODO maybe we also need to check these against global variables?
+        }
+        // TODO maybe we also need to check these against global variables?
     }
 
     private void checkMethodTable(MethodTable table){
-      // TODO
+        // TODO
     }
 
     private void checkVariableTable(VariableTable table){
-      // TODO
+        // TODO
     }
 
     private void checkVariable(IRMemberDecl variable){
-      // TODO
+        // TODO
     }
 
     private void checkMethod(IRMethodDecl method){
-      // TODO
+        // TODO
     }
 
     private void checkBlock(IRBlock block){
@@ -88,13 +90,28 @@ public class SemanticChecker {
     }
 
     private void checkStatement(IRStatement statement){
-      // TODO
+        // TODO
+    }
+
+    private void checkReturnStatement(IRReturnStatement statement){
+        // TODO 8, 9
+        IRType.Type desiredReturnType = env.getReturnType();
+        IRType actualReturnType = statement.getReturnExpr().getType();
+        if (new IRType(desiredReturnType) != actualReturnType){
+            if (desiredReturnType == IRType.Type.VOID){
+                notifyError("Attempted to return value from a void function.", statement);
+            }
+            else {
+                notifyError("Attempted to return value of type " + actualReturnType.toString() +
+                " from function of type " + desiredReturnType.toString() + ".", statement);
+            }
+        }
     }
 
     private void checkIRVariableExpression(IRVariableExpression expr){
-      // TODO
+        // TODO
     }
 
-    // TODO probably lots more of these?
+      // TODO probably lots more of these?
 
 }

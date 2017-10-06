@@ -17,6 +17,10 @@ public class IRReturnStatement extends IRStatement {
     }
   }
 
+  public IRExpression getReturnExpr(){
+      return expr;
+  }
+
   @Override
   public String toString() {
     return ""; // TODO replace by expr.toString.
