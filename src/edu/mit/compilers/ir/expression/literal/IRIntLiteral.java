@@ -13,8 +13,8 @@ public class IRIntLiteral extends IRLiteral<Integer> {
 	}
 
 	@Override
-	public IRType getType() {
-		return IRType.intType();
+	public IRType.Type getType() {
+		return IRType.Type.INT;
 	}
 
 	@Override
