@@ -83,17 +83,17 @@ public class SemanticChecker {
         // TODO
     }
 
-    private void checkBlock(IRBlock block){
+    private void checkIRBlock(IRBlock block){
       for (IRStatement s : block.getStatements()){
-        checkStatement(s);
+        checkIRStatement(s);
       }
     }
 
-    private void checkStatement(IRStatement statement){
+    private void checkIRStatement(IRStatement statement){
         // TODO
     }
 
-    private void checkReturnStatement(IRReturnStatement statement){
+    private void checkIRReturnStatement(IRReturnStatement statement){
         // 8, 9
         IRType.Type desiredReturnType = env.getReturnType();
         IRType.Type actualReturnType = statement.getReturnExpr().getType();
@@ -108,7 +108,15 @@ public class SemanticChecker {
         }
     }
 
-    private void checkIRMethodCallExpression(IRMethodCallExpression expr){
+    private void checkIRAssignStatement(IRAssignStatement statement) {
+        // TODO
+    }
+
+    private void checkIRExpression(IRExpression expr) {
+        // TODO
+    }
+
+    private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
         // 5, 6
         IRMethodDecl md = expr.getIRMethodDecl();
         if (md.getReturnType() == IRType.Type.VOID) {
@@ -130,8 +138,21 @@ public class SemanticChecker {
         }
     }
 
-    private void checkIRVariableExpression(IRVariableExpression expr){
+    private void checkIRVariableExpression(IRVariableExpression expr) {
         // TODO
+    }
+
+    private void checkIRForStatement(IRForStatement statement) {
+        // 21
+        // TODO forloops need to store the assigned variable somewhere
+        checkIRAssignStatement(statement.getStepFunction());
+        checkIRAssignStatement(statement.getInitializer());
+        IRExpression cond = statement.getCondition();
+        checkIRExpression(cond);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("For loop condition expression must have type bool.", cond);
+        }
+        checkIRBlock(statement.getBlock());
     }
 
       // TODO probably lots more of these?

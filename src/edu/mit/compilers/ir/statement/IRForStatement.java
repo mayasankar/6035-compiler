@@ -45,7 +45,10 @@ public class IRForStatement extends IRStatement {
 						+ block.toString(indent + 1);
 	}
 
-
+	public IRBlock getBlock() { return block; }
+	public IRAssignStatement getStepFunction() { return stepFunction; }
+	public IRExpression getCondition() { return condition; }
+	public IRAssignStatement getInitializer() { return initializer; }
 
 	//@Override
 	public List<? extends IRNode> getChildren() {
