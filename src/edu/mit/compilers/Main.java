@@ -84,7 +84,8 @@ class Main {
         IRProgram ir = ASTCreator.getIR(tree);
         System.out.println(ir);
 
-        SemanticChecker.checkProgram(ir);
+        SemanticChecker checker = new SemanticChecker();
+        checker.checkProgram(ir);
       }
     } catch(Exception e) {
       // print the error:

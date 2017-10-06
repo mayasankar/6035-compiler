@@ -12,7 +12,7 @@ public class IRProgram extends IRNode {
 	//public ArrayList<Token> imports; // Token.getText() gets the name of the token
 	//public ArrayList<IRFieldDecl> fields;
 	//public ArrayList<IRMethodDecl> methods;
-	public ProgramTable table;  // TODO initialize
+	public ProgramTable table;
 
 	public IRProgram(ConcreteTree tree) {
 
@@ -53,6 +53,10 @@ public class IRProgram extends IRNode {
 			//methods.add(new IRMethodDecl(child));
 			child = child.getRightSibling();
 		}
+	}
+
+	public ProgramTable getProgramTable(){
+		return this.table;
 	}
 
 	@Override

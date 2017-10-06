@@ -1,6 +1,7 @@
 package edu.mit.compilers.ir.statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import antlr.Token;
 
@@ -15,7 +16,7 @@ public class IRBlock extends IRNode {
 
 	//private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
 	private ArrayList<IRStatement> statements = new ArrayList<IRStatement>();
-	private VariableTable fields;  // TODO construct
+	private VariableTable fields;
 
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
 		fields = new VariableTable(parentScope);
@@ -41,6 +42,14 @@ public class IRBlock extends IRNode {
 			statements.add(IRStatement.makeIRStatement(child, parentScope));
 			child = child.getRightSibling();
 		}
+	}
+
+	public ArrayList<IRStatement> getStatements(){
+		return this.statements;
+	}
+
+	public VariableTable getFields(){
+		return this.fields;
 	}
 
 	@Override
