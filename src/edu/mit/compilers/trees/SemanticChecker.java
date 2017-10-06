@@ -95,7 +95,6 @@ public class SemanticChecker {
 
     private void checkIRMemberDecl(IRMemberDecl variable){
         // 4
-        String name = variable.getName();
         IRType.Type type = variable.getType();
         int length = variable.getLength();
         if (type == IRType.Type.BOOL_ARRAY || type == IRType.Type.INT_ARRAY) {
@@ -257,7 +256,43 @@ public class SemanticChecker {
     // ------- STATEMENT CHECKS ----------
 
     private void checkIRAssignStatement(IRAssignStatement statement) {
-        // TODO
+        // 18
+        IRVariableExpression varAssigned = statement.getVarAssigned();
+        checkIRVariableExpression(varAssigned);
+        String op = statement.getOperator();
+        IRExpression value = statement.getValue();
+        checkIRExpression(value);
+
+        String varName = varAssigned.getName();
+        IRExpression arrayIndex = varAssigned.getIndexExpression();
+        VariableTable lookupTable = env.getVariableTable();
+        IRMemberDecl assignee = lookupTable.get(varName);
+        if (assignee == null) {
+            notifyError("Cannot assign to uninstantiated variable '" + varName + "'.", varAssigned);
+        }
+        if (arrayIndex == null) {
+            // we should have an int or bool, not an array
+            if (assignee.getType() != value.getType()) {
+                notifyError("Cannot assign a value of type " + value.getType().toString() +
+                " to a variable of type " + assignee.getType() + ".", value);
+            }
+            if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
+                notifyError("Cannot assign to variable '" + varName + "' of type " + assignee.getType().toString() +
+                ".", varAssigned);
+            }
+        }
+        else {
+            // we should have an array
+            if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
+                notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
+            }
+            if (!((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT)
+               || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) {
+                   notifyError("Cannot assign a value of type " + value.getType().toString() +
+                   " to an array location of type " + assignee.getType() + ".", value);
+               }
+        }
+
     }
 
     private void checkIRBlock(IRBlock block){
