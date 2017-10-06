@@ -30,7 +30,7 @@ public class IRBlock extends IRNode {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));  // Jackie broke arrays temporarily here too
+					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id));
 				} else {
 					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
 				}

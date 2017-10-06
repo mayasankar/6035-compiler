@@ -33,7 +33,7 @@ public class IRProgram extends IRNode {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken), id)); // TODO Jackie broke arrays and will fix them
+					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id));
 				} else {
 					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
 				}

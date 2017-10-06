@@ -9,7 +9,7 @@ public class IRUnaryOperator extends IROperator {
 	}
 
 	@Override
-	public IRType outputType() {
+	public IRType.Type outputType() {
 		// TODO Auto-generated method stub
 		return null;
 	}
