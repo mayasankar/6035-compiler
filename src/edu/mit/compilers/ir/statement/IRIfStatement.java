@@ -28,6 +28,10 @@ public class IRIfStatement extends IRStatement {
 		}
 	}
 
+	public IRExpression getCondition() { return ifCondition; }
+	public IRBlock getThenBlock() { return thenBlock; }
+	public IRBlock getElseBlock() { return elseBlock; }
+
 	@Override
 	String toString(int indent) {
 		String whitespace = "";

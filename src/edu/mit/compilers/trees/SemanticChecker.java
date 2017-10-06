@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,4,7,10,11,12,13,14,18,19,20
+// write semantic checks 1,2,4,7,10,11,14,18,19,20
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -194,12 +194,12 @@ public class SemanticChecker {
         String op = opToken.getText();
         if (op == "-") {
             if (arg.getType() != IRType.Type.INT) {
-                notifyError("Argument for unary minus must be of type INT.", arg);
+                notifyError("Argument for unary minus must be of type int.", arg);
             }
         }
         if (op == "!") {
             if (arg.getType() != IRType.Type.BOOL) {
-                notifyError("Argument for ! operator must be of type BOOL.", arg);
+                notifyError("Argument for ! operator must be of type bool.", arg);
             }
         }
     }
@@ -235,7 +235,17 @@ public class SemanticChecker {
     }
 
     private void checkIRIfStatement(IRIfStatement statement) {
-        // TODO
+        // part of 13
+    	IRBlock thenBlock = statement.getThenBlock();
+        checkIRBlock(thenBlock);
+    	IRBlock elseBlock = statement.getElseBlock();
+        checkIRBlock(elseBlock);
+        IRExpression cond = statement.getCondition();
+        checkIRExpression(cond);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("If statement condition expression must have type bool.", cond);
+        }
+
     }
 
     private void checkIRMethodCallStatement(IRMethodCallStatement statement) {
@@ -262,7 +272,13 @@ public class SemanticChecker {
     }
 
     private void checkIRWhileStatement(IRWhileStatement statement) {
-        // TODO
+        // part of 13
+        checkIRBlock(statement.getBlock());
+        IRExpression cond = statement.getCondition();
+        checkIRExpression(cond);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("While statement condition expression must have type bool.", cond);
+        }
     }
 
 }
