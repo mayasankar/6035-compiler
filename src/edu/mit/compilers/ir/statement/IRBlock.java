@@ -1,6 +1,7 @@
 package edu.mit.compilers.ir.statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import antlr.Token;
 
@@ -9,13 +10,16 @@ import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRBlock extends IRNode {
 
-	private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
+	//private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
 	private ArrayList<IRStatement> statements = new ArrayList<IRStatement>();
+	private VariableTable fields;
 
-	public IRBlock(ConcreteTree tree) {
+	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
+		fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree grandchild = child.getFirstChild();
@@ -35,9 +39,17 @@ public class IRBlock extends IRNode {
 			child = child.getRightSibling();
 		}
 		while (child != null) {
-			statements.add(IRStatement.makeIRStatement(child));
+			statements.add(IRStatement.makeIRStatement(child, parentScope));
 			child = child.getRightSibling();
 		}
+	}
+
+	public ArrayList<IRStatement> getStatements(){
+		return this.statements;
+	}
+
+	public VariableTable getFields(){
+		return this.fields;
 	}
 
 	@Override
@@ -50,14 +62,7 @@ public class IRBlock extends IRNode {
 		for (int i = 0; i < indent; ++i) {
 			answer += "  ";
 		}
-		answer += "Fields: ";
-		if (fields.size() == 0) {
-			answer += "none";
-		} else {
-			for (IRFieldDecl field : fields) {
-				answer += field.toString() + ", ";
-			}
-		}
+		answer += fields.toString();
 		for (IRStatement statement : statements) {
 			answer += "\n" + statement.toString(indent);
 		}

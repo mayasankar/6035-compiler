@@ -3,6 +3,7 @@ package edu.mit.compilers.ir.statement;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public abstract class IRStatement extends IRNode {
   protected enum StatementType {
@@ -27,7 +28,7 @@ public abstract class IRStatement extends IRNode {
     return answer + statementType.name() + " " + this.toString();
   }
 
-  public static IRStatement makeIRStatement(ConcreteTree tree) {
+  public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable parentScope) {
     ConcreteTree child = tree.getFirstChild();
     if (child.isNode()) {
       int tokentype = child.getToken().getType();
@@ -45,11 +46,11 @@ public abstract class IRStatement extends IRNode {
       } else if (name.equals("method_call")) {
         return new IRMethodCallStatement(child);
       } else if (name.equals("if_block")) {
-        return new IRIfStatement(child);
+        return new IRIfStatement(child, parentScope);
       } else if (name.equals("for_block")) {
-        return new IRForStatement(child);
+        return new IRForStatement(child, parentScope);
       } else if (name.equals("while_block")) {
-        return new IRWhileStatement(child);
+        return new IRWhileStatement(child, parentScope);
       }
     }
     return null;

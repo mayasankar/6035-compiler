@@ -36,6 +36,10 @@ public class IRType extends IRNode {
 	private Type type = Type.UNSPECIFIED;
 	private int arrayLength = -1;
 
+	public IRType(IRType.Type type) {
+		this.type = type;
+	}
+
 	public IRType(Token t) {
 		switch(t.getType()) {
 			case DecafParserTokenTypes.TK_int: {

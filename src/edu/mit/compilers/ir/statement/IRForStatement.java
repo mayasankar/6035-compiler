@@ -6,6 +6,7 @@ import java.util.List;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRForStatement extends IRStatement {
 
@@ -17,7 +18,7 @@ public class IRForStatement extends IRStatement {
 
 	private  IRBlock block;
 
-	public IRForStatement(ConcreteTree tree) {
+	public IRForStatement(ConcreteTree tree, VariableTable parentScope) {
 		statementType = IRStatement.StatementType.FOR_BLOCK;
 		ConcreteTree child = tree.getFirstChild();
 		initializer = IRAssignStatement.makeForLoopInitializer(child);
@@ -28,7 +29,7 @@ public class IRForStatement extends IRStatement {
 		while (!child.getName().equals("block")) {
 			child = child.getRightSibling();
 		}
-		block = new IRBlock(child);
+		block = new IRBlock(child, parentScope);
 	}
 
 	@Override

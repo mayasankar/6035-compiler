@@ -6,15 +6,12 @@ import edu.mit.compilers.ir.IRType;
 
 public class IRParameterDecl extends IRMemberDecl {
 
-	protected IRType.Type type;
-
-	public IRParameterDecl(IRType.Type type, Token id) {
-		super(id);
-		this.type = type;
+	public IRParameterDecl(IRType irType, Token id) {
+		super(irType, id);
 	}
 
 	@Override
 	public String toString() {
-		return type.name() + " " + getName();
+		return this.getType() + " " + this.getName();
 	}
 }

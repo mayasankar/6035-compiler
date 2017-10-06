@@ -9,6 +9,7 @@ import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
+import edu.mit.compilers.trees.SemanticChecker;
 
 class Main {
   public static void main(String[] args) {
@@ -82,6 +83,9 @@ class Main {
         tree.print();
         IRProgram ir = ASTCreator.getIR(tree);
         System.out.println(ir);
+
+        SemanticChecker checker = new SemanticChecker();
+        checker.checkProgram(ir);
       }
     } catch(Exception e) {
       // print the error:

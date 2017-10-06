@@ -11,14 +11,20 @@ import edu.mit.compilers.ir.IRType;
 public abstract class IRMemberDecl extends IRNode {
 
 	protected Token id;
+	protected IRType irType;
 
 	// @Override
 	// public List<? extends IRNode> getChildren() {
 	// 	return Arrays.asList();
 	// }
 
-	protected IRMemberDecl(Token id) {
+	public IRMemberDecl(IRType irType, Token id) {
 		this.id = id;
+		this.irType = irType;
+	}
+
+	public IRType getType() {
+		return irType;
 	}
 
 	public String getName() {
