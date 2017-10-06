@@ -38,7 +38,8 @@ public class IRAssignStatement extends IRStatement {
 
 	public static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
 		//TODO test
-		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
+		System.out.println("Initializer called");
+		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
 		child = child.getRightSibling();
 		Token operator = child.getToken();
 		child = child.getRightSibling();
@@ -48,6 +49,7 @@ public class IRAssignStatement extends IRStatement {
 
 	public static IRAssignStatement makeForLoopStepFunction(ConcreteTree child) {
 		//TODO test
+		System.out.println("Step function creating");
 		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
 		child = child.getRightSibling();
 		Token operator = child.getToken();
