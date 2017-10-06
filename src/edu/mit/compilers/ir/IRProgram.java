@@ -19,14 +19,11 @@ public class IRProgram extends IRNode {
 		methods = new MethodTable();
 
 		ConcreteTree child = tree.getFirstChild(); // TODO do I need to instantiate these?
-		//imports = new ArrayList<Token>();
 		while (child != null && child.getName().equals("import_decl")) {
 			imports.add(new IRImportDecl(child.getFirstChild().getToken()));
-			//imports.add(child.getFirstChild().getToken());
 			child = child.getRightSibling();
 		}
 
-		//fields = new ArrayList<IRFieldDecl>();
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree grandchild = child.getFirstChild();
 			Token typeToken = grandchild.getToken();
@@ -36,25 +33,20 @@ public class IRProgram extends IRNode {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(new IRType(typeToken, lengthAsInt), id));
-					//fields.add(new IRFieldDecl(new IRType(typeToken, lengthAsInt), id));
+					fields.add(new IRFieldDecl(IRType.getType(typeToken), id)); // TODO Jackie broke arrays and will fix them
 				} else {
-					fields.add(new IRFieldDecl(new IRType(typeToken), id));
-					//fields.add(new IRFieldDecl(new IRType(typeToken), id));
+					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
 				}
 				grandchild = grandchild.getRightSibling();
 			}
 			child = child.getRightSibling();
 		}
 
-		//methods = new ArrayList<IRMethodDecl>();
 		while (child != null && child.getName().equals("method_decl")) {
 			methods.add(new IRMethodDecl(child, fields));
-			//methods.add(new IRMethodDecl(child));
 			child = child.getRightSibling();
 		}
 	}
-
 
 	@Override
 	public String toString() {
@@ -66,21 +58,4 @@ public class IRProgram extends IRNode {
 		answer += "\n" + methods.toString();
 		return answer;
 	}
-
-	// @Override
-	// public String toString() {
-	// 	String answer = "Imports: ";
-	// 	for (Token imp : imports) {
-	// 		answer += imp.getText() + ", ";
-	// 	}
-	// 	answer += "\nFields: ";
-	// 	for (IRFieldDecl field : fields) {
-	// 		answer += field.toString() + ", ";
-	// 	}
-	// 	answer += "\nMethods: \n";
-	// 	for (IRMethodDecl method : methods) {
-	// 		answer += method.toString() + "\n";
-	// 	}
-	// 	return answer;
-	// }
 }

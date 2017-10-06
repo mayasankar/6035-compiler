@@ -36,7 +36,7 @@ public class IRMethodDecl extends IRNode {
     id = child.getToken();
     child = child.getRightSibling();
     while(child.isNode()) {
-      IRType parameterType = new IRType(IRType.getType(child.getToken()));
+      IRType.Type parameterType = IRType.getType(child.getToken());
       child = child.getRightSibling();
       Token parameterId = child.getToken();
       parameters.add(new IRParameterDecl(parameterType, parameterId));

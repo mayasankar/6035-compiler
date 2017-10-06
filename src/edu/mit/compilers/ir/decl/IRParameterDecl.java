@@ -6,7 +6,7 @@ import edu.mit.compilers.ir.IRType;
 
 public class IRParameterDecl extends IRMemberDecl {
 
-	public IRParameterDecl(IRType irType, Token id) {
+	public IRParameterDecl(IRType.Type irType, Token id) {
 		super(irType, id);
 	}
 
