@@ -1,0 +1,8 @@
+import printf();
+int a, b, c;
+void main ( ) {
+  a = 10;
+  b = 5;
+  c = a + b;
+  printf ( "%d + %d = %d (15)\n", a, b, c );
+}

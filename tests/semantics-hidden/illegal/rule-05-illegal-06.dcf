@@ -1,0 +1,11 @@
+// 5. The arguments in a method call must match those in the method signature
+
+bool test ( int x ) {
+    return true;
+}
+void outertest ( int f ){
+
+}
+void main ( ) {
+  outertest(test(5));
+}

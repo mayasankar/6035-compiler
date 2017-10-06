@@ -1,0 +1,9 @@
+// 14. The <expr> in for statement must have type bool.
+int foo ( ) {
+  return 0;
+}
+void main ( ) {
+  int i;
+  for ( i = 0; foo ( ); i+=1 ) {
+  }
+}

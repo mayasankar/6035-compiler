@@ -1,0 +1,8 @@
+min int operation: result should be -2147483648, is: -2147483648
+paren assoc: result should be 100, is: 100
+- assoc: result should be 10, is: 10
+-,+ assoc: result should be 90, is: 90
+- * assoc: result should be 80, is: 80
+result should be 46, is: 46
+*, -, uses var: result should be 11, is: 11
+*,- assoc: result should be 2, is: 2

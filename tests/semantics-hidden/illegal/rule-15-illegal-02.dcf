@@ -1,0 +1,7 @@
+// 15.  Each alternative in the ternary must be of the correct type
+
+void main() {
+    int b;
+    bool c;
+    b = c ? 5:(7 < 8);
+}

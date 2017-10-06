@@ -1,0 +1,74 @@
+import printf();
+// test as many operators as we can
+void main ( ) {
+  int a, b, c;
+  a = 10 + 20;
+  printf ( "10 + 20 is %d (30)\n", a );
+  a = 10 - 20;
+  printf ( "10 - 20 is %d (-10)\n", a );
+  a = 10 * 20;
+  printf ( "10 * 20 is %d (200)\n", a );
+  a = 1;
+  b = 2;
+  c = 2;
+  if ( a < b ) {
+    printf ( "a < b is correct\n" );
+  }
+  if ( a <= b ) {
+    printf ( "a <= b is correct\n" );
+  }
+  if ( a > b ) {
+    printf ( "a > b is incorrect\n" );
+  }
+  if ( a >= b ) {
+    printf ( "a >= b is incorrect\n" );
+  }
+  if ( c < b ) {
+    printf ( "c < b is incorrect\n" );
+  }
+  if ( c <= b ) {
+    printf ( "c <= b is correct\n" );
+  }
+  if ( c > b ) {
+    printf ( "c > b is incorrect\n" );
+  }
+  if ( c >= b ) {
+    printf ( "c >= b is correct\n" );
+  }
+  if ( a == a ) {
+    printf ( "a == a is correct\n" );
+  }
+  if ( a != a ) {
+    printf ( "a != a is incorrect\n" );
+  }
+  if ( a == b ) {
+    printf ( "a == b is incorrect\n" );
+  }
+  if ( a != b ) {
+    printf ( "a != b is correct\n" );
+  }
+  if ( ( a == a ) && ( b == c ) ) {
+    printf ( "true and true is correct\n" );
+  }
+  if ( ( a != a ) && ( b == c ) ) {
+    printf ( "false and true is incorrect\n" );
+  }
+  if ( ( a == a ) && ( b != c ) ) {
+    printf ( "true and false is incorrect\n" );
+  }
+  if ( ( a != a ) && ( b != c ) ) {
+    printf ( "false and false is incorrect\n" );
+  }
+  if ( ( a == a ) || ( b == c ) ) {
+    printf ( "true or true is correct\n" );
+  }
+  if ( ( a != a ) || ( b == c ) ) {
+    printf ( "false or true is correct\n" );
+  }
+  if ( ( a == a ) || ( b != c ) ) {
+    printf ( "true or false is correct\n" );
+  }
+  if ( ( a != a ) || ( b != c ) ) {
+    printf ( "false or false is incorrect\n" );
+  }
+}

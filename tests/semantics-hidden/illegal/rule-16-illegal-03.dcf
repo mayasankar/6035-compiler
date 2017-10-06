@@ -1,0 +1,5 @@
+// 16. The operands of <arith_op>s must have type int.
+void main ( ) {
+  int x;
+  x = x - true;
+}

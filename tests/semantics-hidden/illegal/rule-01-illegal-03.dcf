@@ -1,0 +1,8 @@
+// 1. No identifier can be declared twice in the same scope.
+void foo ( ) {
+}
+int foo ( int bar ) {
+    return bar;
+}
+void main ( ) {
+}

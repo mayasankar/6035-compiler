@@ -1,0 +1,7 @@
+// 8. A return statement must not have a return value in a void method
+void foo ( ) {
+  return 5;
+}
+void main ( ) {
+  return;
+}

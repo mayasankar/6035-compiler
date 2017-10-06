@@ -1,0 +1,6 @@
+// 9. The expression in a return must have the same type as the declared result type.
+
+void main() {
+  int a;
+  a = main();
+}

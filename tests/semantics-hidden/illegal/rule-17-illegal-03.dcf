@@ -1,0 +1,7 @@
+// 17. The operands of <eq_ops> must have the same type, either int or bool.
+void x ( ) {
+}
+void main ( ) {
+  if ( x ( ) != x ( ) ) {
+  }
+}

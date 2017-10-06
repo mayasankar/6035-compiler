@@ -1,0 +1,5 @@
+// 2. No identifier can be used before it is declared
+int b;
+void main ( ) {
+  a[b] = 0;
+}

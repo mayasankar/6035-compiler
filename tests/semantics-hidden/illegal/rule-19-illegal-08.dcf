@@ -1,0 +1,11 @@
+// 19. The <location> and <expr> in an assignment must have the same type.
+void main ( ) {
+  bool b;
+  while(b) {
+    int b;
+    bool c;
+    while (c) {
+      b = false;
+    }
+  }
+}
