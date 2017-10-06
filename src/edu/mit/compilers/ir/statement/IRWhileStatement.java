@@ -26,6 +26,9 @@ public class IRWhileStatement extends IRStatement {
 		this.block = block;
 	}
 
+	public IRExpression getCondition() { return condition; }
+	public IRBlock getBlock() { return block; }
+
 	@Override
 	String toString(int indent) {
 		String whitespace = "";
@@ -36,7 +39,7 @@ public class IRWhileStatement extends IRStatement {
 						+ block.toString(indent + 1);
 	}
 
-	//@Override
+	@Override
 	public List<? extends IRNode> getChildren() {
 		return Arrays.asList(condition, block);
 	}

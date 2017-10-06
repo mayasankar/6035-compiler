@@ -44,4 +44,10 @@ public class ConcreteTreeNode extends ConcreteTree {
   @Override
   public Token getToken() { return tk; }
 
+  @Override
+  public void initializeLineNumbers() {
+    lineNumber = tk.getLine();
+    columnNumber = tk.getColumn();
+  }
+
 }

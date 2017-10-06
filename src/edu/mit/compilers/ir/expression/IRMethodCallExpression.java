@@ -25,6 +25,7 @@ public class IRMethodCallExpression extends IRExpression {
 	}
 
 	public IRMethodCallExpression(ConcreteTree tree) {
+		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
 		functionName = child.getToken().getText();
 		child = child.getRightSibling();

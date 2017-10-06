@@ -14,4 +14,9 @@ public class IRLoopStatement extends IRStatement {
   public String toString() {
     return "";
   }
+
+  @Override
+  public List<? extends IRNode> getChildren() {
+    return Arrays.asList();
+  }
 }

@@ -12,6 +12,7 @@ public class IRImportDecl extends IRNode {
 	protected Token id;
 
 	public IRImportDecl(Token id) {
+		setLineNumbers(id);
 		this.id = id;
 	}
 
@@ -22,5 +23,10 @@ public class IRImportDecl extends IRNode {
 	@Override
 	public String toString(){
 		return getName();
+	}
+
+	@Override
+	public List<? extends IRNode> getChildren() {
+		return Arrays.asList();
 	}
 }

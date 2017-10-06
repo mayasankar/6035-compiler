@@ -21,11 +21,11 @@ public class EnvStack {
     public void push(VariableTable v) { variableScopes.add(v); }
     public void push(IRType.Type t) { returnTypes.add(t); }
 
-    public void popMethods() { methodScopes.remove(methodScopes.size()-1); }
-    public void popVariables() { variableScopes.remove(variableScopes.size()-1); }
+    public void popMethodTable() { methodScopes.remove(methodScopes.size()-1); }
+    public void popVariableTable() { variableScopes.remove(variableScopes.size()-1); }
     public void popReturnType() { returnTypes.remove(returnTypes.size()-1); }
 
-    public MethodTable getMethods() { return methodScopes.get(methodScopes.size()-1); }
-    public VariableTable getVariables() { return variableScopes.get(variableScopes.size()-1); }
+    public MethodTable getMethodTable() { return methodScopes.get(methodScopes.size()-1); }
+    public VariableTable getVariableTable() { return variableScopes.get(variableScopes.size()-1); }
     public IRType.Type getReturnType() { return returnTypes.get(returnTypes.size()-1); }
 }

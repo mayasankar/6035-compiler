@@ -22,6 +22,7 @@ public class IRTernaryOpExpression extends IRExpression {
 	}
 	
 	public IRTernaryOpExpression(ConcreteTree tree) {
+		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
 		condition = IRExpression.makeIRExpression(child);
 		child = child.getRightSibling();

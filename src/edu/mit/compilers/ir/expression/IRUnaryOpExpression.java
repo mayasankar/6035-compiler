@@ -22,6 +22,7 @@ public class IRUnaryOpExpression extends IRExpression {
 	}
 
 	public IRUnaryOpExpression(ConcreteTree tree) {
+		setLineNumbers(tree);
 		ConcreteTree exprChild = tree.getLastChild();
 		ConcreteTree opChild = exprChild.getLeftSibling();
 		ConcreteTree firstOpChild = tree.getFirstChild();
