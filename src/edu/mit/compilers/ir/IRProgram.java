@@ -18,14 +18,11 @@ public class IRProgram extends IRNode {
 		fields = new VariableTable();
 		methods = new MethodTable();
 
-		System.out.println("Starting IRProgram");
-
 		ConcreteTree child = tree.getFirstChild(); // TODO do I need to instantiate these?
 		while (child != null && child.getName().equals("import_decl")) {
 			imports.add(new IRImportDecl(child.getFirstChild().getToken()));
 			child = child.getRightSibling();
 		}
-		System.out.println("Did imports");
 
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree grandchild = child.getFirstChild();
@@ -45,14 +42,10 @@ public class IRProgram extends IRNode {
 			child = child.getRightSibling();
 		}
 
-		System.out.println("Did fields");
-
 		while (child != null && child.getName().equals("method_decl")) {
 			methods.add(new IRMethodDecl(child, fields));
-			System.out.println("Finished a declaration");
 			child = child.getRightSibling();
 		}
-		System.out.println("Did methods");
 	}
 
 	@Override

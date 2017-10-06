@@ -17,16 +17,15 @@ public class IRAssignStatement extends IRStatement {
 	private IRExpression value;
 
 	public IRAssignStatement(ConcreteTree tree) {
-		System.out.println("v1");
 		statementType = IRStatement.StatementType.ASSIGN_EXPR;
 		ConcreteTree child = tree.getFirstChild();
-		System.out.println("v2");
+		if (child == null) {
+			System.out.println("ERROR: null child tree in IRAssignStatement.IRAssignStatement.");
+		}
 		varAssigned = IRVariableExpression.makeIRVariableExpression(child);
 		child = child.getRightSibling();
-		System.out.println("v3");
 		operator = child.getToken();
 		child = child.getRightSibling();
-		System.out.println("v4");
 		value = IRExpression.makeIRExpression(child);
 	}
 
