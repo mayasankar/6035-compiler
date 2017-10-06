@@ -37,7 +37,7 @@ public class IRAssignStatement extends IRStatement {
 	}
 
 	public String getVariableName(){
-		return varAssigned.getVariableName();
+		return varAssigned.getName();
 	}
 	public IRExpression getValue() { return value; }
 
