@@ -155,6 +155,25 @@ public class SemanticChecker {
         checkIRBlock(statement.getBlock());
     }
 
+    private void checkIRBinaryOpExpression(IRBinaryOpExpression expr) {
+        // part of 15
+        IRExpression left = expr.getLeftExpr();
+        checkIRExpression(left);
+        IRExpression right = expr.getRightExpr();
+        checkIRExpression(right);
+        Token opToken = expr.getOperator();
+        String op = opToken.getText();
+        if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%" || op == "<"
+            || op == "<=" || op == ">" || op == ">=") {
+            if (left.getType() != IRType.Type.INT) {
+                notifyError("First argument to operator " + op + " must be of type INT.", left);
+            }
+            if (right.getType() != IRType.Type.INT) {
+                notifyError("Second argument to operator " + op + " must be of type INT.", right);
+            }
+        }
+    }
+
       // TODO probably lots more of these?
 
 }
