@@ -23,8 +23,12 @@ public class VariableTable {
 		return parent;
 	}
 
-	public void add(IRMemberDecl v){
+	public void add(IRMemberDecl v) {
 		variables.put(v.getName(), v);
+	}
+
+	public boolean isEmpty() {
+		return variables.isEmpty();
 	}
 
 	public IRMemberDecl get(String name){

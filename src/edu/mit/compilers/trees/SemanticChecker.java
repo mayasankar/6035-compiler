@@ -14,32 +14,49 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
+// write semantic checks 1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
+// test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
+
 public class SemanticChecker {
 
     private EnvStack env = new EnvStack();
 
     public void checkProgram(IRProgram tree){
         notifyError("DEBUG: Checking program for semantic errors.", tree);
-        checkProgramTable(tree.getProgramTable());
+        env.push(tree.methods);
+        env.push(tree.fields);
+        checkImports(tree.imports);
+        checkVariableTable(tree.fields);
+        checkMethodTable(tree.methods);
+        checkHasMain(tree);
+        env.popMethods();
+        env.popVariables();
     }
 
-    private void notifyError(String error, Object problematicObject){
+    private void notifyError(String error, IRNode problematicNode){
       // TODO make this better; have location and whatnot
-      System.out.println(error);
+      System.out.println("ERROR " + problematicNode.location() + ": " + error);
     }
 
-    private void checkProgramTable(ProgramTable table){
-        env.push(table.getMethodTable());
-        env.push(table.getFields());
-        checkImports(table.getImports());
-        checkVariableTable(table.getFields());
-        checkMethodTable(table.getMethodTable());
+
+    private void checkHasMain(IRProgram program){
+        IRMethodDecl mainMethod = program.methods.get("main");
+        if (mainMethod == null) {
+            notifyError("Program has no main method.", program);
+        }
+        if (mainMethod.getReturnType() != IRType.Type.VOID){
+            notifyError("Main method return type is not void.", mainMethod);
+        }
+
+        if (! mainMethod.getParameters().isEmpty()){
+            notifyError("Main method requires input parameters.", mainMethod);
+        }
     }
 
-    private void checkImports(List<Token> imports){
+    private void checkImports(List<IRImportDecl> imports){
       // check that they're all distinct
-      HashSet<Token> importsSet = new HashSet<>();
-      for (Token imp : imports){
+      HashSet<IRImportDecl> importsSet = new HashSet<>();
+      for (IRImportDecl imp : imports){
         if (importsSet.contains(imp)){
           notifyError("Attempted to import an identifier previously imported.", imp);
         }

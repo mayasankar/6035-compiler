@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import antlr.Token;
 
 import edu.mit.compilers.trees.ConcreteTree;
-import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
-public class IRMethodDecl {
+public class IRMethodDecl extends IRNode {
   IRType.Type returnType = IRType.Type.UNSPECIFIED;
   Token id;
   // ArrayList<IRParameterDecl> parameters = new ArrayList<IRParameterDecl>();
   IRBlock code;
-  VariableTable parameters;  // TODO make this an actual thing
+  VariableTable parameters;
 
   public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
     parameters = new VariableTable(parentScope);
@@ -45,9 +45,11 @@ public class IRMethodDecl {
     code = new IRBlock(child, parameters);
   }
 
-  public String getName() {
-    return id.getText();
-  }
+  public String getName() { return id.getText(); }
+  public IRType.Type getReturnType() { return returnType; }
+  public IRBlock getCode() { return code; }
+  public VariableTable getParameters() { return parameters; }
+
 
   @Override
   public String toString() {
