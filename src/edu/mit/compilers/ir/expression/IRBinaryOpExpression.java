@@ -12,7 +12,6 @@ import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRBinaryOpExpression extends IRExpression{
 	private IRExpression leftExpr;
-
 	private IRExpression rightExpr;
 
 	//private IRBinaryOperator operator;
@@ -50,9 +49,18 @@ public class IRBinaryOpExpression extends IRExpression{
 
 	@Override
 	public IRType.Type getType() {
-		// TODO Where are we static checking types???
-		//return operator.outputType();
-		return null;
+		// TODO dear god refactor this
+		String op = operator.getText();
+		if (op.equals("==") || op.equals("!=") || op.equals("&&") || op.equals("||") || op.equals("<")
+            || op.equals("<=") || op.equals(">") || op.equals(">=")) {
+			return IRType.Type.BOOL;
+		}
+		else if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") ) {
+			return IRType.Type.INT;
+		}
+		else {
+			throw new RuntimeException("Undefined operator " + op + ".");
+		}
 	}
 
 	@Override

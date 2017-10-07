@@ -42,8 +42,17 @@ public class IRUnaryOpExpression extends IRExpression {
 
 	@Override
 	public IRType.Type getType() {
-		return null;
-		//return operator.outputType();
+		// TODO dear god refactor this
+		String op = operator.getText();
+		if (op.equals("!")) {
+			return IRType.Type.BOOL;
+		}
+		else if (op.equals("-")) {
+			return IRType.Type.INT;
+		}
+		else {
+			throw new RuntimeException("Undefined operator " + op + ".");
+		}
 	}
 
 	@Override

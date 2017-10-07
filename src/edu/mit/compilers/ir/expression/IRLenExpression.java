@@ -22,7 +22,7 @@ public class IRLenExpression extends IRExpression {
 
   @Override
   public IRType.Type getType() {
-    return null;
+    return IRType.Type.INT;
   }
 
   @Override
