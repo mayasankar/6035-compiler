@@ -81,13 +81,14 @@ public class SemanticChecker {
         // part of 1
         List<IRMethodDecl> methods = table.getMethodList();
         HashSet<IRMethodDecl> methodsSet = new HashSet<>();
-            for (IRMethodDecl met : methods){
-                 if (methodsSet.contains(met)){
+        for (IRMethodDecl met : methods){
+            if (methodsSet.contains(met)){
                  notifyError("Attempted to declare method " + met.getName() +
                  " but a method of that name already exists in the same scope.", met);
-             }
-             methodsSet.add(met);
-         }
+            }
+            checkIRMethodDecl(met);
+            methodsSet.add(met);
+        }
     }
 
     private void checkVariableTable(VariableTable table){
@@ -99,6 +100,7 @@ public class SemanticChecker {
                  notifyError("Attempted to declare variable " + var.getName() +
                  " but a variable of that name already exists in the same scope.", var);
              }
+             checkIRMemberDecl(var);
              variablesSet.add(var);
          }
     }
