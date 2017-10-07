@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.math.BigInteger;
 
 import antlr.Token;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.ir.expression.*;
+import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
@@ -76,6 +78,12 @@ public class SemanticChecker {
                 notifyError("Attempted to declare a global variable that conflicts with an import name.", imp);
             }
             namesSet.add(imp.getName());
+        }
+    }
+
+    private void checkIntLiteral(IRIntLiteral il) {
+        if (il.getValue().compareTo(BigInteger.valueOf(Long.MAX_VALUE)) == 1) {
+            notifyError("Attempted to assign integer too large for 64-bit int.", il);
         }
     }
 
@@ -220,9 +228,11 @@ public class SemanticChecker {
 
     private void checkIRExpression(IRExpression expr) {
         switch(expr.getExpressionType()) {
-          case BOOL_LITERAL: case INT_LITERAL: case STRING_LITERAL: {
+          case BOOL_LITERAL: case STRING_LITERAL: {
             return;
-          } case UNARY: {
+        } case INT_LITERAL: {
+            checkIntLiteral((IRIntLiteral) expr); break;
+        } case UNARY: {
             checkIRUnaryOpExpression((IRUnaryOpExpression) expr); break;
           } case BINARY: {
             checkIRBinaryOpExpression((IRBinaryOpExpression) expr); break;
