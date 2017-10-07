@@ -23,6 +23,7 @@ public class SemanticChecker {
     private boolean hasError = false;
 
     public boolean checkProgram(IRProgram tree){
+        //System.out.println("Debugging: starts checkProgram().");
         notifyError("DEBUG: Checking program for semantic errors.", tree);
         env.push(tree.methods);
         env.push(tree.fields);
@@ -314,11 +315,11 @@ public class SemanticChecker {
         IRMemberDecl decl = table.get(var.getName());
         IRExpression idxExpr = var.getIndexExpression();
         if (decl == null) {
-          notifyError("Variable " + var.getName() + " used but not declared.", var);
+          notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
         } else if (idxExpr != null) {
           IRType.Type declType = decl.getType();
           if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
-            notifyError("Cannot index into non-array variable " + var.getName() + ".", var);
+            notifyError("Cannot index into non-array variable '" + var.getName() + "'.", var);
           }
         }
         if (idxExpr != null) {
@@ -347,7 +348,7 @@ public class SemanticChecker {
         VariableTable lookupTable = env.getVariableTable();
         IRMemberDecl assignee = lookupTable.get(varName);
         if (assignee == null) {
-            notifyError("Cannot assign to uninstantiated variable '" + varName + "'.", varAssigned);
+            notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
         }
         if (op.equals("=")) {
             if (arrayIndex == null) {
