@@ -255,7 +255,13 @@ public class SemanticChecker {
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
         // 5, 6
-        IRMethodDecl md = expr.getIRMethodDecl();
+        MethodTable lookupTable = env.getMethodTable();
+        IRMethodDecl md = lookupTable.get(expr.getName());
+        if (md == null) {
+            notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
+            return;
+        }
+        expr.setType(md.getReturnType());  // NOTE: this means we're not actually completing the IRMethodCallExpressions until we do semantic checking when we change things
         if (md.getReturnType() == IRType.Type.VOID) {
             notifyError("Expression uses return value of void method.", expr);
         }

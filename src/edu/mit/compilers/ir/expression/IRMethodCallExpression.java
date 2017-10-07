@@ -12,10 +12,8 @@ import edu.mit.compilers.ir.decl.IRMethodDecl;
 
 public class IRMethodCallExpression extends IRExpression {
 
-	private IRMethodDecl descriptor;
-
+	private IRType.Type type = null;
 	private final List<IRExpression> arguments;
-
 	private String functionName;
 
 	public IRMethodCallExpression(String descriptorName, List<IRExpression> arguments) {
@@ -40,14 +38,14 @@ public class IRMethodCallExpression extends IRExpression {
 
 	@Override
 	public IRType.Type getType() {
-		return descriptor.getReturnType();
+		return type;
 	}
 
-	public IRMethodDecl getIRMethodDecl() { return this.descriptor; }
 	public List<IRExpression> getArguments() { return this.arguments; }
+	public String getName() { return this.functionName; }
 
-	public void setDescriptor(IRMethodDecl descriptor) {
-		this.descriptor = descriptor;
+	public void setType(IRType.Type t){
+		type = t;
 	}
 
 	@Override
