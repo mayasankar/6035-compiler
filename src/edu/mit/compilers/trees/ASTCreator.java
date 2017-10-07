@@ -106,7 +106,7 @@ public class ASTCreator {
 			ConcreteTree firstChild = tree.getFirstChild();
 			if(firstChild.isNode()) {
 				return new IRLenExpression(firstChild.getRightSibling().getToken());
-			} 
+			}
 			else if(firstChild.getName() == "method_call") {
 				List<IRExpression> arguments = new ArrayList<>();
 				ConcreteTree nextChild = firstChild.getRightSibling();
@@ -170,10 +170,10 @@ public class ASTCreator {
 			return new IRVariableExpression(name, parseExpressionTree(child));
 		}
   }
-  
+
   public static IRStatement parseStatement(ConcreteTree tree) {
     ConcreteTree child = tree.getFirstChild();
-    IRStatement toReturn;
+    IRStatement toReturn = null;
   	if (child.isNode()) {
       int tokentype = child.getToken().getType();
       if (tokentype == DecafParserTokenTypes.TK_return) {
@@ -185,7 +185,7 @@ public class ASTCreator {
         toReturn = IRLoopStatement.continueStatement;
       }
     }
-  	
+
   	String nodeName = tree.getName();
   	switch(nodeName) {
   	case "assign_expr":
@@ -203,14 +203,14 @@ public class ASTCreator {
   		IRExpression methodCall = parseExpressionTree(tree);
   		toReturn = new IRMethodCallStatement(methodCall);
   	case "if_block"://TODO: finish for Arkadiy
-  		
+
   	case "for_block":
   	case "while_block":
   	}
-  	
+
   	return toReturn;
   }
-  
-  
+
+
 
 }

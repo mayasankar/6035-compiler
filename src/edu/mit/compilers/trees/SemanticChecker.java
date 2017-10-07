@@ -20,8 +20,9 @@ import edu.mit.compilers.trees.EnvStack;
 public class SemanticChecker {
 
     private EnvStack env = new EnvStack();
+    private boolean hasError = false;
 
-    public void checkProgram(IRProgram tree){
+    public boolean checkProgram(IRProgram tree){
         notifyError("DEBUG: Checking program for semantic errors.", tree);
         env.push(tree.methods);
         env.push(tree.fields);
@@ -33,9 +34,11 @@ public class SemanticChecker {
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
+        return hasError;
     }
 
     private void notifyError(String error, IRNode problematicNode){
+        hasError = true;
         System.err.println("ERROR " + problematicNode.location() + ": " + error);
     }
 
@@ -79,29 +82,34 @@ public class SemanticChecker {
 
     private void checkMethodTable(MethodTable table){
         // part of 1
+        System.out.println("Debugging: called checkMethodTable().");
         List<IRMethodDecl> methods = table.getMethodList();
-        HashSet<IRMethodDecl> methodsSet = new HashSet<>();
+        HashSet<String> methodsSet = new HashSet<>();
         for (IRMethodDecl met : methods){
-            if (methodsSet.contains(met)){
+            System.out.println("Debugging: methods=" + methods.toString());
+            if (methodsSet.contains(met.getName())){
                  notifyError("Attempted to declare method " + met.getName() +
                  " but a method of that name already exists in the same scope.", met);
             }
             checkIRMethodDecl(met);
-            methodsSet.add(met);
+            System.out.println("Debugging: checked IRMethodDecl " + met.toString());
+            methodsSet.add(met.getName());
         }
     }
 
     private void checkVariableTable(VariableTable table){
         // part of 1
+        System.out.println("Debugging: called checkVariableTable().");
          List<IRMemberDecl> variables = table.getVariableList();
-         HashSet<IRMemberDecl> variablesSet = new HashSet<>();
+         HashSet<String> variablesSet = new HashSet<>();
          for (IRMemberDecl var : variables){
-             if (variablesSet.contains(var)){
+             System.out.println("Debugging: variablesSet=" + variablesSet.toString());
+             if (variablesSet.contains(var.getName())){
                  notifyError("Attempted to declare variable " + var.getName() +
                  " but a variable of that name already exists in the same scope.", var);
              }
              checkIRMemberDecl(var);
-             variablesSet.add(var);
+             variablesSet.add(var.getName());
          }
     }
 
