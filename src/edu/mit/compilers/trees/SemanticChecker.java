@@ -50,11 +50,11 @@ public class SemanticChecker {
         IRMethodDecl mainMethod = program.methods.get("main");
         if (mainMethod == null) {
             notifyError("Program has no main method.", program);
+            return;
         }
         if (mainMethod.getReturnType() != IRType.Type.VOID){
             notifyError("Main method return type is not void.", mainMethod);
         }
-
         if (! mainMethod.getParameters().isEmpty()){
             notifyError("Main method requires input parameters.", mainMethod);
         }
@@ -349,6 +349,7 @@ public class SemanticChecker {
         IRMemberDecl assignee = lookupTable.get(varName);
         if (assignee == null) {
             notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
+            return;
         }
         if (op.equals("=")) {
             if (arrayIndex == null) {
