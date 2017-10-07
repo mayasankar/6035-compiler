@@ -1,0 +1,121 @@
+import printf();
+int gurp ( int a, int b, bool c, int d, int e, int f, bool g, int h ) {
+  int i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, a1, a2, a3, a4;
+  printf ( "top of gurp\n" );
+  j = a * b - e + d;
+  printf ( "done j\n" );
+  i = j - 1;
+  printf ( "done i\n" );
+  j = 3 + i;
+  printf ( "done j\n" );
+  k = i + j - 2;
+  printf ( "done k\n" );
+  l = k - j;
+  printf ( "done k\n" );
+  m = i + k;
+  printf ( "done m\n%d %d\n", k, m );
+  n = i + ( j - ( k - m ) );
+  printf ( "after n\n" );
+  if ( a > 50 ) {
+    o = a + b + l;
+    j = l - m;
+    if ( c ) {
+      l = e + f - ( h + n );
+      f = f - 1;
+      q = o - 3;
+    }
+    else {
+      q = o + 3;
+    }
+    if ( c || g ) {
+      s = f + e + ( h - b );
+    }
+  }
+  else {
+    o = b - a;
+    j = l + m;
+    if ( g ) {
+      f = 3 + ( a - o );
+      q = 3 - o;
+      s = f + q;
+    }
+    else {
+      s = 3 + ( o - a - 2 );
+      q = s + j;
+      f = s + q - q;
+    }
+  }
+  printf ( "after first if\n" );
+  t = e + l - i;
+  a1 = t + j + o;
+  r = t - a1 + m - j;
+  v = l + a1 + ( t - ( q + f ) );
+  if ( g ) {
+    w = 3;
+  }
+  else {
+    w = -1;
+  }
+  printf ( "after second if\n" );
+  u = 99 + n - e + t;
+  y = e - s + n + o + m - e + b - b + e;
+  a2 = a1 + t - n - t;
+  a4 = h + f + d - e;
+  if ( w == -1 ) {
+    a3 = a2 + a4;
+  }
+  else {
+    a3 = a4 - a2;
+  }
+  z = u - v + w;
+  p = 42 - z;
+  x = 0;
+  printf ( "after third if\n" );
+  printf ( "%d", a - i + d + j - e - f + l + m );
+  printf ( " " );
+  printf ( "%d", b - k - h + n + o + q - r - a2 );
+  printf ( " " );
+  printf ( "%d", a4 + s - t + z - y + x + w - a3 );
+  printf ( " " );
+  if ( c ) {
+    printf ( "%d", p + u - v + a1 );
+  }
+  else {
+    if ( g ) {
+      printf ( "%d", u - v + a1 - p );
+    }
+    else {
+      printf ( "%d", a1 + v + p - u );
+    }
+  }
+  printf ( "after fourth if\n" );
+  return a - b + d + e + f + h + i + j + k + l + m - n + o - p + q - r + s - t + u - v + w - x + y - z + a1 + a2 + a3 - a4;
+}
+void main ( ) {
+  int y, z, a, b;
+  int x;
+  for ( x = 3; x < 5; x += 1 ) {
+    printf ( "Top of loop\n" );
+    z = gurp ( 1 + x, 0-x, true, 3, 2 + x, 1 - x, true, 4 - x );
+    printf ( "done z gurp\n" );
+    printf ( "%d", x );
+    printf ( "\n" );
+    z = gurp ( 1 + x, 0-x, true, 3, 2 + x, x + 1, true, 0 );
+    printf ( "done 0z gurp\n" );
+    y = gurp ( 3 - x, -8 + x, false, 12 - 3 * x, 16 + x, 1, true, 8 - x );
+    printf ( "done y gurp\n" );
+    a = gurp ( 2 - x, 6 + x, false, x * -3, 1, 3 - x * 2, false, 5 - x );
+    printf ( "done a gurp\n" );
+    b = gurp ( -3, 8, true, 7 - x, x - 4, 2, false, 6 - x * 9 );
+    printf ( "done b gurp\n" );
+    printf ( "After gurps\n" );
+    printf ( "%d", y );
+    printf ( " " );
+    printf ( "%d", z );
+    printf ( " " );
+    printf ( "%d", a );
+    printf ( " " );
+    printf ( "%d", b );
+    printf ( "\n" );
+  }
+}

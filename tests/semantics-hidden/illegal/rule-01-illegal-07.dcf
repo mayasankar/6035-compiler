@@ -1,0 +1,12 @@
+// 1. No identifier can be declared twice in the same scope.
+import printf;
+
+bool foo;
+int printf;
+
+void main(){
+    int a;
+    if (foo){
+        a = printf;
+    }
+}

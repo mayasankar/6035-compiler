@@ -1,0 +1,10 @@
+// 14. The <expr> in if statement must have type bool.
+int foo ( ) {
+  return 0;
+}
+void main ( ) {
+  if ( foo ( ) ) {
+  }
+  else {
+  }
+}

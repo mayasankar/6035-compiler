@@ -1,0 +1,33 @@
+import printf();
+void main ( ) {
+  int i, sum;
+  int j;
+  sum = 0;
+  for ( j = 0; j < 10; j ++ ) {
+    sum += j;
+  }
+  if ( sum != 45 ) {
+    printf ( "ERROR: for loop is bad (1)\n" );
+  }
+  i = 11;
+  for ( j = 10; j < 0; j += 1 ) {
+    i += 1;
+  }
+  if ( i != 11 ) {
+    printf ( "ERROR: for loop is bad (2)\n" );
+    printf ( "%d\n", i );
+  }
+  if ( 1 > 2 ) {
+    printf ( "ERROR: true branch is bad (2)\n" );
+  }
+  else {
+    // don't do anything here
+  }
+  if ( 1 < 2 ) {
+    // don't do anything here
+  }
+  else {
+    printf ( "ERROR: else branch is bad (2)\n" );
+  }
+  printf ( "control flow OK if no previous output\n" );
+}

@@ -1,0 +1,8 @@
+// 13. The argument of the len operator must be an array variable
+
+int a;
+
+void main() {
+    int b;
+    b = len(a);
+}

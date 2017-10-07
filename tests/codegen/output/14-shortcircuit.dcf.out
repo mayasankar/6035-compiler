@@ -1,0 +1,10 @@
+hello world from main
+some values (13,14): 13 14
+args: 13+13+13+14+14+14=81
+returned a variable, value is 81, should be 81
+returned a constant, value is 1, should be 1
+successfully did a short-circuited and.
+successfully did a short-circuited and.
+successfully did a short-circuited or.
+successfully did a short-circuited or.
+sum from 0 to 99 is 4950, should be 4950

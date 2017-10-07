@@ -1,0 +1,9 @@
+// 7. String literals and array variables may not be used as arguments to non-import methods.
+import printf;
+void print ( int x ) {
+
+}
+
+void main(){
+    print("Error");
+}

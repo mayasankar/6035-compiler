@@ -1,0 +1,5 @@
+// 16. The operands of <rel_op>s must have type int.
+void main ( ) {
+  bool b;
+  b = ( 1 > 2 ) <= ( 3 > 4 );
+}

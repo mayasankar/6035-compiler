@@ -1,0 +1,7 @@
+// 6. If a method call is used as an expression, the method must return a result.
+void foo ( ) {
+}
+void main ( ) {
+  int x;
+  x = 2 + foo ( );
+}

@@ -1,0 +1,9 @@
+// OK
+void main ( ) {
+  bool b;
+  while (b) {
+    int b;
+    b = 0;
+  }
+  b = true;
+}

@@ -1,0 +1,13 @@
+// OK
+void x ( ) {
+}
+void main ( ) {
+  bool x;
+  while(x) {
+    int x;
+    bool y;
+    while (y) {
+      int x;
+    }
+  }
+}

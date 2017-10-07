@@ -1,0 +1,8 @@
+// 13. The return type of the len operator must be an int
+
+int a[13];
+
+void main() {
+    bool b;
+    b = len(a);
+}

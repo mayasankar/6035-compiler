@@ -1,0 +1,8 @@
+// OK - array index is an int
+int a[10];
+int i ( ) {
+  return 0;
+}
+void main ( ) {
+  a[i ( ) ] = 1;
+}

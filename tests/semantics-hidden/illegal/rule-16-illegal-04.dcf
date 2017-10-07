@@ -1,0 +1,8 @@
+// 16. The operand of unary must have type int.
+bool foo ( ) {
+  return true;
+}
+void main ( ) {
+  int i;
+  i = -foo ( );
+}

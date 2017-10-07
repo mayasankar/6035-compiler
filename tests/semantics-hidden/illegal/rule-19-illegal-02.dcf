@@ -1,0 +1,5 @@
+// 19. The <location> and <expr> in an assignment must have the same type.
+bool b[10];
+void main ( ) {
+  b[1] = 10;
+}
