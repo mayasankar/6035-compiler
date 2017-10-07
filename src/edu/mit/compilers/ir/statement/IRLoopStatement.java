@@ -6,11 +6,15 @@ import java.util.List;
 import edu.mit.compilers.ir.IRNode;
 
 public class IRLoopStatement extends IRStatement {
-  IRStatement loop;
+  private IRStatement loop;
 
   public IRLoopStatement(IRStatement.StatementType st) {
     statementType = st;
   }
+  
+  public static IRLoopStatement breakStatement = new IRLoopStatement(IRStatement.StatementType.BREAK);
+
+  public static IRLoopStatement continueStatement = new IRLoopStatement(IRStatement.StatementType.CONTINUE);
 
   public void setLoop(IRStatement loop) {
     this.loop = loop;
