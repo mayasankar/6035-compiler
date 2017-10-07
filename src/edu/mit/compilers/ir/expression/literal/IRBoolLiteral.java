@@ -5,11 +5,13 @@ import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.expression.IRExpression;
 
 public class IRBoolLiteral extends IRLiteral<Boolean> {
 
 	public IRBoolLiteral(Boolean value) {
 		super(value);
+		expressionType = IRExpression.ExpressionType.BOOL_LITERAL;
 	}
 
 	@Override

@@ -11,11 +11,8 @@ import edu.mit.compilers.symbol_tables.VariableTable;
 public class IRForStatement extends IRStatement {
 
 	private  IRAssignStatement initializer;
-
 	private  IRExpression condition;
-
 	private  IRAssignStatement stepFunction;
-
 	private  IRBlock block;
 
 	public IRForStatement(ConcreteTree tree, VariableTable parentScope) {

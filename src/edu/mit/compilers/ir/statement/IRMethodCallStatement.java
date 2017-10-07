@@ -20,8 +20,10 @@ public class IRMethodCallStatement extends IRStatement {
   
   public IRMethodCallStatement(ConcreteTree tree) {
 		statementType = IRStatement.StatementType.METHOD_CALL;
-    methodCall = new IRMethodCallExpression(tree);
-	}
+        methodCall = new IRMethodCallExpression(tree);
+    }
+
+    public IRMethodCallExpression getMethodCall() { return methodCall; }
 
   @Override
   public String toString() {

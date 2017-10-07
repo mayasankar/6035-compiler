@@ -17,11 +17,13 @@ public class IRUnaryOpExpression extends IRExpression {
 	private IRExpression argument;
 
 	public IRUnaryOpExpression(Token operator, IRExpression argument) {
+		expressionType = IRExpression.ExpressionType.UNARY;
 		this.operator = operator;
 		this.argument = argument;
 	}
 
 	public IRUnaryOpExpression(ConcreteTree tree) {
+		expressionType = IRExpression.ExpressionType.UNARY;
 		setLineNumbers(tree);
 		ConcreteTree exprChild = tree.getLastChild();
 		ConcreteTree opChild = exprChild.getLeftSibling();

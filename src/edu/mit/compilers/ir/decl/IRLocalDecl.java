@@ -10,6 +10,10 @@ public class IRLocalDecl extends IRMemberDecl {
 		super(irType, id);
 	}
 
+	public IRLocalDecl(IRType.Type irType, Token id, int length) {
+		super(irType, id, length);
+	}
+
 	@Override
 	public String toString() {
 		return this.getType() + " " + this.getName();

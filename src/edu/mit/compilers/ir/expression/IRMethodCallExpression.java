@@ -19,12 +19,14 @@ public class IRMethodCallExpression extends IRExpression {
 	private String functionName;
 
 	public IRMethodCallExpression(String descriptorName, List<IRExpression> arguments) {
+		expressionType = IRExpression.ExpressionType.METHOD_CALL;
 		this.arguments = Collections.unmodifiableList(arguments);
 		this.functionName = descriptorName;
 		//TODO: some code to get the method descriptor
 	}
 
 	public IRMethodCallExpression(ConcreteTree tree) {
+		expressionType = IRExpression.ExpressionType.METHOD_CALL;
 		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
 		functionName = child.getToken().getText();
