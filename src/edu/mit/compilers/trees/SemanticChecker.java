@@ -20,23 +20,28 @@ import edu.mit.compilers.trees.EnvStack;
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
+    //Should there be an errorStream and outputStream associated with this class?
 
     private EnvStack env = new EnvStack();
     private boolean hasError = false;
 
     public boolean checkProgram(IRProgram tree){
         //System.out.println("Debugging: starts checkProgram().");
-        notifyError("DEBUG: Checking program for semantic errors.", tree);
+        //notifyError("DEBUG: Checking program for semantic errors.", tree);
+        System.out.println("DEBUG: Checking program for semantic errors");
         env.push(tree.methods);
         env.push(tree.fields);
         env.push(IRType.Type.VOID);
-        checkImportsAndGlobals(tree.imports, tree.fields);
+        checkGlobals(tree.fields, tree.methods);
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
+        if (! hasError) { // maybe keep track of how many errors we've found?
+          System.out.println("No semantic errors found :)");
+        }
         return hasError;
     }
 
@@ -58,26 +63,23 @@ public class SemanticChecker {
             notifyError("Main method return type is not void.", mainMethod);
         }
         if (! mainMethod.getParameters().isEmpty()){
-            notifyError("Main method requires input parameters.", mainMethod);
+            notifyError("Main method cannot have parameters.", mainMethod);
         }
     }
 
-    private void checkImportsAndGlobals(List<IRImportDecl> imports, VariableTable varTable){
+    private void checkGlobals(VariableTable varTable, MethodTable methodTable){
         // first part of 1
         // check that they're all distinct
         List<IRMemberDecl> variables = varTable.getVariableList();
-        HashSet<String> namesSet = new HashSet<>();
-        for (IRImportDecl imp : imports){
-            if (namesSet.contains(imp.getName())){
-                notifyError("Attempted to import an identifier previously imported.", imp);
-            }
-            namesSet.add(imp.getName());
+        List<IRMethodDecl> methods = methodTable.getMethodList();
+        HashSet<String> methodsSet = new HashSet<>();
+        for (IRMethodDecl met : methods) {
+          methodsSet.add(met.getName());
         }
-        for (IRMemberDecl imp : variables){
-            if (namesSet.contains(imp.getName())){
-                notifyError("Attempted to declare a global variable that conflicts with an import name.", imp);
+        for (IRMemberDecl var : variables){
+            if (methodsSet.contains(var.getName())){
+                notifyError("Attempted to declare variable and function of the same name.", var);
             }
-            namesSet.add(imp.getName());
         }
     }
 
@@ -96,11 +98,14 @@ public class SemanticChecker {
         HashSet<String> methodsSet = new HashSet<>();
         for (IRMethodDecl met : methods){
             //System.out.println("Debugging: methods=" + methods.toString());
+            // it would be nice if we could
             if (methodsSet.contains(met.getName())){
                  notifyError("Attempted to declare method " + met.getName() +
                  " but a method of that name already exists in the same scope.", met);
             }
-            checkIRMethodDecl(met);
+            if (!met.isImport()) {
+                checkIRMethodDecl(met);
+            }
             //System.out.println("Debugging: checked IRMethodDecl " + met.toString());
             methodsSet.add(met.getName());
         }
@@ -256,7 +261,7 @@ public class SemanticChecker {
         VariableTable lookupTable = env.getVariableTable();
         IRMemberDecl argument = lookupTable.get(argumentName);
         if (argument == null) {
-            notifyError("Cannot apply len() to uninstantiated variable '" + argumentName + "'.", expr);
+            notifyError("Cannot apply len() to undeclared variable '" + argumentName + "'.", expr);
         }
         else if (argument.getType() != IRType.Type.INT_ARRAY && argument.getType() != IRType.Type.BOOL_ARRAY) {
             notifyError("Cannot apply len() to non-array-type variable '" + argumentName + "'.", expr);
@@ -264,6 +269,10 @@ public class SemanticChecker {
     }
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
+      checkIRMethodCallExpression(expr, true);
+    }
+
+    private void checkIRMethodCallExpression(IRMethodCallExpression expr, boolean isInExpression) {
         // 5, 6
         MethodTable lookupTable = env.getMethodTable();
 
@@ -273,23 +282,29 @@ public class SemanticChecker {
             return;
         }
 
-        expr.setType(md.getReturnType());  // NOTE: this means we're not actually completing the IRMethodCallExpressions until we do semantic checking when we change things
-        if (md.getReturnType() == IRType.Type.VOID) {
-            notifyError("Expression uses return value of void method.", expr);
+        // NOTE: the following line means we're not actually completing the
+        // IRMethodCallExpressions until we do semantic checking when we change things
+        expr.setType(md.getReturnType());
+
+        if (isInExpression && md.getReturnType() == IRType.Type.VOID) {
+            notifyError("Expression uses method with return value of void.", expr);
         }
-        List<IRMemberDecl> parameters = md.getParameters().getVariableList();
-        List<IRExpression> arguments = expr.getArguments();
-        if (parameters.size() != arguments.size()) {
-            notifyError("Method " + md.getName() + " called with " + arguments.size() +
-            " parameters; needs " + parameters.size() + ".", expr);
-        }
-        for (int i = 0; i < parameters.size(); i++) {
-            checkIRExpression(arguments.get(i));
-            IRType.Type parType = parameters.get(i).getType();
-            IRType.Type argType = arguments.get(i).getType();
-            if (parType != argType) {
-                notifyError("Method " + md.getName() + "requires parameter " + parameters.get(i).getName() +
-                " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
+        // == CODE TO CHECK PARAMETER LISTS ARE THE SAME
+        if (!md.isImport()) { // don't check imports match parameter lengths
+            List<IRMemberDecl> parameters = md.getParameters().getVariableList();
+            List<IRExpression> arguments = expr.getArguments();
+            if (parameters.size() != arguments.size()) {
+                notifyError("Method " + md.getName() + " called with " + arguments.size() +
+                " parameters; needs " + parameters.size() + ".", expr);
+            }
+            for (int i = 0; i < parameters.size(); i++) {
+                checkIRExpression(arguments.get(i));
+                IRType.Type parType = parameters.get(i).getType();
+                IRType.Type argType = arguments.get(i).getType();
+                if (parType != argType) {
+                    notifyError("Method " + md.getName() + " requires parameter " + parameters.get(i).getName() +
+                    " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
+                }
             }
         }
     }
@@ -390,10 +405,10 @@ public class SemanticChecker {
         }
         VariableTable lookupTable = env.getVariableTable();
         IRMemberDecl assignee = lookupTable.get(varName);
-        if (assignee == null) {
-            notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
-            return;
-        }
+        // if (assignee == null) { // redundant given you're running checkIRVariableExpression
+        //     notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
+        //     return;
+        // }
         if (op.equals("=")) {
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
@@ -413,7 +428,7 @@ public class SemanticChecker {
                    !((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT) // it's not the case that we're putting an int in an int_array
                    || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) { // it's also not the case that we're putting a bool in a bool_array
                        notifyError("Cannot assign a value of type " + value.getType().toString() +
-                       " to an array location of type " + assignee.getType() + ".", value);
+                       " to a location in an " + assignee.getType() + ".", value);
                    }
             }
         }
@@ -484,7 +499,7 @@ public class SemanticChecker {
     }
 
     private void checkIRMethodCallStatement(IRMethodCallStatement statement) {
-        checkIRMethodCallExpression(statement.getMethodCall());
+        checkIRMethodCallExpression(statement.getMethodCall(), false);
     }
 
     private void checkIRReturnStatement(IRReturnStatement statement){

@@ -2,6 +2,7 @@ package edu.mit.compilers.trees;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigInteger;
 
 import antlr.Token;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
@@ -125,7 +126,7 @@ public class ASTCreator {
 				int tokentype = token.getType();
 				IRExpression toReturn = null;
 				if (tokentype == DecafParserTokenTypes.INT) {
-					toReturn = new IRIntLiteral(Integer.parseInt(token.getText()));
+					toReturn = new IRIntLiteral(new BigInteger(token.getText()));
 				} else if (tokentype == DecafParserTokenTypes.CHAR) {
 					String charstring = token.getText();
 					charstring = charstring.substring(1, charstring.length()-1);
@@ -139,7 +140,7 @@ public class ASTCreator {
 							character = charstring.charAt(1);
 						}
 					}
-					toReturn = new IRIntLiteral((int) character);
+					toReturn = new IRIntLiteral(BigInteger.valueOf((int) character));
 				} else if (tokentype == DecafParserTokenTypes.TK_true) {
 					toReturn =  new IRBoolLiteral(true);
 				} else if (tokentype == DecafParserTokenTypes.TK_false) {
