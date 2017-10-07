@@ -104,17 +104,19 @@ public class SemanticChecker {
     }
 
     private void checkClassTable(ClassTable table) {
-        // not actually todo because we don't need to do classes
+        System.err.println("Unimplemented method checkClassTable() should never be called.");
     }
 
     // ------- DECL CHECKS ----------
 
     private void checkIRFieldDecl(IRFieldDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRFieldDecl() should never be called.");
     }
 
     private void checkIRLocalDecl(IRLocalDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRLocalDecl() should never be called.");
     }
 
     private void checkIRMemberDecl(IRMemberDecl variable) {
@@ -160,6 +162,7 @@ public class SemanticChecker {
 
     private void checkIRParameterDecl(IRParameterDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRParameterDecl() should never be called.");
     }
 
     // ------- EXPRESSION CHECKS ----------
@@ -398,7 +401,7 @@ public class SemanticChecker {
     }
 
     private void checkIRMethodCallStatement(IRMethodCallStatement statement) {
-        // TODO
+        checkIRMethodCallExpression(statement.getMethodCall());
     }
 
     private void checkIRReturnStatement(IRReturnStatement statement){
