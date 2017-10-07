@@ -53,8 +53,14 @@ public abstract class IRExpression extends IRNode {
 					int tokentype = token.getType();
 					IRExpression toReturn = null;
 					if (tokentype == DecafParserTokenTypes.INT) {
-						// TODO make sure this never throws an error parsing
-						toReturn = new IRIntLiteral(new BigInteger(token.getText()));
+						String numAsString = token.getText();
+						int radix = 10;
+						System.out.println(numAsString);
+						if (numAsString.length() > 1 && numAsString.substring(0,2).equals("0x")) {
+							numAsString = numAsString.substring(2);
+							radix = 16;
+						}
+						toReturn = new IRIntLiteral(new BigInteger(numAsString, radix));
 					} else if (tokentype == DecafParserTokenTypes.CHAR) {
 						String charstring = token.getText();
 						charstring = charstring.substring(1, charstring.length()-1);
