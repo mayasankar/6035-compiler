@@ -87,8 +87,14 @@ public class ConcreteTree {
       child.initializeLineNumbers();
       child = child.rightSibling;
     }
-    lineNumber = firstChild.lineNumber;
-    columnNumber = firstChild.columnNumber;
+    if (firstChild != null) {
+        lineNumber = firstChild.lineNumber;
+        columnNumber = firstChild.columnNumber;
+    }
+    else {
+        System.out.println("Debugging: name is " + getName());
+        // TODO for mayars what should the line/col numbers be assigned to in the case of an empty block? i.e. method(){}
+    }
   }
 
   // deletes any nodes of the given tokentype. TODO test that it is correct
