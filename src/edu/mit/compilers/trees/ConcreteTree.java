@@ -71,7 +71,7 @@ public class ConcreteTree {
     for (int i = 0; i < indent; ++i) {
       System.out.print("  ");
     }
-    System.out.println(nodeName);
+    System.out.println(nodeName + " " + lineNumber + " " + columnNumber);
     if (firstChild != null) {
       firstChild.print(indent + 1);
     }
@@ -126,6 +126,8 @@ public class ConcreteTree {
   // one child. Useful for the case of expr -> expr_8 -> ... -> expr_2 when
   // parsing, for example, a * b as an expr.
   public void compressNodes(String name) {
+    //System.out.println(nodeName + " " + lineNumber + " " + columnNumber);
+    ConcreteTree child;
     if (nodeName.equals(name)) {
       if (firstChild != null && firstChild == lastChild) {
         firstChild.parent = parent;
@@ -142,8 +144,10 @@ public class ConcreteTree {
           rightSibling.leftSibling = firstChild;
         }
       }
+      child = firstChild.firstChild;
+    } else {
+      child = firstChild;
     }
-    ConcreteTree child = firstChild;
     while (child != null) {
       child.compressNodes(name);
       child = child.rightSibling;

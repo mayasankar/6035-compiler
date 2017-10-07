@@ -48,12 +48,12 @@ public class ASTCreator {
     tree.deleteNodes(DecafParserTokenTypes.OP_TERN_2);
     // contract along unnecessary edges
     tree.compressNodes("type");
+    tree.compressNodes("op_pm");
+    tree.compressNodes("bool_literal");
     tree.compressNodes("expr");
     for (int i = 0; i <= 8; ++i) {
       tree.compressNodes("expr_" + i);
     }
-    tree.compressNodes("op_pm");
-    tree.compressNodes("bool_literal");
   }
 
   public static IRProgram getIR(ConcreteTree tree) {

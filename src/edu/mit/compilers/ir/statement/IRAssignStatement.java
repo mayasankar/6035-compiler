@@ -26,6 +26,9 @@ public class IRAssignStatement extends IRStatement {
 		varAssigned = IRVariableExpression.makeIRVariableExpression(child);
 		child = child.getRightSibling();
 		operator = child.getToken();
+		if (operator.getType() == DecafParserTokenTypes.OP_INC || operator.getType() == DecafParserTokenTypes.OP_DEC) {
+			return;
+		}
 		child = child.getRightSibling();
 		value = IRExpression.makeIRExpression(child);
 	}

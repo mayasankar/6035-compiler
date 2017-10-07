@@ -28,7 +28,7 @@ public class SemanticChecker {
     public boolean checkProgram(IRProgram tree){
         //System.out.println("Debugging: starts checkProgram().");
         //notifyError("DEBUG: Checking program for semantic errors.", tree);
-        System.out.println("DEBUG: Checking program for semantic errors");
+        System.err.println("DEBUG: Checking program for semantic errors");
         env.push(tree.methods);
         env.push(tree.fields);
         env.push(IRType.Type.VOID);
@@ -40,7 +40,7 @@ public class SemanticChecker {
         env.popVariableTable();
         env.popReturnType();
         if (! hasError) { // maybe keep track of how many errors we've found?
-          System.out.println("No semantic errors found :)");
+          System.err.println("No semantic errors found :)");
         }
         return hasError;
     }
