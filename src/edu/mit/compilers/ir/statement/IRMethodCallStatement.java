@@ -10,10 +10,12 @@ import edu.mit.compilers.trees.ConcreteTree;
 public class IRMethodCallStatement extends IRStatement {
   private IRMethodCallExpression methodCall;
 
-  public IRMethodCallStatement(ConcreteTree tree) {
+    public IRMethodCallStatement(ConcreteTree tree) {
 		statementType = IRStatement.StatementType.METHOD_CALL;
-    methodCall = new IRMethodCallExpression(tree);
-	}
+        methodCall = new IRMethodCallExpression(tree);
+    }
+
+    public IRMethodCallExpression getMethodCall() { return methodCall; }
 
   @Override
   public String toString() {

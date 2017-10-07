@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 2,14
+// write semantic checks 2
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -26,7 +26,7 @@ public class SemanticChecker {
         env.push(tree.methods);
         env.push(tree.fields);
         env.push(IRType.Type.VOID);
-        checkImports(tree.imports);
+        checkImportsAndGlobals(tree.imports, tree.fields);
         checkVariableTable(tree.fields);
         checkMethodTable(tree.methods);
         checkHasMain(tree);
@@ -56,41 +56,69 @@ public class SemanticChecker {
         }
     }
 
-    private void checkImports(List<IRImportDecl> imports){
+    private void checkImportsAndGlobals(List<IRImportDecl> imports, VariableTable varTable){
         // first part of 1
         // check that they're all distinct
-        HashSet<IRImportDecl> importsSet = new HashSet<>();
+        List<IRMemberDecl> variables = varTable.getVariableList();
+        HashSet<String> namesSet = new HashSet<>();
         for (IRImportDecl imp : imports){
-            if (importsSet.contains(imp)){
+            if (namesSet.contains(imp.getName())){
                 notifyError("Attempted to import an identifier previously imported.", imp);
             }
-        importsSet.add(imp);
+            namesSet.add(imp.getName());
         }
-        // TODO maybe we also need to check these against global variables?
+        for (IRMemberDecl imp : variables){
+            if (namesSet.contains(imp.getName())){
+                notifyError("Attempted to declare a global variable that conflicts with an import name.", imp);
+            }
+            namesSet.add(imp.getName());
+        }
     }
 
     // ------- TABLE CHECKS ----------
 
     private void checkMethodTable(MethodTable table){
-        // TODO
+        // part of 1
+        List<IRMethodDecl> methods = table.getMethodList();
+        HashSet<IRMethodDecl> methodsSet = new HashSet<>();
+        for (IRMethodDecl met : methods){
+            if (methodsSet.contains(met)){
+                 notifyError("Attempted to declare method " + met.getName() +
+                 " but a method of that name already exists in the same scope.", met);
+            }
+            checkIRMethodDecl(met);
+            methodsSet.add(met);
+        }
     }
 
     private void checkVariableTable(VariableTable table){
-        // TODO
+        // part of 1
+         List<IRMemberDecl> variables = table.getVariableList();
+         HashSet<IRMemberDecl> variablesSet = new HashSet<>();
+         for (IRMemberDecl var : variables){
+             if (variablesSet.contains(var)){
+                 notifyError("Attempted to declare variable " + var.getName() +
+                 " but a variable of that name already exists in the same scope.", var);
+             }
+             checkIRMemberDecl(var);
+             variablesSet.add(var);
+         }
     }
 
     private void checkClassTable(ClassTable table) {
-        // not actually todo because we don't need to do classes
+        System.err.println("Unimplemented method checkClassTable() should never be called.");
     }
 
     // ------- DECL CHECKS ----------
 
     private void checkIRFieldDecl(IRFieldDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRFieldDecl() should never be called.");
     }
 
     private void checkIRLocalDecl(IRLocalDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRLocalDecl() should never be called.");
     }
 
     private void checkIRMemberDecl(IRMemberDecl variable) {
@@ -136,6 +164,7 @@ public class SemanticChecker {
 
     private void checkIRParameterDecl(IRParameterDecl param) {
         // low priority because we don't seem to be using this?
+        System.err.println("Unimplemented method checkIRParameterDecl() should never be called.");
     }
 
     // ------- EXPRESSION CHECKS ----------
@@ -392,7 +421,7 @@ public class SemanticChecker {
     }
 
     private void checkIRMethodCallStatement(IRMethodCallStatement statement) {
-        // TODO
+        checkIRMethodCallExpression(statement.getMethodCall());
     }
 
     private void checkIRReturnStatement(IRReturnStatement statement){
