@@ -82,28 +82,28 @@ public class SemanticChecker {
 
     private void checkMethodTable(MethodTable table){
         // part of 1
-        System.out.println("Debugging: called checkMethodTable().");
+        //System.out.println("Debugging: called checkMethodTable().");
         List<IRMethodDecl> methods = table.getMethodList();
         HashSet<String> methodsSet = new HashSet<>();
         for (IRMethodDecl met : methods){
-            System.out.println("Debugging: methods=" + methods.toString());
+            //System.out.println("Debugging: methods=" + methods.toString());
             if (methodsSet.contains(met.getName())){
                  notifyError("Attempted to declare method " + met.getName() +
                  " but a method of that name already exists in the same scope.", met);
             }
             checkIRMethodDecl(met);
-            System.out.println("Debugging: checked IRMethodDecl " + met.toString());
+            //System.out.println("Debugging: checked IRMethodDecl " + met.toString());
             methodsSet.add(met.getName());
         }
     }
 
     private void checkVariableTable(VariableTable table){
         // part of 1
-        System.out.println("Debugging: called checkVariableTable().");
          List<IRMemberDecl> variables = table.getVariableList();
+         //System.out.println("Debugging: called checkVariableTable(). variables=" + variables.toString());
          HashSet<String> variablesSet = new HashSet<>();
          for (IRMemberDecl var : variables){
-             System.out.println("Debugging: variablesSet=" + variablesSet.toString());
+             //System.out.println("Debugging: variablesSet=" + variablesSet.toString());
              if (variablesSet.contains(var.getName())){
                  notifyError("Attempted to declare variable " + var.getName() +
                  " but a variable of that name already exists in the same scope.", var);
@@ -150,6 +150,7 @@ public class SemanticChecker {
         // 7
         IRType.Type returnType = method.getReturnType();
         VariableTable parameters = method.getParameters();
+        //System.out.println("Debugging: called checkIRMethodDecl(). parameters=" + parameters.toString());
 
         env.push(parameters);
         env.push(returnType);
@@ -399,6 +400,8 @@ public class SemanticChecker {
 
     private void checkIRBlock(IRBlock block){
       env.push(block.getFields());
+      checkVariableTable(block.getFields());
+      // TODO arkadiy wants to fix the fact that there isn't a direct getVariableList method from IRBlock
       for (IRStatement s : block.getStatements()){
         checkIRStatement(s);
       }
