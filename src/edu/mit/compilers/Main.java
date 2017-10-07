@@ -80,11 +80,11 @@ class Main {
         }
         ConcreteTree tree = parser.getParseTree();
         ASTCreator.simplifyTree(tree);
+        IRProgram ir = ASTCreator.getIR(tree);
         if (CLI.debug) {
             tree.print();
+            System.out.println(ir);
         }
-        IRProgram ir = ASTCreator.getIR(tree);
-        System.out.println(ir);
 
         SemanticChecker checker = new SemanticChecker();
         if (checker.checkProgram(ir)) {
