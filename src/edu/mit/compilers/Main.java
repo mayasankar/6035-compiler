@@ -94,6 +94,7 @@ class Main {
     } catch(Exception e) {
       // print the error:
       System.err.println(CLI.infile+" "+e);
+      e.printStackTrace();
     }
   }
 }
