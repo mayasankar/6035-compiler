@@ -13,6 +13,7 @@ public class IRVariableExpression extends IRExpression {
 
 	private String variableName;
 	private IRExpression arrayIndex = null;
+	private IRType.Type type = null;
 
 	public static IRVariableExpression makeIRVariableExpression(ConcreteTree tree) { // TODO make constructor
 		if (tree == null) {
@@ -55,7 +56,11 @@ public class IRVariableExpression extends IRExpression {
 
 	@Override
 	public IRType.Type getType() {
-		return  null;//IRType.getTypeFromDescriptor(variable.getType()); TODO: This will complain until Variables have the right type
+		return type;
+	}
+
+	public void setType(IRType.Type t) {
+		type = t;
 	}
 
 	@Override

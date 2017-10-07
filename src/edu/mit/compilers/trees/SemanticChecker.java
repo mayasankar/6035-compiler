@@ -319,6 +319,7 @@ public class SemanticChecker {
         // 10, 11
         VariableTable table = env.getVariableTable();
         IRMemberDecl decl = table.get(var.getName());
+        var.setType(decl.getType()); // NOTE: this means we're not actually completing the IRVariableExpressions until we do semantic checking when we change things
         IRExpression idxExpr = var.getIndexExpression();
         if (decl == null) {
           notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
@@ -345,8 +346,11 @@ public class SemanticChecker {
         checkIRVariableExpression(varAssigned);
         String op = statement.getOperator();
         IRExpression value = statement.getValue();
-        if (op != "++" && op != "--"){
+        if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
+            if (value.getType() == null){
+                System.out.println("Debugging: null value.getType(). value=" + value.toString());
+            }
         }
 
         String varName = varAssigned.getName();
