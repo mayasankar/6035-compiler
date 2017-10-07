@@ -22,7 +22,9 @@ public class IRTernaryOpExpression extends IRExpression {
 		this.falseExpression = falseExpression;
 	}
 
-	public IRTernaryOpExpression(ConcreteTree tree) { // TODO make recursive
+	public IRTernaryOpExpression(ConcreteTree tree) { // TODO for mayars make recursive
+		//tree.print();
+		//System.out.println();
 		expressionType = IRExpression.ExpressionType.TERNARY;
 		setLineNumbers(tree);
 		ConcreteTree child = tree.getFirstChild();
@@ -47,10 +49,9 @@ public class IRTernaryOpExpression extends IRExpression {
 		return Arrays.asList(condition, trueExpression, falseExpression);
 	}
 
-  // TODO uncomment when expressions cannot be null.
-	// @Override
-	// public String toString() {
-	// 	return condition + " ? " + trueExpression + " : " + falseExpression;
-	// }
+	@Override
+	public String toString() {
+		return condition + " ? " + trueExpression + " : " + falseExpression;
+	}
 
 }

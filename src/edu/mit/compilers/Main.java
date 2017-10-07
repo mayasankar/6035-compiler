@@ -79,8 +79,8 @@ class Main {
           System.exit(1);
         }
         ConcreteTree tree = parser.getParseTree();
-        ASTCreator.simplifyTree(tree);
         if (CLI.debug) {
+          ASTCreator.simplifyTree(tree);
           tree.print();
         }
         IRProgram ir = ASTCreator.getIR(tree);
