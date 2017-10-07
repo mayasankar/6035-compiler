@@ -11,6 +11,23 @@ import edu.mit.compilers.ir.expression.literal.*;
 public abstract class IRExpression extends IRNode {
 	public abstract IRType.Type getType();
 
+	public static enum ExpressionType {
+		UNSPECIFIED,
+		BOOL_LITERAL,
+		INT_LITERAL,
+		STRING_LITERAL,
+		UNARY,
+		BINARY,
+		TERNARY,
+		LEN,
+		METHOD_CALL,
+		VARIABLE,
+	}
+
+	protected ExpressionType expressionType = ExpressionType.UNSPECIFIED;
+
+	public ExpressionType getExpressionType() { return expressionType; }
+
 	public static IRExpression makeIRExpression(ConcreteTree tree) {
 		if (tree.isNode()) { // TODO deal with case that string has escaped characters
 			String text = tree.getToken().getText();

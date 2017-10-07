@@ -14,7 +14,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// write semantic checks 1,2,14
+// write semantic checks 2,14
 // test  semantic checks 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 
 public class SemanticChecker {
@@ -177,7 +177,25 @@ public class SemanticChecker {
     }
 
     private void checkIRExpression(IRExpression expr) {
-        // TODO
+        switch(expr.getExpressionType()) {
+          case BOOL_LITERAL: case INT_LITERAL: case STRING_LITERAL: {
+            return;
+          } case UNARY: {
+            checkIRUnaryOpExpression((IRUnaryOpExpression) expr); break;
+          } case BINARY: {
+            checkIRBinaryOpExpression((IRBinaryOpExpression) expr); break;
+          } case TERNARY: {
+            checkIRTernaryOpExpression((IRTernaryOpExpression) expr); break;
+          } case LEN: {
+            checkIRLenExpression((IRLenExpression) expr); break;
+          } case METHOD_CALL: {
+            checkIRMethodCallExpression((IRMethodCallExpression) expr); break;
+          } case VARIABLE: {
+            checkIRVariableExpression((IRVariableExpression) expr); break;
+          } default: {
+            notifyError("IR error: UNSPECIFIED expr", expr);
+          }
+        }
     }
 
     private void checkIRLenExpression(IRLenExpression expr) {

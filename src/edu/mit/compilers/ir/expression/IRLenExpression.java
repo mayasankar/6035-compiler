@@ -12,6 +12,7 @@ public class IRLenExpression extends IRExpression {
   private Token id; // what you are taking the length of
 
   public IRLenExpression(Token id) {
+    expressionType = IRExpression.ExpressionType.LEN;
     this.id = id;
   }
 

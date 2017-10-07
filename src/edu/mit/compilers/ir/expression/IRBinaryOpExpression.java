@@ -19,12 +19,14 @@ public class IRBinaryOpExpression extends IRExpression{
 	private Token operator;
 
 	public IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
+		expressionType = IRExpression.ExpressionType.BINARY;
 		this.leftExpr = leftExpr;
 		this.operator = operator;
 		this.rightExpr = rightExpr;
 	}
 
 	public IRBinaryOpExpression(ConcreteTree tree) {
+		expressionType = IRExpression.ExpressionType.BINARY;
 		setLineNumbers(tree);
 		ConcreteTree exprChild = tree.getFirstChild();
 		IRExpression lexpr = IRExpression.makeIRExpression(exprChild);
