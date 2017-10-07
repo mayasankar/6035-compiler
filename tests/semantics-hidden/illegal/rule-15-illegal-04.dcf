@@ -1,9 +1,0 @@
-// 15.  Each alternative in the ternary must be of the correct type
-
-void main() {
-    int a[10];
-    int b;
-    int c;
-    bool d;
-    c = len(d ? a : b);
-}
