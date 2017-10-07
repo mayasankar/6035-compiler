@@ -266,11 +266,13 @@ public class SemanticChecker {
     private void checkIRMethodCallExpression(IRMethodCallExpression expr) {
         // 5, 6
         MethodTable lookupTable = env.getMethodTable();
+
         IRMethodDecl md = lookupTable.get(expr.getName());
         if (md == null) {
             notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
             return;
         }
+
         expr.setType(md.getReturnType());  // NOTE: this means we're not actually completing the IRMethodCallExpressions until we do semantic checking when we change things
         if (md.getReturnType() == IRType.Type.VOID) {
             notifyError("Expression uses return value of void method.", expr);
@@ -282,6 +284,7 @@ public class SemanticChecker {
             " parameters; needs " + parameters.size() + ".", expr);
         }
         for (int i = 0; i < parameters.size(); i++) {
+            checkIRExpression(arguments.get(i));
             IRType.Type parType = parameters.get(i).getType();
             IRType.Type argType = arguments.get(i).getType();
             if (parType != argType) {
@@ -330,16 +333,31 @@ public class SemanticChecker {
         VariableTable table = env.getVariableTable();
         IRMemberDecl decl = table.get(var.getName());
         IRExpression idxExpr = var.getIndexExpression();
+
         if (decl == null) {
-          notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
-          return;
-        } else if (idxExpr != null) {
-          IRType.Type declType = decl.getType();
-          if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
-            notifyError("Cannot index into non-array variable '" + var.getName() + "'.", var);
-          }
+            notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
+            return;
         }
-        var.setType(decl.getType()); // NOTE: this means we're not actually completing the IRVariableExpressions until we do semantic checking when we change things
+        checkIRMemberDecl(decl);
+
+        if (idxExpr != null) {
+            checkIRExpression(idxExpr);
+            IRType.Type declType = decl.getType();
+            if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
+                notifyError("Cannot index into non-array variable '" + var.getName() + "'.", var);
+            }
+        }
+        if (idxExpr == null) {
+            var.setType(decl.getType()); // NOTE: this means we're not actually completing the IRVariableExpressions until we do semantic checking when we change things
+        }
+        else {
+            if (decl.getType() == IRType.Type.INT_ARRAY) {
+                var.setType(IRType.Type.INT);
+            }
+            else if (decl.getType() == IRType.Type.BOOL_ARRAY) {
+                var.setType(IRType.Type.BOOL);
+            }
+        }
 
         if (idxExpr != null) {
           IRType.Type exprType = idxExpr.getType();
@@ -367,6 +385,9 @@ public class SemanticChecker {
 
         String varName = varAssigned.getName();
         IRExpression arrayIndex = varAssigned.getIndexExpression();
+        if (arrayIndex != null){
+            checkIRExpression(arrayIndex);
+        }
         VariableTable lookupTable = env.getVariableTable();
         IRMemberDecl assignee = lookupTable.get(varName);
         if (assignee == null) {
@@ -469,6 +490,7 @@ public class SemanticChecker {
     private void checkIRReturnStatement(IRReturnStatement statement){
         // 8, 9
         IRType.Type desiredReturnType = env.getReturnType();
+        checkIRExpression(statement.getReturnExpr());
         IRType.Type actualReturnType = statement.getReturnExpr().getType();
         if (desiredReturnType != actualReturnType){
             if (desiredReturnType == IRType.Type.VOID){

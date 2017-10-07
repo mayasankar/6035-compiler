@@ -41,7 +41,7 @@ public class IRBlock extends IRNode {
 			child = child.getRightSibling();
 		}
 		while (child != null) {
-			statements.add(IRStatement.makeIRStatement(child, parentScope));
+			statements.add(IRStatement.makeIRStatement(child, fields));
 			child = child.getRightSibling();
 		}
 	}

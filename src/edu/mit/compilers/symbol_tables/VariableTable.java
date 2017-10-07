@@ -42,12 +42,16 @@ public class VariableTable {
 	}
 
 	public IRMemberDecl get(String name){
+		//System.out.println("Possible values at this scope: " + variables.keySet().toString());
 		if (variables.containsKey(name)){
+			//System.out.println("Found " + name);
 			return variables.get(name);
 		}
 		if (parent != null) {
+			//System.out.println("Recursing for finding " + name);
 			return parent.get(name);
 		}
+		//System.out.println("Didn't find " + name );
 		return null;
 	}
 
