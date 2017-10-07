@@ -30,7 +30,7 @@ public class IRAssignStatement extends IRStatement {
 		value = IRExpression.makeIRExpression(child);
 	}
 
-	private IRAssignStatement(IRVariableExpression varAssigned, Token operator, IRExpression value) {
+	public IRAssignStatement(IRVariableExpression varAssigned, Token operator, IRExpression value) {
 		this.varAssigned = varAssigned;
 		this.operator = operator;
 		this.value = value;
