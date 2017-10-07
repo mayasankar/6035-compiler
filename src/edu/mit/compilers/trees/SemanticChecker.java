@@ -177,8 +177,8 @@ public class SemanticChecker {
         checkIRExpression(right);
         Token opToken = expr.getOperator();
         String op = opToken.getText();
-        if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%" || op == "<"
-            || op == "<=" || op == ">" || op == ">=") {
+        if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") || op.equals("<")
+            || op.equals("<=") || op.equals(">") || op.equals(">=")) {
             if (left.getType() != IRType.Type.INT) {
                 notifyError("First argument to operator " + op + " must be of type INT.", left);
             }
@@ -186,7 +186,7 @@ public class SemanticChecker {
                 notifyError("Second argument to operator " + op + " must be of type INT.", right);
             }
         }
-        if (op == "&&" || op == "||") {
+        else if (op.equals("&&") || op.equals("||")) {
             if (left.getType() != IRType.Type.BOOL) {
                 notifyError("First argument to operator " + op + " must be of type BOOL.", left);
             }
@@ -194,7 +194,7 @@ public class SemanticChecker {
                 notifyError("Second argument to operator " + op + " must be of type BOOL.", right);
             }
         }
-        if (op == "==" || op == "!=") {
+        else if (op.equals("==") || op.equals("!=")) {
             if (left.getType() != right.getType()) {
                 notifyError("Cannot compare types " + left.getType() + " and " +
                 right.getType() + " with operator " + op + ".", right);
@@ -202,6 +202,9 @@ public class SemanticChecker {
             if (left.getType() != IRType.Type.INT && left.getType() != IRType.Type.BOOL) {
                 notifyError("Can only compare objects of type INT or BOOL with operator " + op + ".", left);
             }
+        }
+        else {
+            System.err.println("checkIRBinaryOpExpression() semantic checking error: operator '" + op + "' did not match any of accepted types.");
         }
     }
 
@@ -284,12 +287,12 @@ public class SemanticChecker {
         checkIRExpression(arg);
         Token opToken = expr.getOperator();
         String op = opToken.getText();
-        if (op == "-") {
+        if (op.equals("-")) {
             if (arg.getType() != IRType.Type.INT) {
                 notifyError("Argument for unary minus must be of type int.", arg);
             }
         }
-        if (op == "!") {
+        if (op.equals("!")) {
             if (arg.getType() != IRType.Type.BOOL) {
                 notifyError("Argument for ! operator must be of type bool.", arg);
             }
@@ -302,17 +305,17 @@ public class SemanticChecker {
         IRMemberDecl decl = table.get(var.getName());
         IRExpression idxExpr = var.getIndexExpression();
         if (decl == null) {
-          notifyError("Variable " + var.getName() + " used but not declared", var);
+          notifyError("Variable " + var.getName() + " used but not declared.", var);
         } else if (idxExpr != null) {
           IRType.Type declType = decl.getType();
           if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
-            notifyError("Cannot index into non-array variable " + var.getName(), var);
+            notifyError("Cannot index into non-array variable " + var.getName() + ".", var);
           }
         }
         if (idxExpr != null) {
           IRType.Type exprType = idxExpr.getType();
           if (exprType != IRType.Type.INT) {
-            notifyError("Array index must be an integer", idxExpr);
+            notifyError("Array index must be an integer.", idxExpr);
           }
         }
 
@@ -337,7 +340,7 @@ public class SemanticChecker {
         if (assignee == null) {
             notifyError("Cannot assign to uninstantiated variable '" + varName + "'.", varAssigned);
         }
-        if (op == "=") {
+        if (op.equals("=")) {
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
                 if (assignee.getType() != value.getType()) {
@@ -350,19 +353,19 @@ public class SemanticChecker {
                 }
             }
             else {
-                // we should have an array
-                if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
-                    notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
-                }
-                if (!((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT)
-                   || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) {
+                // we should have an array; checkIRVariableExpression handles checking that the thing being indexed to is an array
+                // TODO arkadiy wants to refactor type to have ARRAY as its own type
+                if (!(assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) && // the thing we're trying to assign to is in fact an array
+                   !((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT) // it's not the case that we're putting an int in an int_array
+                   || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) { // it's also not the case that we're putting a bool in a bool_array
                        notifyError("Cannot assign a value of type " + value.getType().toString() +
                        " to an array location of type " + assignee.getType() + ".", value);
                    }
             }
         }
-        else {
-            if ((op == "+=" || op == "-=") && value.getType() != IRType.Type.INT) {
+        else if (op.equals("+=") || op.equals("-=") || op.equals("++") || op.equals("--")) {
+            //System.out.println("DEBUG: this branch! op=" + op);
+            if ((op.equals("+=") || op.equals("-=")) && value.getType() != IRType.Type.INT) {
                 notifyError("Cannot increment by a value of type " + value.getType().toString() + ".", value);
             }
             if (arrayIndex == null) {
@@ -381,7 +384,9 @@ public class SemanticChecker {
                 }
             }
         }
-
+        else {
+            System.err.println("checkIRAssignStatement() semantic checking error: statement operator '" + op + "' did not match any of accepted types.");
+        }
     }
 
     private void checkIRBlock(IRBlock block){
