@@ -55,7 +55,6 @@ public abstract class IRExpression extends IRNode {
 					if (tokentype == DecafParserTokenTypes.INT) {
 						String numAsString = token.getText();
 						int radix = 10;
-						System.out.println(numAsString);
 						if (numAsString.length() > 1 && numAsString.substring(0,2).equals("0x")) {
 							numAsString = numAsString.substring(2);
 							radix = 16;

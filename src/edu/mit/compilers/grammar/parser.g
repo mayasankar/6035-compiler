@@ -29,6 +29,7 @@ options
   @Override
   public void reportError (RecognitionException ex) {
     // Print the error via some kind of error reporting mechanism.
+    System.out.println(ex.getMessage());
     error = true;
   }
   @Override
