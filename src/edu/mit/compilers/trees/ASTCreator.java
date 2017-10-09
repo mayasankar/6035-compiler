@@ -1,11 +1,13 @@
 package edu.mit.compilers.trees;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 import antlr.Token;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.*;
+import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.expression.IRBinaryOpExpression;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRLenExpression;
@@ -17,11 +19,13 @@ import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
+import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRStatement.StatementType;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 // This class has a lot of the functions necessary to simplify the concrete tree
 // into an abstract tree.
@@ -125,7 +129,7 @@ public class ASTCreator {
 				int tokentype = token.getType();
 				IRExpression toReturn = null;
 				if (tokentype == DecafParserTokenTypes.INT) {
-					toReturn = new IRIntLiteral(Integer.parseInt(token.getText()));
+					toReturn = new IRIntLiteral(new BigInteger(token.getText()));
 				} else if (tokentype == DecafParserTokenTypes.CHAR) {
 					String charstring = token.getText();
 					charstring = charstring.substring(1, charstring.length()-1);
@@ -139,7 +143,7 @@ public class ASTCreator {
 							character = charstring.charAt(1);
 						}
 					}
-					toReturn = new IRIntLiteral((int) character);
+					toReturn = new IRIntLiteral(BigInteger.valueOf((int) character));
 				} else if (tokentype == DecafParserTokenTypes.TK_true) {
 					toReturn =  new IRBoolLiteral(true);
 				} else if (tokentype == DecafParserTokenTypes.TK_false) {
@@ -210,7 +214,34 @@ public class ASTCreator {
 
   	return toReturn;
   }
-
+  
+  public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope) {
+  		//setLineNumbers(tree);
+  		VariableTable fields = new VariableTable(parentScope);
+  		ConcreteTree child = tree.getFirstChild();
+  		while (child != null && child.getName().equals("field_decl")) { // TODO for mayars: should these be locals?
+  			ConcreteTree grandchild = child.getFirstChild();
+  			Token typeToken = grandchild.getToken();
+  			grandchild = grandchild.getRightSibling();
+  			while (grandchild != null) {
+  				Token id = grandchild.getFirstChild().getToken();
+  				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
+  					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
+  					int lengthAsInt = Integer.parseInt(length.getText());
+  					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+  				} else {
+  					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+  				}
+  				grandchild = grandchild.getRightSibling();
+  			}
+  			child = child.getRightSibling();
+  		}
+  		while (child != null) {
+  			statements.add(IRStatement.makeIRStatement(child, fields));
+  			child = child.getRightSibling();
+  		}
+	}
+  	
 
 
 }
