@@ -1,0 +1,7 @@
+// OK - local variable can shadow a method
+void i ( ) {
+}
+void main ( ) {
+  int i;
+  i = 4;
+}

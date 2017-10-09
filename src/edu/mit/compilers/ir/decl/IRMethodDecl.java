@@ -13,10 +13,19 @@ import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class IRMethodDecl extends IRNode {
   IRType.Type returnType = IRType.Type.UNSPECIFIED;
-  Token id;
+  protected Token id;
   // ArrayList<IRParameterDecl> parameters = new ArrayList<IRParameterDecl>();
-  IRBlock code;
-  VariableTable parameters;
+  IRBlock code; // null if import declaration
+  VariableTable parameters; // null if import declaration
+
+  // used only by IRImportDecl
+  protected IRMethodDecl(Token id) {
+    this.id = id;
+    returnType = IRType.Type.INT;
+    code = null;
+    parameters = null;
+    setLineNumbers(id);
+  }
 
   public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
     setLineNumbers(tree);
@@ -52,6 +61,8 @@ public class IRMethodDecl extends IRNode {
   public IRType.Type getReturnType() { return returnType; }
   public IRBlock getCode() { return code; }
   public VariableTable getParameters() { return parameters; }
+
+  public boolean isImport() { return false; } // overriden in import subclass
 
   @Override
   public List<? extends IRNode> getChildren() {

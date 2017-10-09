@@ -1,0 +1,6 @@
+// 21. continue and break must be in a loop
+void main ( ) {
+  if (true) {
+    break;
+  }
+}

@@ -1,0 +1,5 @@
+// 18. The operand of logical not must have type bool
+void main(){
+    bool b;
+    b = !5;
+}

@@ -3,6 +3,7 @@ package edu.mit.compilers.trees;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigInteger;
 
 import antlr.Token;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
@@ -51,12 +52,12 @@ public class ASTCreator {
     tree.deleteNodes(DecafParserTokenTypes.OP_TERN_2);
     // contract along unnecessary edges
     tree.compressNodes("type");
+    tree.compressNodes("op_pm");
+    tree.compressNodes("bool_literal");
     tree.compressNodes("expr");
     for (int i = 0; i <= 8; ++i) {
       tree.compressNodes("expr_" + i);
     }
-    tree.compressNodes("op_pm");
-    tree.compressNodes("bool_literal");
   }
 
   public static IRProgram getIR(ConcreteTree tree) {
@@ -175,7 +176,7 @@ public class ASTCreator {
 		}
   }
 
-  public static IRStatement parseStatement(ConcreteTree tree) {
+  public static IRStatement parseStatement(ConcreteTree tree, VariableTable table) {
     ConcreteTree child = tree.getFirstChild();
     IRStatement toReturn = null;
   	if (child.isNode()) {
@@ -219,27 +220,33 @@ public class ASTCreator {
   		//setLineNumbers(tree);
   		VariableTable fields = new VariableTable(parentScope);
   		ConcreteTree child = tree.getFirstChild();
-  		while (child != null && child.getName().equals("field_decl")) { // TODO for mayars: should these be locals?
-  			ConcreteTree grandchild = child.getFirstChild();
-  			Token typeToken = grandchild.getToken();
-  			grandchild = grandchild.getRightSibling();
-  			while (grandchild != null) {
-  				Token id = grandchild.getFirstChild().getToken();
-  				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
-  					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
+  		while (child != null && child.getName().equals("field_decl")) {
+  			ConcreteTree fieldType = child.getFirstChild();
+  			Token typeToken = fieldType.getToken();
+  			ConcreteTree fieldName = fieldType.getRightSibling();
+  			while (fieldName != null) {
+  				Token id = fieldName.getFirstChild().getToken();
+  				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
+  					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
   					int lengthAsInt = Integer.parseInt(length.getText());
   					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
   				} else {
   					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
   				}
-  				grandchild = grandchild.getRightSibling();
+  				fieldName = fieldName.getRightSibling();
   			}
   			child = child.getRightSibling();
   		}
+  		
+  		List<IRStatement> statements = new ArrayList<>();
   		while (child != null) {
-  			statements.add(IRStatement.makeIRStatement(child, fields));
+  			statements.add(parseStatement(child, fields));
   			child = child.getRightSibling();
   		}
+  		IRBlock block = new IRBlock(statements, fields);
+  		block.setLineNumbers(tree);
+  		
+  		return block;
 	}
   	
 

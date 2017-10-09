@@ -1,0 +1,5 @@
+// 12(a). <id> must be an array variable
+int a;
+void main ( ) {
+  a[0] = 0;
+}

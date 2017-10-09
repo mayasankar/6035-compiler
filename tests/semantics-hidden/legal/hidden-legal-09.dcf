@@ -1,0 +1,9 @@
+// OK
+int foo ( ) {
+  return 0;
+}
+bool bar ( bool foo ) {
+  return foo || false;
+}
+void main ( ) {
+}

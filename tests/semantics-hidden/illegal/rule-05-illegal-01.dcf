@@ -1,0 +1,9 @@
+// 5. The arguments in a method call must match those in the method signature
+void foo ( int i ) {
+}
+void main ( ) {
+  bool b;
+  int i;
+  i = 0;
+  foo ( ( i + 5 ) < 3 );
+}

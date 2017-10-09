@@ -1,0 +1,13 @@
+10 + 20 is 30 (30)
+10 - 20 is -10 (-10)
+10 * 20 is 200 (200)
+a < b is correct
+a <= b is correct
+c <= b is correct
+c >= b is correct
+a == a is correct
+a != b is correct
+true and true is correct
+true or true is correct
+false or true is correct
+true or false is correct

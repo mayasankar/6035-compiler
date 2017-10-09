@@ -1,0 +1,6 @@
+//11. The identifier in a method statement must be a declared method or import.
+
+int i;
+void main ( ) {
+  i ( );
+}

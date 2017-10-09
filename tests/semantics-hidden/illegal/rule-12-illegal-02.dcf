@@ -1,0 +1,8 @@
+// 10. index must be an int
+int a[10];
+bool i ( ) {
+  return false;
+}
+void main ( ) {
+  a[i ( ) ] = 1;
+}

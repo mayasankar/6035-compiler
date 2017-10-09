@@ -1,0 +1,7 @@
+// 3. The program should contain a definition for a method called main that
+// has no parameters and is of return type void.
+int main;
+
+void foo(){
+    main = 3;
+}

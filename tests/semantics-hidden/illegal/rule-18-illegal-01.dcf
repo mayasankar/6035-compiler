@@ -1,0 +1,5 @@
+// 18. The operands of cond_ops must have type bool
+void main(){
+    bool b;
+    b = 5 && 3;
+}

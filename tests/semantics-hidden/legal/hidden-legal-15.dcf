@@ -1,0 +1,7 @@
+// 15. <location> += <expr> must have type int on both sides
+void main ( ) {
+  int x;
+  x = 0;
+  x += 3;
+  x += x*7;
+}

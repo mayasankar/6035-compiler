@@ -1,0 +1,6 @@
+// OK -- make sure operator precendence is right
+void main ( ) {
+  int a, b, c, d;
+  bool e;
+  e = a * b == c + d || a % b <= c - d;
+}

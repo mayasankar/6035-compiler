@@ -1,0 +1,10 @@
+// 15. The first expr in a ternary must have type boolean
+
+int foo() {
+    return 15;
+}
+
+void main() {
+    int b;
+    b = foo() ? 5:7;
+}

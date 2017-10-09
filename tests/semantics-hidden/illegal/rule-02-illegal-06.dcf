@@ -1,0 +1,11 @@
+// 2. No identifier can be used before it is declared
+void main(){
+   int a;
+   a = 1;
+   if (a < 2){
+       int b;
+       b = 1;
+       a += b;
+   }
+   a += b;
+}

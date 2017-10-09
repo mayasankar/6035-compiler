@@ -1,0 +1,7 @@
+void main ( ) {
+  int x;
+  x = 0x7fff;
+  x = 2*0x7fff;
+  x = 2*-0x8000;
+  x = 2*- -8000;
+}

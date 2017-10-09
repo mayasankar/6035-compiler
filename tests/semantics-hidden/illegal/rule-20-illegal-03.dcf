@@ -1,0 +1,8 @@
+// 20. The location and the expr in an incrementing/decrementing assignment must be of type int
+void main ( ) {
+  int b[10];
+  int x;
+  x = 0;
+  b = true;
+  x -= b;
+}

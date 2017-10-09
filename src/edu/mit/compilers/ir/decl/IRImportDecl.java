@@ -8,21 +8,18 @@ import antlr.Token;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 
-public class IRImportDecl extends IRNode {
-	protected Token id;
+public class IRImportDecl extends IRMethodDecl {
 
 	public IRImportDecl(Token id) {
-		setLineNumbers(id);
-		this.id = id;
-	}
-
-	public String getName() {
-		return id.getText();
+		super(id);
 	}
 
 	@Override
+	public boolean isImport() { return true; }
+
+	@Override
 	public String toString(){
-		return getName();
+		return id.getText();
 	}
 
 	@Override

@@ -1,0 +1,5 @@
+// 10. An <id> used as a <location> must name a declared local/global variable or formal parameter.
+
+void main ( ) {
+  main = 3;
+}

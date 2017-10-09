@@ -1,0 +1,6 @@
+// 4. The int_literal in an array declaration must be greater than 0
+int a[0];
+
+void main() {
+    a[0] = 4;
+}

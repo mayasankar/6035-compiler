@@ -1,0 +1,16 @@
+import printf();
+void main ( ) {
+  int a, b, c;
+  int d, e;
+  int g, h;
+  a = 10;
+  b = 20;
+  c = 30;
+  d = ( a + b );
+  e = ( c * 3 );
+  e = d * e - 100;
+  printf ( "%d %d\n", d, e );
+  g = d % 16;
+  h = e / 100;
+  printf ( "%d %d\n", g, h );
+}

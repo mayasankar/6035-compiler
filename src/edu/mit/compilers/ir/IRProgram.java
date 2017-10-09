@@ -23,7 +23,9 @@ public class IRProgram extends IRNode {
 
 		ConcreteTree child = tree.getFirstChild(); // TODO do I need to instantiate these?
 		while (child != null && child.getName().equals("import_decl")) {
-			imports.add(new IRImportDecl(child.getFirstChild().getToken()));
+			IRImportDecl imp = new IRImportDecl(child.getFirstChild().getToken());
+			imports.add(imp); // todo maybe remove
+			methods.add(imp);
 			child = child.getRightSibling();
 		}
 

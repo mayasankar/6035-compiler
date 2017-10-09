@@ -1,0 +1,10 @@
+// 9. The expression in a return must have the same type as the declared result type.
+
+bool bar ( ) {
+  return false;
+}
+int foo ( ) {
+  return bar ( );
+}
+void main ( ) {
+}

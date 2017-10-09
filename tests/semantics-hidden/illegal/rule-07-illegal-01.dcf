@@ -1,0 +1,10 @@
+// 7. String literals and array variables may not be used as arguments to non-import methods.
+
+void foo ( int x ) {
+
+}
+
+void main(){
+    int a[10];
+    foo(a);
+}

@@ -16,9 +16,14 @@ import edu.mit.compilers.symbol_tables.VariableTable;
 public class IRBlock extends IRNode {
 
 	//private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
-	private ArrayList<IRStatement> statements = new ArrayList<IRStatement>();
+	private List<IRStatement> statements = new ArrayList<IRStatement>();
 	private VariableTable fields;
 
+	public IRBlock(List<IRStatement> statements, VariableTable fields) {
+		this.statements = statements;
+		this.fields = fields;
+	}
+	
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
 		setLineNumbers(tree);
 		fields = new VariableTable(parentScope);
