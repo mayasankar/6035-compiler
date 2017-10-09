@@ -6,6 +6,8 @@
 
   <!-- Manually generated java files -->
   <property name="src"     location="src"     />
+  <!-- Manually generated unit tests -->
+  <property name="test"    location="test"    />
   <!-- Auto-generated java files -->
   <property name="autogen" location="autogen" />
   <!-- Target Dir for compile -->
@@ -81,6 +83,13 @@
       <classpath refid="libraries" />
     </javac>
   </target>
+	
+  <target name="compile-tests" depends="compile">
+  	<javac srcdir="${test}" destdir="${classes}"
+  		    debug="one" includeantruntime="false">
+  	  <classpath refid="libraries.test" />
+  	</javac>
+  </target>
 
   <target name="jar" depends="compile">
     <jar jarfile="${dist}/Compiler.jar" basedir="${classes}">
@@ -96,6 +105,20 @@
     <symlink link="${dist}/antlr.jar" resource="${lib}/antlr.jar"
              overwrite="true" />
   </target>
+  
+	
+  <target name="unit-tests" depends="compile-tests">
+	<junit printsummary="on" haltonfailure="yes" fork="true">
+	  <classpath>
+	    <path refid="libraries"/>
+	    <pathelement location="${classes}"/>
+	  </classpath>
+	  <formatter type="brief" usefile="false" />
+	  <batchtest>
+	    <fileset dir="${test}" includes="**/*Test.java" />
+	  </batchtest>
+    </junit>
+  </target>	
 
   <target name="test_scanner" depends="jar">
     <!-- Set failonerror="true" when you're confident you're correct
@@ -134,7 +157,7 @@
   </target>
 
   <target name="integrationtests"
-          depends="test_scanner,test_parser,test_semantics,test_codegen,test_dataflow,test_opt">
+          depends="unit-tests,test_scanner,test_parser,test_semantics,test_codegen,test_dataflow,test_opt">
   </target>
 
   <target name="tar" depends="clean">
