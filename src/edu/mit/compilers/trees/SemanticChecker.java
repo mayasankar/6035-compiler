@@ -84,8 +84,10 @@ public class SemanticChecker {
     }
 
     private void checkIntLiteral(IRIntLiteral il) {
-        if (il.getValue().compareTo(BigInteger.valueOf(Long.MAX_VALUE)) == 1) {
+        if (il.getValue().compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
             notifyError("Attempted to assign integer too large for 64-bit int.", il);
+        } else if (il.getValue().compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0) {
+            notifyError("Attempted to assign integer less than minimum for 64-bit int.", il);
         }
     }
 
@@ -405,10 +407,10 @@ public class SemanticChecker {
         }
         VariableTable lookupTable = env.getVariableTable();
         IRMemberDecl assignee = lookupTable.get(varName);
-        // if (assignee == null) { // redundant given you're running checkIRVariableExpression
-        //     notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
-        //     return;
-        // }
+        if (assignee == null) {
+            notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
+            return;
+        }
         if (op.equals("=")) {
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array

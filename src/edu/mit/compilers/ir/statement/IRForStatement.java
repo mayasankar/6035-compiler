@@ -14,6 +14,15 @@ public class IRForStatement extends IRStatement {
 	private  IRExpression condition;
 	private  IRAssignStatement stepFunction;
 	private  IRBlock block;
+	
+	public IRForStatement(IRAssignStatement initializer, IRExpression condition, 
+			IRAssignStatement stepFunction, IRBlock block) {
+		this.initializer = initializer;
+		this.condition = condition;
+		this.stepFunction = stepFunction;
+		this.block = block;
+		statementType = IRStatement.StatementType.FOR_BLOCK;
+	}
 
 	public IRForStatement(ConcreteTree tree, VariableTable parentScope) {
 		statementType = IRStatement.StatementType.FOR_BLOCK;

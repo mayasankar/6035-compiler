@@ -14,6 +14,20 @@ public class IRIfStatement extends IRStatement {
 	private IRBlock thenBlock;
 	private IRBlock elseBlock;
 
+	public IRIfStatement(IRExpression ifCondition, IRBlock thenBlock, IRBlock elseBlock) {
+		this.ifCondition = ifCondition;
+		this.thenBlock = thenBlock;
+		this.elseBlock = elseBlock;
+		statementType = IRStatement.StatementType.IF_BLOCK;
+
+	}
+	
+	public IRIfStatement(IRExpression ifCondition, IRBlock thenBlock) {
+		this.ifCondition = ifCondition;
+		this.thenBlock = thenBlock;
+		statementType = IRStatement.StatementType.IF_BLOCK;
+	}
+	
 	public IRIfStatement(ConcreteTree tree, VariableTable parentScope) {
 		statementType = IRStatement.StatementType.IF_BLOCK;
 		ConcreteTree child = tree.getFirstChild();

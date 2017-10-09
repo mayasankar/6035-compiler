@@ -21,11 +21,14 @@ import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRBlock;
+import edu.mit.compilers.ir.statement.IRForStatement;
+import edu.mit.compilers.ir.statement.IRIfStatement;
 import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRStatement.StatementType;
+import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
 // This class has a lot of the functions necessary to simplify the concrete tree
@@ -65,6 +68,7 @@ public class ASTCreator {
     return new IRProgram(tree);
   }
 
+  // TODO for mayars -- add line numbers to this function.
   public static IRExpression parseExpressionTree(ConcreteTree tree) {
   	String nodeName = tree.getName();
   	switch(nodeName) {
@@ -73,8 +77,16 @@ public class ASTCreator {
 		case "expr_1":
 			IRExpression returnValue = parseExpressionTree(tree.getLastChild());
 			ConcreteTree subTree = tree.getLastChild().getLeftSibling();
+			if (returnValue.getExpressionType() == IRExpression.ExpressionType.INT_LITERAL) {
+		        IRIntLiteral literalValue = (IRIntLiteral) returnValue;
+		        while (subTree != null && subTree.getToken().getType() == DecafParserTokenTypes.OP_NEG) {
+		            literalValue.invert();
+		            subTree = subTree.getRightSibling();
+		        }
+		    }
 			while(subTree != null) {
 				returnValue = new IRUnaryOpExpression(subTree.getToken(), returnValue);
+				subTree = subTree.getRightSibling();
 			}
 			return returnValue;
 		case "expr_2":
@@ -108,11 +120,15 @@ public class ASTCreator {
 			}
 			return returnExpression;
 		case "expr_base":
+            if (tree.isNode()) { // TODO deal with case that string has escaped characters
+                String text = tree.getToken().getText();
+                return new IRStringLiteral(text.substring(1, text.length()-1));
+            }
 			ConcreteTree firstChild = tree.getFirstChild();
 			if(firstChild.isNode()) {
 				return new IRLenExpression(firstChild.getRightSibling().getToken());
 			}
-			else if(firstChild.getName() == "method_call") {
+			else if(firstChild.getName() == "method_call") { // should we use .equals? -mayars
 				List<IRExpression> arguments = new ArrayList<>();
 				ConcreteTree nextChild = firstChild.getRightSibling();
 				while (nextChild != null) {
@@ -130,7 +146,13 @@ public class ASTCreator {
 				int tokentype = token.getType();
 				IRExpression toReturn = null;
 				if (tokentype == DecafParserTokenTypes.INT) {
-					toReturn = new IRIntLiteral(new BigInteger(token.getText()));
+                String numAsString = token.getText();
+                int radix = 10;
+                if (numAsString.length() > 1 && numAsString.substring(0,2).equals("0x")) {
+                  numAsString = numAsString.substring(2);
+                  radix = 16;
+                }
+              toReturn = new IRIntLiteral(new BigInteger(numAsString, radix));
 				} else if (tokentype == DecafParserTokenTypes.CHAR) {
 					String charstring = token.getText();
 					charstring = charstring.substring(1, charstring.length()-1);
@@ -159,9 +181,9 @@ public class ASTCreator {
 		default:
 			return new IRStringLiteral(tree.getToken().getText());
 		}
-  }
+    }
 
-  public static IRVariableExpression parseLocation(ConcreteTree tree) {
+    public static IRVariableExpression parseLocation(ConcreteTree tree) {
 		if (tree == null) {
 			throw new RuntimeException("Location node is empty");
 		}
@@ -174,50 +196,103 @@ public class ASTCreator {
 			child = child.getRightSibling();
 			return new IRVariableExpression(name, parseExpressionTree(child));
 		}
-  }
-
-  public static IRStatement parseStatement(ConcreteTree tree, VariableTable table) {
-    ConcreteTree child = tree.getFirstChild();
-    IRStatement toReturn = null;
-  	if (child.isNode()) {
-      int tokentype = child.getToken().getType();
-      if (tokentype == DecafParserTokenTypes.TK_return) {
-      	IRExpression returnExpression = parseExpressionTree(child.getRightSibling());
-        toReturn = new IRReturnStatement(returnExpression);
-      } else if (tokentype == DecafParserTokenTypes.TK_break) {
-        toReturn = IRLoopStatement.breakStatement;
-      } else if (tokentype == DecafParserTokenTypes.TK_continue) {
-        toReturn = IRLoopStatement.continueStatement;
-      }
     }
 
-  	String nodeName = tree.getName();
-  	switch(nodeName) {
-  	case "assign_expr":
-  		IRVariableExpression location = parseLocation(child);
-  		child = child.getRightSibling();
-  		Token operator = child.getToken();
-  		child = child.getRightSibling();
-  		IRExpression assignment = null;
-  		if(child != null) {
-  			assignment = parseExpressionTree(child);
-  		}
-  		toReturn = new IRAssignStatement(location, operator, assignment);
-  		break;
-  	case "method_call":
-  		IRExpression methodCall = parseExpressionTree(tree);
-  		toReturn = new IRMethodCallStatement(methodCall);
-  	case "if_block"://TODO: finish for Arkadiy
-
-  	case "for_block":
-  	case "while_block":
-  	}
-
-  	return toReturn;
-  }
+    public static IRStatement parseStatement(ConcreteTree tree, VariableTable scope) {
+        ConcreteTree child = tree.getFirstChild();
+        IRStatement toReturn = null;
+      	if (child.isNode()) {
+            int tokentype = child.getToken().getType();
+            if (tokentype == DecafParserTokenTypes.TK_return) {
+            	IRExpression returnExpression = parseExpressionTree(child.getRightSibling());
+              toReturn = new IRReturnStatement(returnExpression);
+            } else if (tokentype == DecafParserTokenTypes.TK_break) {
+              toReturn = IRLoopStatement.breakStatement;
+            } else if (tokentype == DecafParserTokenTypes.TK_continue) {
+              toReturn = IRLoopStatement.continueStatement;
+            }  
+            toReturn.setLineNumbers(tree);
+            return toReturn;
+        }
+    
+      	String nodeName = tree.getName();
+      	switch(nodeName) {
+      	case "assign_expr":
+      		IRVariableExpression location = parseLocation(child);
+      		child = child.getRightSibling();
+      		Token operator = child.getToken();
+      		child = child.getRightSibling();
+      		IRExpression assignment = null;
+      		if(child != null) {
+      			assignment = parseExpressionTree(child);
+      		}
+      		toReturn = new IRAssignStatement(location, operator, assignment);
+      		break;
+      	case "method_call":
+      		IRExpression methodCall = parseExpressionTree(tree);
+      		toReturn = new IRMethodCallStatement(methodCall);
+      		break;
+      	case "if_block":
+      		IRExpression ifCondition = parseExpressionTree(child);
+      		IRBlock ifBlock = parseBlock(child.getRightSibling(), scope);
+      		if(child.getRightSibling().getRightSibling() != null) {
+      			IRBlock elseBlock = parseBlock(child.getRightSibling().getRightSibling(), scope);
+      			toReturn = new IRIfStatement(ifCondition,  ifBlock, elseBlock);
+      		} else {
+      			toReturn = new IRIfStatement(ifCondition, ifBlock);
+      		}
+      		break;
+      	case "for_block":{
+    		IRAssignStatement initializer = makeForLoopInitializer(child);
+    		child = child.getRightSibling().getRightSibling().getRightSibling();
+    		IRExpression condition = parseExpressionTree(child);
+    		child = child.getRightSibling();
+    		IRAssignStatement stepFunction = makeForLoopStepFunction(child);
+    		while (!child.getName().equals("block")) {
+    			child = child.getRightSibling();
+    		}
+    		IRBlock block = new IRBlock(tree.getLastChild(), scope);
+    		toReturn = new IRForStatement(initializer, condition, stepFunction, block);
+    		break;
+      	}
+      	case "while_block": {
+      		IRExpression loopCondition = parseExpressionTree(child);
+      		IRBlock block = parseBlock(child.getRightSibling(), scope);
+      		toReturn = new IRWhileStatement(loopCondition, block);
+      		break;
+      	}
+      	}
+      	toReturn.setLineNumbers(tree);
+      	return toReturn;
+    }
+  
+    private static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
+		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
+		child = child.getRightSibling();
+		Token operator = child.getToken();
+		child = child.getRightSibling();
+		IRExpression value = parseExpressionTree(child);
+		IRAssignStatement toReturn = new IRAssignStatement(varAssigned, operator, value);
+		toReturn.setLineNumbers(child);
+		return toReturn;
+    }
+  
+	private static IRAssignStatement makeForLoopStepFunction(ConcreteTree child) {
+		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
+		child = child.getRightSibling();
+		Token operator = child.getToken();
+		IRAssignStatement toReturn;
+		if (operator.getType() == DecafParserTokenTypes.OP_INC || operator.getType() == DecafParserTokenTypes.OP_DEC) {
+			toReturn = new IRAssignStatement(varAssigned, operator, null);
+		} else {
+			child = child.getRightSibling();
+			toReturn = new IRAssignStatement(varAssigned, operator, parseExpressionTree(child));
+		}
+		toReturn.setLineNumbers(child);
+		return toReturn;
+	}
   
   public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope) {
-  		//setLineNumbers(tree);
   		VariableTable fields = new VariableTable(parentScope);
   		ConcreteTree child = tree.getFirstChild();
   		while (child != null && child.getName().equals("field_decl")) {
@@ -248,7 +323,4 @@ public class ASTCreator {
   		
   		return block;
 	}
-  	
-
-
 }

@@ -51,7 +51,7 @@ public class IRBlock extends IRNode {
 		}
 	}
 
-	public ArrayList<IRStatement> getStatements(){
+	public List<IRStatement> getStatements(){
 		return this.statements;
 	}
 
