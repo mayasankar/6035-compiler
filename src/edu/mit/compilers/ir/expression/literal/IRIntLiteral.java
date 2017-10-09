@@ -15,6 +15,10 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 		expressionType = IRExpression.ExpressionType.INT_LITERAL;
 	}
 
+	public void invert() {
+		value = value.negate();
+	}
+
 	@Override
 	public IRType.Type getType() {
 		return IRType.Type.INT;

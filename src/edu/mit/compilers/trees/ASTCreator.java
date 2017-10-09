@@ -61,6 +61,7 @@ public class ASTCreator {
     return new IRProgram(tree);
   }
 
+  // TODO for mayars -- add line numbers to this function.
   public static IRExpression parseExpressionTree(ConcreteTree tree) {
   	String nodeName = tree.getName();
   	switch(nodeName) {
@@ -69,8 +70,16 @@ public class ASTCreator {
 		case "expr_1":
 			IRExpression returnValue = parseExpressionTree(tree.getLastChild());
 			ConcreteTree subTree = tree.getLastChild().getLeftSibling();
+      if (returnValue.getExpressionType() == IRExpression.ExpressionType.INT_LITERAL) {
+        IRIntLiteral literalValue = (IRIntLiteral) returnValue;
+        while (subTree != null && subTree.getToken().getType() == DecafParserTokenTypes.OP_NEG) {
+          literalValue.invert();
+          subTree = subTree.getRightSibling();
+        }
+      }
 			while(subTree != null) {
 				returnValue = new IRUnaryOpExpression(subTree.getToken(), returnValue);
+        subTree = subTree.getRightSibling();
 			}
 			return returnValue;
 		case "expr_2":
@@ -104,11 +113,15 @@ public class ASTCreator {
 			}
 			return returnExpression;
 		case "expr_base":
+      if (tree.isNode()) { // TODO deal with case that string has escaped characters
+        String text = tree.getToken().getText();
+        return new IRStringLiteral(text.substring(1, text.length()-1));
+      }
 			ConcreteTree firstChild = tree.getFirstChild();
 			if(firstChild.isNode()) {
 				return new IRLenExpression(firstChild.getRightSibling().getToken());
 			}
-			else if(firstChild.getName() == "method_call") {
+			else if(firstChild.getName() == "method_call") { // should we use .equals? -mayars
 				List<IRExpression> arguments = new ArrayList<>();
 				ConcreteTree nextChild = firstChild.getRightSibling();
 				while (nextChild != null) {
@@ -126,7 +139,13 @@ public class ASTCreator {
 				int tokentype = token.getType();
 				IRExpression toReturn = null;
 				if (tokentype == DecafParserTokenTypes.INT) {
-					toReturn = new IRIntLiteral(new BigInteger(token.getText()));
+          String numAsString = token.getText();
+          int radix = 10;
+          if (numAsString.length() > 1 && numAsString.substring(0,2).equals("0x")) {
+            numAsString = numAsString.substring(2);
+            radix = 16;
+          }
+          toReturn = new IRIntLiteral(new BigInteger(numAsString, radix));
 				} else if (tokentype == DecafParserTokenTypes.CHAR) {
 					String charstring = token.getText();
 					charstring = charstring.substring(1, charstring.length()-1);
