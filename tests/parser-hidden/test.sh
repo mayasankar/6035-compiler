@@ -24,6 +24,8 @@ for file in `dirname $0`/legal/*; do
     echo "Legal file $file failed to parse.";
     exitcode=1;
     fail=$((fail+1));
+  else
+    echo "Test $file passed";
   fi
   count=$((count+1));
 done

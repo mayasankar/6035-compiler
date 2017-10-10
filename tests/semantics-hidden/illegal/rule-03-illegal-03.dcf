@@ -3,4 +3,4 @@
 import printf;
 int foo() {
   printf(1);
-};
+}
