@@ -29,6 +29,16 @@ public abstract class CFGLine {
         this.falseBranch = falseBranch;
     }
 
+    protected CFGLine(CFGLine next) {
+        this.trueBranch = next;
+        this.falseBranch = next;
+    }
+
+    protected CFGLine() {
+        this.trueBranch = null;
+        this.falseBranch = null;
+    }
+
     public CFGLine getTrueBranch() {
         return trueBranch;
     }
@@ -38,15 +48,27 @@ public abstract class CFGLine {
     }
 
     public boolean isBranch() {
-        throw new RuntimeException("Not implemented yet.");
+        return (trueBranch != falseBranch);
     }
 
     public void setNext(CFGLine next) {
-        throw new RuntimeException("Not implemented yet.");
+        this.trueBranch = next;
+        this.falseBranch = next;
     }
 
     public boolean isEnd() {
-        // are branches null?
+        if (trueBranch == null) {
+            if (falseBranch != null) {
+                throw new RuntimeException("CFGLine has one null branch and one non-null branch.");
+            }
+            else {
+                return true;
+            }
+        }
+        elif (falseBranch == null) {
+            throw new RuntimeException("CFGLine has one null branch and one non-null branch.");
+        }
+        return false;
     }
 
 }
