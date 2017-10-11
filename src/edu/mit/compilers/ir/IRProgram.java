@@ -10,10 +10,16 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class IRProgram extends IRNode {
-	public ArrayList<IRImportDecl> imports; // Token.getText() gets the name of the token
+	public List<IRImportDecl> imports; // Token.getText() gets the name of the token
 	public VariableTable fields;
 	public MethodTable methods;
 
+	public IRProgram(List<IRImportDecl> imports, VariableTable fields, MethodTable methods) {
+		this.imports = imports;
+		this.fields = fields;
+		this.methods = methods;
+	}
+	
 	public IRProgram(ConcreteTree tree) {
 		setLineNumbers(tree);
 

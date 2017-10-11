@@ -9,6 +9,8 @@ import antlr.Token;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
+import edu.mit.compilers.ir.decl.IRImportDecl;
+import edu.mit.compilers.ir.decl.IRMethodDecl;
 import edu.mit.compilers.ir.expression.IRBinaryOpExpression;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRLenExpression;
@@ -29,6 +31,7 @@ import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRStatement.StatementType;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
+import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
 // This class has a lot of the functions necessary to simplify the concrete tree
@@ -36,37 +39,84 @@ import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class ASTCreator {
 
-  public static void simplifyTree(ConcreteTree tree) {
-    tree.initializeLineNumbers();
-    // delete tokens only necessary for parsing
-    tree.deleteNodes(DecafParserTokenTypes.EOF);
-    tree.deleteNodes(DecafParserTokenTypes.COMMA);
-    tree.deleteNodes(DecafParserTokenTypes.LPAREN);
-    tree.deleteNodes(DecafParserTokenTypes.RPAREN);
-    tree.deleteNodes(DecafParserTokenTypes.LCURLY);
-    tree.deleteNodes(DecafParserTokenTypes.RCURLY);
-    tree.deleteNodes(DecafParserTokenTypes.SEMICOLON);
-    tree.deleteNodes(DecafParserTokenTypes.TK_import);
-    tree.deleteNodes(DecafParserTokenTypes.TK_if);
-    tree.deleteNodes(DecafParserTokenTypes.TK_else);
-    tree.deleteNodes(DecafParserTokenTypes.TK_for);
-    tree.deleteNodes(DecafParserTokenTypes.TK_while);
-    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_1);
-    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_2);
-    // contract along unnecessary edges
-    tree.compressNodes("type");
-    tree.compressNodes("op_pm");
-    tree.compressNodes("bool_literal");
-    tree.compressNodes("expr");
-    for (int i = 0; i <= 8; ++i) {
-      tree.compressNodes("expr_" + i);
+    public static void simplifyTree(ConcreteTree tree) {
+	    tree.initializeLineNumbers();
+	    // delete tokens only necessary for parsing
+	    tree.deleteNodes(DecafParserTokenTypes.EOF);
+	    tree.deleteNodes(DecafParserTokenTypes.COMMA);
+	    tree.deleteNodes(DecafParserTokenTypes.LPAREN);
+	    tree.deleteNodes(DecafParserTokenTypes.RPAREN);
+	    tree.deleteNodes(DecafParserTokenTypes.LCURLY);
+	    tree.deleteNodes(DecafParserTokenTypes.RCURLY);
+	    tree.deleteNodes(DecafParserTokenTypes.SEMICOLON);
+	    tree.deleteNodes(DecafParserTokenTypes.TK_import);
+	    tree.deleteNodes(DecafParserTokenTypes.TK_if);
+	    tree.deleteNodes(DecafParserTokenTypes.TK_else);
+	    tree.deleteNodes(DecafParserTokenTypes.TK_for);
+	    tree.deleteNodes(DecafParserTokenTypes.TK_while);
+	    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_1);
+	    tree.deleteNodes(DecafParserTokenTypes.OP_TERN_2);
+	    // contract along unnecessary edges
+	    tree.compressNodes("type");
+	    tree.compressNodes("op_pm");
+	    tree.compressNodes("bool_literal");
+	    tree.compressNodes("expr");
+	    for (int i = 0; i <= 8; ++i) {
+	        tree.compressNodes("expr_" + i);
+	    }
     }
-  }
 
   public static IRProgram getIR(ConcreteTree tree) {
     simplifyTree(tree);
     return new IRProgram(tree);
   }
+  
+    public static IRProgram getIRNew(ConcreteTree tree) {
+	    simplifyTree(tree);
+	    return parseProgram(tree);
+	}
+  
+  
+    public static IRProgram parseProgram(ConcreteTree tree) {
+		List<IRImportDecl> imports = new ArrayList<>();
+		VariableTable fields = new VariableTable();
+		MethodTable methods = new MethodTable();
+		
+		ConcreteTree child = tree.getFirstChild();
+		while (child != null && child.getName().equals("import_decl")) {
+			IRImportDecl imp = new IRImportDecl(child.getFirstChild().getToken());
+			imports.add(imp); // todo maybe remove
+			methods.add(imp);
+			child = child.getRightSibling();
+		}
+		
+		while (child != null && child.getName().equals("field_decl")) {
+			ConcreteTree grandchild = child.getFirstChild();
+			Token typeToken = grandchild.getToken();
+			grandchild = grandchild.getRightSibling();
+			while (grandchild != null) {
+				Token id = grandchild.getFirstChild().getToken();
+				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
+					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
+					int lengthAsInt = Integer.parseInt(length.getText());
+					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+				} else {
+					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+				}
+				grandchild = grandchild.getRightSibling();
+			}
+			child = child.getRightSibling();
+		}
+		
+		while (child != null && child.getName().equals("method_decl")) {
+			methods.add(new IRMethodDecl(child, fields));
+			child = child.getRightSibling();
+		}
+		
+		IRProgram toReturn = new IRProgram(imports, fields, methods);
+		toReturn.setLineNumbers(tree);
+		return toReturn;
+    }
   
   public static IRMethodCallExpression parseMethodExpression(ConcreteTree tree) {
       List<IRExpression> arguments = new ArrayList<>();
@@ -281,7 +331,39 @@ public class ASTCreator {
       	return toReturn;
     }
   
-    private static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
+    public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope) {
+		VariableTable fields = new VariableTable(parentScope);
+		ConcreteTree child = tree.getFirstChild();
+		while (child != null && child.getName().equals("field_decl")) {
+			ConcreteTree fieldType = child.getFirstChild();
+			Token typeToken = fieldType.getToken();
+			ConcreteTree fieldName = fieldType.getRightSibling();
+			while (fieldName != null) {
+				Token id = fieldName.getFirstChild().getToken();
+				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
+					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
+					int lengthAsInt = Integer.parseInt(length.getText());
+					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+				} else {
+					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+				}
+				fieldName = fieldName.getRightSibling();
+			}
+			child = child.getRightSibling();
+		}
+		
+		List<IRStatement> statements = new ArrayList<>();
+		while (child != null) {
+			statements.add(parseStatement(child, fields));
+			child = child.getRightSibling();
+		}
+		IRBlock block = new IRBlock(statements, fields);
+		block.setLineNumbers(tree);
+		
+		return block;
+	}
+
+	private static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
 		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
 		child = child.getRightSibling();
 		Token operator = child.getToken();
@@ -305,37 +387,5 @@ public class ASTCreator {
 		}
 		toReturn.setLineNumbers(child);
 		return toReturn;
-	}
-  
-  public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope) {
-  		VariableTable fields = new VariableTable(parentScope);
-  		ConcreteTree child = tree.getFirstChild();
-  		while (child != null && child.getName().equals("field_decl")) {
-  			ConcreteTree fieldType = child.getFirstChild();
-  			Token typeToken = fieldType.getToken();
-  			ConcreteTree fieldName = fieldType.getRightSibling();
-  			while (fieldName != null) {
-  				Token id = fieldName.getFirstChild().getToken();
-  				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
-  					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
-  					int lengthAsInt = Integer.parseInt(length.getText());
-  					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
-  				} else {
-  					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
-  				}
-  				fieldName = fieldName.getRightSibling();
-  			}
-  			child = child.getRightSibling();
-  		}
-  		
-  		List<IRStatement> statements = new ArrayList<>();
-  		while (child != null) {
-  			statements.add(parseStatement(child, fields));
-  			child = child.getRightSibling();
-  		}
-  		IRBlock block = new IRBlock(statements, fields);
-  		block.setLineNumbers(tree);
-  		
-  		return block;
 	}
 }

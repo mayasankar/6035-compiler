@@ -83,7 +83,7 @@ class Main {
           ASTCreator.simplifyTree(tree);
           tree.print();
         }
-        IRProgram ir = ASTCreator.getIR(tree);
+        IRProgram ir = ASTCreator.getIRNew(tree);
         if (CLI.debug) {
             System.out.println(ir);
         }
