@@ -86,8 +86,8 @@
 	
   <target name="compile-tests" depends="compile">
   	<javac srcdir="${test}" destdir="${classes}"
-  		    debug="one" includeantruntime="false">
-  	  <classpath refid="libraries.test" />
+  		    debug="true" includeantruntime="false" debuglevel="lines,vars,source">
+  	  <classpath refid="libraries" />
   	</javac>
   </target>
 
@@ -103,7 +103,7 @@
          reside in the same dir but we don't a billion copies floating around,
          so use symlinks instead. -->
     <symlink link="${dist}/antlr.jar" resource="${lib}/antlr.jar"
-             overwrite="true" />
+	      overwrite="true" />
   </target>
   
 	
