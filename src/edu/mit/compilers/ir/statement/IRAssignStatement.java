@@ -37,6 +37,7 @@ public class IRAssignStatement extends IRStatement {
 		this.varAssigned = varAssigned;
 		this.operator = operator;
 		this.value = value;
+        statementType = IRStatement.StatementType.ASSIGN_EXPR;
 	}
 
 	public String getVariableName(){

@@ -24,6 +24,8 @@ public class IRWhileStatement extends IRStatement {
 	public IRWhileStatement(IRExpression condition, IRBlock block) {
 		this.condition = condition;
 		this.block = block;
+        statementType = IRStatement.StatementType.WHILE_BLOCK;
+
 	}
 
 	public IRExpression getCondition() { return condition; }

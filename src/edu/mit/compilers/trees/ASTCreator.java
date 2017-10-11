@@ -67,7 +67,18 @@ public class ASTCreator {
     simplifyTree(tree);
     return new IRProgram(tree);
   }
-
+  
+  public static IRMethodCallExpression parseMethodExpression(ConcreteTree tree) {
+      List<IRExpression> arguments = new ArrayList<>();
+      String methodName = tree.getFirstChild().getToken().getText();
+      ConcreteTree nextChild = tree.getFirstChild().getRightSibling();
+      while (nextChild != null) {
+          arguments.add(parseExpressionTree(nextChild));
+          nextChild = nextChild.getRightSibling();
+      }
+      return new IRMethodCallExpression(methodName, arguments);
+  }
+  
   // TODO for mayars -- add line numbers to this function.
   public static IRExpression parseExpressionTree(ConcreteTree tree) {
   	String nodeName = tree.getName();
@@ -112,9 +123,10 @@ public class ASTCreator {
 	case "expr_8":
 		ConcreteTree nextNode = tree.getLastChild();
 		IRExpression returnExpression = parseExpressionTree(nextNode);
-		while(nextNode.getRightSibling() != null) {
-			ConcreteTree trueExpressionTree = nextNode.getLeftSibling().getLeftSibling();
-			ConcreteTree conditionTree = trueExpressionTree.getLeftSibling().getLeftSibling();
+		while(nextNode.getLeftSibling() != null) {
+			ConcreteTree trueExpressionTree = nextNode.getLeftSibling();
+			ConcreteTree conditionTree = trueExpressionTree.getLeftSibling();
+			nextNode = conditionTree;
 			IRExpression trueExpression = parseExpressionTree(trueExpressionTree);
 			IRExpression condition = parseExpressionTree(conditionTree);
 			returnExpression = new IRTernaryOpExpression(condition, trueExpression, returnExpression);
@@ -129,15 +141,8 @@ public class ASTCreator {
 		if(firstChild.isNode()) {
 			return new IRLenExpression(firstChild.getRightSibling().getToken());
 		}
-		else if(firstChild.getName().equals("method_call")) { // should we use .equals? -mayars
-			List<IRExpression> arguments = new ArrayList<>();
-			String methodName = firstChild.getFirstChild().getToken().getText();
-			ConcreteTree nextChild = firstChild.getFirstChild().getRightSibling();
-			while (nextChild != null) {
-				arguments.add(parseExpressionTree(nextChild));
-				nextChild = nextChild.getRightSibling();
-			}
-			return new IRMethodCallExpression(methodName, arguments);
+		else if(firstChild.getName().equals("method_call")) {
+		    return parseMethodExpression(firstChild);
 		}
 		else if(firstChild.getName() == "location") {
 			return parseLocation(firstChild);
@@ -181,8 +186,12 @@ public class ASTCreator {
 			return toReturn;
 		}
 		default:
-			return new IRStringLiteral(tree.getToken().getText());
-		}
+		    if (tree.isNode()) { // TODO deal with case that string has escaped characters
+	            String text = tree.getToken().getText();
+	            return new IRStringLiteral(text.substring(1, text.length()-1));
+	        }
+		    throw new RuntimeException("You tried parsing a badly formatted expression!");
+  	    }
     }
 
     public static IRVariableExpression parseLocation(ConcreteTree tree) {
@@ -217,24 +226,26 @@ public class ASTCreator {
             return toReturn;
         }
     
-      	String nodeName = tree.getName();
+      	String nodeName = child.getName();
       	switch(nodeName) {
       	case "assign_expr":
-      		IRVariableExpression location = parseLocation(child);
-      		child = child.getRightSibling();
-      		Token operator = child.getToken();
-      		child = child.getRightSibling();
+      	    ConcreteTree locationTree = child.getFirstChild();
+      		IRVariableExpression location = parseLocation(locationTree);
+      		ConcreteTree operatorTree = locationTree.getRightSibling();
+      		Token operator = operatorTree.getToken();
+      		ConcreteTree expressionTree = operatorTree.getRightSibling();
       		IRExpression assignment = null;
-      		if(child != null) {
-      			assignment = parseExpressionTree(child);
+      		if(expressionTree != null) {
+      			assignment = parseExpressionTree(expressionTree);
       		}
       		toReturn = new IRAssignStatement(location, operator, assignment);
       		break;
       	case "method_call":
-      		IRExpression methodCall = parseExpressionTree(tree);
+      		IRExpression methodCall = parseMethodExpression(child);
       		toReturn = new IRMethodCallStatement(methodCall);
       		break;
       	case "if_block":
+      	    child = child.getFirstChild();
       		IRExpression ifCondition = parseExpressionTree(child);
       		IRBlock ifBlock = parseBlock(child.getRightSibling(), scope);
       		if(child.getRightSibling().getRightSibling() != null) {
@@ -245,6 +256,7 @@ public class ASTCreator {
       		}
       		break;
       	case "for_block":{
+      	    child = child.getFirstChild();
     		IRAssignStatement initializer = makeForLoopInitializer(child);
     		child = child.getRightSibling().getRightSibling().getRightSibling();
     		IRExpression condition = parseExpressionTree(child);
@@ -253,11 +265,12 @@ public class ASTCreator {
     		while (!child.getName().equals("block")) {
     			child = child.getRightSibling();
     		}
-    		IRBlock block = new IRBlock(tree.getLastChild(), scope);
+    		IRBlock block = parseBlock(child, scope);
     		toReturn = new IRForStatement(initializer, condition, stepFunction, block);
     		break;
       	}
       	case "while_block": {
+      	    child = child.getFirstChild();
       		IRExpression loopCondition = parseExpressionTree(child);
       		IRBlock block = parseBlock(child.getRightSibling(), scope);
       		toReturn = new IRWhileStatement(loopCondition, block);

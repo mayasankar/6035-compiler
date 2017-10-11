@@ -13,9 +13,10 @@ public class IRMethodCallStatement extends IRStatement {
 
   public IRMethodCallStatement(IRExpression expr) {
   	if(!(expr instanceof IRMethodCallExpression)) {
-  		throw new RuntimeException("To make a method call statement you mumst supply a method call expression");
+  		throw new RuntimeException("To make a method call statement you must supply a method call expression");
   	}
   	methodCall = (IRMethodCallExpression) expr;
+    statementType = IRStatement.StatementType.METHOD_CALL;
   }
   
   public IRMethodCallStatement(ConcreteTree tree) {
