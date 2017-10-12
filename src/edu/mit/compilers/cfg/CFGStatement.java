@@ -11,4 +11,7 @@ public class CFGStatement extends CFGLine {
     }
 
     public IRStatement getStatement() { return statement; }
+
+    @Override
+    public boolean isNoOp() { return false; }
 }

@@ -71,4 +71,8 @@ public abstract class CFGLine {
         return false;
     }
 
+    public boolean isNoOp() {
+        throw new RuntimeException("Must be overridden by child class of CFGLine.");
+    }
+
 }

@@ -23,7 +23,7 @@ import edu.mit.compilers.cfg.*;
 public static class CFGCreator {
 
     public static CFGLine makeNoOp() {
-
+        return new CFGNoOp();
     }
 
     public static CFG destruct(IRNode ir) {

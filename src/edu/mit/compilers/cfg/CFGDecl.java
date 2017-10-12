@@ -5,10 +5,13 @@ import edu.mit.compilers.cfg.decl.IRMemberDecl;
 public class CFGDecl extends CFGLine {
     IRMemberDecl decl;
 
-    public CFGStatement(CFGLine trueBranch, CFGLine falseBranch, IRMemberDecl decl) {
+    public CFGDecl(CFGLine trueBranch, CFGLine falseBranch, IRMemberDecl decl) {
         super(trueBranch, falseBranch);
         this.decl = decl;
     }
 
-    public IRStatement getDecl() { return decl; }
+    public IRMemberDecl getDecl() { return decl; }
+
+    @Override
+    public boolean isNoOp() { return false; }
 }
