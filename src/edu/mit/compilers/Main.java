@@ -10,6 +10,7 @@ import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.trees.SemanticChecker;
+import edu.mit.compilers.cfg.*;
 
 class Main {
   public static void main(String[] args) {
@@ -92,6 +93,10 @@ class Main {
         if (checker.checkProgram(ir)) {
             System.exit(1);
         }
+
+        CFGCreator creator = new CFGCreator();
+        CFG graph = creator.destruct(ir);
+        System.out.println(graph.toString());
       }
     } catch(Exception e) {
       // print the error:

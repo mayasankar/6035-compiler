@@ -20,6 +20,11 @@ public abstract class IRStatement extends IRNode {
 
   protected StatementType statementType = StatementType.UNSPECIFIED;
 
+  @Override
+  public String toString() {
+      return toString(0);
+  }
+
   String toString(int indent) {
     String answer = "";
     for (int i = 0; i < indent; ++i) {

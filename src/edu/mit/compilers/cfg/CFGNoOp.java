@@ -9,4 +9,9 @@ public class CFGNoOp extends CFGLine {
 
     @Override
     public boolean isNoOp() { return true; }
+
+    @Override
+    protected String ownValue() {
+        return "NOOP";
+    }
 }

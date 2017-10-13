@@ -75,4 +75,29 @@ public abstract class CFGLine {
         throw new RuntimeException("Must be overridden by child class of CFGLine.");
     }
 
+    @Override
+    public String toString() {
+        return stringHelper(0);
+    }
+
+    public String stringHelper(int numIndents) {
+        String prefix = "";
+        for (int i=0; i<numIndents; i++){
+            prefix += "-";
+        }
+        String str = prefix + ownValue() + "\n";
+        if (isBranch()) {
+            str += trueBranch.stringHelper(numIndents+1);
+            str += falseBranch.stringHelper(numIndents+1);
+        }
+        else if (trueBranch != null) {
+            str += trueBranch.stringHelper(numIndents);
+        }
+        return str;
+    }
+
+    protected String ownValue() {
+        return "<CFGLine Object>";
+    }
+
 }

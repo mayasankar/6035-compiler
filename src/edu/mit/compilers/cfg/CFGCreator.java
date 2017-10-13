@@ -26,9 +26,17 @@ public class CFGCreator {
         return new CFGNoOp();
     }
 
-    public static CFG destruct(IRProgram ir) {
-        // TODO
-        throw new RuntimeException("Unimplemented");
+    public static CFG destruct(IRProgram tree) {
+        // TODO something with List<IRImportDecl> tree.imports
+        CFG mainCFG = null;
+        for (IRMethodDecl method : tree.methods.getMethodList()) {
+            CFG methodCFG = destructIRMethodDecl(method);
+            // TODO store this in some lookuptable?
+            if (method.getName().equals("main")) {
+                mainCFG = methodCFG;
+            }
+        }
+        return mainCFG;
     }
 
     private static CFG destructIRStatement(IRStatement statement){
@@ -40,7 +48,7 @@ public class CFGCreator {
           } case WHILE_BLOCK: {
             return destructIRWhileStatement((IRWhileStatement) statement);
           } case METHOD_CALL: case RETURN_EXPR: {
-            // TODO idk how we're handling methods and returns?
+            // TODO idk how we're handling methods and returns? I think just as lines
           } case ASSIGN_EXPR: case BREAK: case CONTINUE: {
             return new CFG(new CFGStatement(statement));
           } default: {
@@ -49,8 +57,18 @@ public class CFGCreator {
         }
     }
 
+    private static CFG destructIRMethodDecl(IRMethodDecl decl) {
+        // todo do something w/ MethodTable parameters?
+        IRBlock code = decl.getCode();
+        if (code == null) {
+            // it's an import
+            return new CFG(new CFGMethodDecl(decl));
+        }
+        return destructIRBlock(code);
+    }
 
     private static CFG destructIRIfStatement(IRIfStatement statement) {
+        // TODO handle nonexistence of else blocks
         IRExpression cond = statement.getCondition();
         IRBlock thenBlock = statement.getThenBlock();
         IRBlock elseBlock = statement.getElseBlock();
@@ -133,19 +151,24 @@ public class CFGCreator {
     }
 
     private static CFG destructStatementList(List<IRStatement> statements) {
-        CFGStatement first = new CFGStatement(statements.remove(0));
+        if (statements.size() == 0) {
+            CFGLine noOp = makeNoOp();
+            return new CFG(noOp);
+        }
+        CFG firstGraph = destructIRStatement(statements.remove(0));
+        CFGLine firstEnd = firstGraph.getEnd();
         CFG restGraph = destructStatementList(statements);
         CFGLine restStart = restGraph.getStart();
         CFGLine restEnd = restGraph.getEnd();
-        first.setNext(restStart);
-        return new CFG(first, restEnd);
+        firstEnd.setNext(restStart);
+        return new CFG(firstGraph.getStart(), restEnd);
     }
 
     private static CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         switch(expr.getExpressionType()) {
           case UNARY: {
             IRUnaryOpExpression unExpr = (IRUnaryOpExpression) expr;
-            if (unExpr.getOperator().getText() == "!") {
+            if (unExpr.getOperator().getText().equals("!")) {
                 return shortcircuitNotExpression(unExpr, trueBranch, falseBranch);
             }
             return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
@@ -153,10 +176,10 @@ public class CFGCreator {
           case BINARY: {
             IRBinaryOpExpression biExpr = (IRBinaryOpExpression) expr;
             String op = biExpr.getOperator().getText();
-            if (op == "&&") {
+            if (op.equals("&&")) {
                 return shortcircuitAndExpression(biExpr, trueBranch, falseBranch);
             }
-            if (op == "||") {
+            if (op.equals("||")) {
                 return shortcircuitOrExpression(biExpr, trueBranch, falseBranch);
             }
             return shortcircuitBasicExpression(expr, trueBranch, falseBranch);

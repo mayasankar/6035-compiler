@@ -35,12 +35,17 @@ public class CFG {
         this.end = line;
     }
 
-    public CFGLine getStart(){
+    public CFGLine getStart() {
         return start;
     }
 
-    public CFGLine getEnd(){
+    public CFGLine getEnd() {
         return end;
+    }
+
+    @Override
+    public String toString() {
+        return start.toString();
     }
 
 }
