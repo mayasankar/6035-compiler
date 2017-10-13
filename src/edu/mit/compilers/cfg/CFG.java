@@ -25,6 +25,16 @@ public class CFG {
     private CFGLine start;
     private CFGLine end;
 
+    public CFG(CFGLine start, CFGLine end){
+        this.start = start;
+        this.end = end;
+    }
+
+    public CFG(CFGLine line){
+        this.start = line;
+        this.end = line;
+    }
+
     public CFGLine getStart(){
         return start;
     }

@@ -65,7 +65,7 @@ public abstract class CFGLine {
                 return true;
             }
         }
-        elif (falseBranch == null) {
+        else if (falseBranch == null) {
             throw new RuntimeException("CFGLine has one null branch and one non-null branch.");
         }
         return false;
