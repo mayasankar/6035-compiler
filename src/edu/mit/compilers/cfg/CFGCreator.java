@@ -140,5 +140,27 @@ public class CFGCreator {
         throw new RuntimeException("Unimplemented");
     }
 
+    private static CFGLine shortcircuitAndExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
+        CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), beginSecond, falseBranch);
+        return beginFirst;
+    }
+
+    private static CFGLine shortcircuitOrExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
+        CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), trueBranch, beginSecond);
+        return beginFirst;
+    }
+
+    private static CFGLine shortcircuitBasicExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine begin = new CFGExpression(trueBranch, falseBranch, expr);
+        return begin;
+    }
+
+    private static CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginNot = shortcircuit(expr.getArgument(), falseBranch, trueBranch);
+        return beginNot;
+    }
+
     // probably same here
 }
