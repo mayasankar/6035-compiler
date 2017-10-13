@@ -72,16 +72,23 @@ public class CFGCreator {
         IRExpression cond = statement.getCondition();
         IRBlock thenBlock = statement.getThenBlock();
         IRBlock elseBlock = statement.getElseBlock();
+
         CFG thenGraph = destructIRBlock(thenBlock);
-        CFG elseGraph = destructIRBlock(elseBlock);
         CFGLine thenStart = thenGraph.getStart();
         CFGLine thenEnd = thenGraph.getEnd();
-        CFGLine elseStart = elseGraph.getStart();
-        CFGLine elseEnd = elseGraph.getEnd();
         CFGLine noOp = makeNoOp();
         thenEnd.setNext(noOp);
-        elseEnd.setNext(noOp);
-        CFGLine condStart = shortcircuit(cond, thenStart, elseStart);
+        CFGLine condStart;
+        if (elseBlock != null) {
+            CFG elseGraph = destructIRBlock(elseBlock);
+            CFGLine elseStart = elseGraph.getStart();
+            CFGLine elseEnd = elseGraph.getEnd();
+            elseEnd.setNext(noOp);
+            condStart = shortcircuit(cond, thenStart, elseStart);
+        }
+        else {
+            condStart = shortcircuit(cond, thenStart, noOp);
+        }
         return new CFG(condStart, noOp);
     }
     private static CFG destructIRWhileStatement(IRWhileStatement statement) {

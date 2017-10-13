@@ -77,21 +77,24 @@ public abstract class CFGLine {
 
     @Override
     public String toString() {
-        return stringHelper(0);
+        return stringHelper(0, 20);
     }
 
-    public String stringHelper(int numIndents) {
+    public String stringHelper(int numIndents, int depthLimit) {
+        if (depthLimit <= 0) {
+            return "";
+        }
         String prefix = "";
         for (int i=0; i<numIndents; i++){
             prefix += "-";
         }
         String str = prefix + ownValue() + "\n";
         if (isBranch()) {
-            str += trueBranch.stringHelper(numIndents+1);
-            str += falseBranch.stringHelper(numIndents+1);
+            str += trueBranch.stringHelper(numIndents+1, depthLimit-1);
+            str += falseBranch.stringHelper(numIndents+1, depthLimit-1);
         }
         else if (trueBranch != null) {
-            str += trueBranch.stringHelper(numIndents);
+            str += trueBranch.stringHelper(numIndents, depthLimit-1);
         }
         return str;
     }
