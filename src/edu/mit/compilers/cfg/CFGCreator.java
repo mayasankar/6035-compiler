@@ -18,7 +18,7 @@ import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
 
 // todo list
-// multi-line, insert here
+// IRMethodCallExpression destructor
 
 public class CFGCreator {
 
@@ -49,31 +49,6 @@ public class CFGCreator {
         }
     }
 
-/*
-    private static CFG destructIRExpression(IRExpression expr){
-        switch(expr.getExpressionType()) {
-          case BOOL_LITERAL: case STRING_LITERAL: {
-            return;
-        } case INT_LITERAL: {
-            destructIntLiteral((IRIntLiteral) expr); break;
-        } case UNARY: {
-            destructIRUnaryOpExpression((IRUnaryOpExpression) expr); break;
-          } case BINARY: {
-            destructIRBinaryOpExpression((IRBinaryOpExpression) expr); break;
-          } case TERNARY: {
-            destructIRTernaryOpExpression((IRTernaryOpExpression) expr); break;
-          } case LEN: {
-            destructIRLenExpression((IRLenExpression) expr); break;
-          } case METHOD_CALL: {
-            destructIRMethodCallExpression((IRMethodCallExpression) expr); break;
-          } case VARIABLE: {
-            destructIRVariableExpression((IRVariableExpression) expr); break;
-          } default: {
-            notifyError("IR error: UNSPECIFIED expr", expr);
-          }
-        }
-    }
-*/ // uncertain if we need this
 
     private static CFG destructIRIfStatement(IRIfStatement statement) {
         IRExpression cond = statement.getCondition();
@@ -122,6 +97,36 @@ public class CFGCreator {
         return new CFG(initLine, noOp);
     }
 
+    private static CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr) {
+        IRExpression condition = expr.getCondition();
+
+        CFGLine trueBranch = destructIRExpression(expr.getTrueExpression()).getStart();
+        CFGLine falseBranch = destructIRExpression(expr.getFalseExpression()).getStart();
+
+        CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
+        CFGLine noOp = makeNoOp();
+        return new CFG(condLine, noOp);
+    }
+
+    private static CFG destructIRExpression(IRExpression expr) {
+        switch(expr.getExpressionType()) {
+          case TERNARY: {
+            return destructIRTernaryOpExpression((IRTernaryOpExpression) expr);
+          }
+          case METHOD_CALL: {
+            return destructIRMethodCallExpression((IRMethodCallExpression) expr);
+          }
+          default: {
+            return new CFG(new CFGExpression(expr));
+          }
+        }
+    }
+
+    private static CFG destructIRMethodCallExpression(IRMethodCallExpression expr) {
+        // TODO
+        throw new RuntimeException("Unimplemented");
+    }
+
     private static CFG destructIRBlock(IRBlock block) {
         List<IRStatement> statements = block.getStatements();
         return destructStatementList(statements);
@@ -137,7 +142,29 @@ public class CFGCreator {
     }
 
     private static CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
-        throw new RuntimeException("Unimplemented");
+        switch(expr.getExpressionType()) {
+          case UNARY: {
+            IRUnaryOpExpression unExpr = (IRUnaryOpExpression) expr;
+            if (unExpr.getOperator().getText() == "!") {
+                return shortcircuitNotExpression(unExpr, trueBranch, falseBranch);
+            }
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+          case BINARY: {
+            IRBinaryOpExpression biExpr = (IRBinaryOpExpression) expr;
+            String op = biExpr.getOperator().getText();
+            if (op == "&&") {
+                return shortcircuitAndExpression(biExpr, trueBranch, falseBranch);
+            }
+            if (op == "||") {
+                return shortcircuitOrExpression(biExpr, trueBranch, falseBranch);
+            }
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+          default: {
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+        }
     }
 
     private static CFGLine shortcircuitAndExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
@@ -152,9 +179,9 @@ public class CFGCreator {
         return beginFirst;
     }
 
-    private static CFGLine shortcircuitBasicExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
-        CFGLine begin = new CFGExpression(trueBranch, falseBranch, expr);
-        return begin;
+    private static CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        // todo do we ever need to destruct this?
+        return new CFGExpression(trueBranch, falseBranch, expr);
     }
 
     private static CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
@@ -162,5 +189,6 @@ public class CFGCreator {
         return beginNot;
     }
 
-    // probably same here
+
+
 }
