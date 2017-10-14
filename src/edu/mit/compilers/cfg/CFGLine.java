@@ -18,9 +18,9 @@ import edu.mit.compilers.trees.EnvStack;
 
 
 public abstract class CFGLine {
-    private CFGLine trueBranch;
-    private CFGLine falseBranch;
-    private int numParentLines;
+    protected CFGLine trueBranch;
+    protected CFGLine falseBranch;
+    protected int numParentLines;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -52,6 +52,10 @@ public abstract class CFGLine {
 
     public boolean isBranch() {
         return (trueBranch != falseBranch);
+    }
+
+    public boolean isMerge() {
+        return numParentLines > 1;
     }
 
     public void setNext(CFGLine next) {
@@ -109,6 +113,11 @@ public abstract class CFGLine {
 
     protected String ownValue() {
         return "<CFGLine Object>";
+    }
+
+    public String getLabel(){
+        // TODO: what should the label of this line in the code be, if needed?
+        return new Integer(this.hashCode()).toString();
     }
 
 }

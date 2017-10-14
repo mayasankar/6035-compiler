@@ -17,7 +17,8 @@ import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
 
 // todo list
-// makeCode(String label, CFG method)
+// makeCodeLineRecursively
+
 
 public class Assembler {
     public static void makeCode(Map<String, CFG> methods, OutputStream os, MethodTable table) {
@@ -48,9 +49,7 @@ public class Assembler {
         int numAllocs = numParams; // TODO increment numAllocs as we do stuff that needs new local vars / temps
 
         CFGLine line = method.getStart();
-        while (line != null) {
-            //TODO make it iterate through lines and generate code
-        }
+        code += makeCodeLineRecursively(line);
 
         String allocSpace = (new Integer(8*numAllocs)).toString();
         code += "leave\n" + "ret\n";
@@ -58,8 +57,12 @@ public class Assembler {
         return prefix + code;
     }
 
-    private static String makeCodeLine() {
-        // TODO
+    private static String makeCodeLineRecursively(CFGLine line) {
+        // TODO implement; also please make it use blocks once those work so we don't jump a gazillion times
+        // label the location with line.getLabel()
+        // make the code for its statement (split cases for CFGMethodDecl, CFGDecl, CFGNoOp, CFGStatement, CFGExpression)
+        // if branches, make code for each child, and have jump statements depending true or falseBranch
+        // otherwise just make code for the one child and don't need to jump
         throw new RuntimeException("Unimplemented");
     }
 }
