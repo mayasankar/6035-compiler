@@ -1,4 +1,4 @@
-import printf();
+import printf;
 bool not2 ( bool a ) {
   bool b;
   if (a) {
