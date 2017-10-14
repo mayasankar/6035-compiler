@@ -16,27 +16,30 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
-// todo list
-// multi-line, insert here
-
 
 public abstract class CFGLine {
     private CFGLine trueBranch;
     private CFGLine falseBranch;
+    private int numParentLines;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
+        trueBranch.addParentLine();
         this.falseBranch = falseBranch;
+        falseBranch.addParentLine();
+        this.numParentLines = 0;
     }
 
     protected CFGLine(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
+        this.numParentLines = 0;
     }
 
     protected CFGLine() {
         this.trueBranch = null;
         this.falseBranch = null;
+        this.numParentLines = 0;
     }
 
     public CFGLine getTrueBranch() {
@@ -54,6 +57,11 @@ public abstract class CFGLine {
     public void setNext(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
+        next.addParentLine();
+    }
+
+    public void addParentLine() {
+        this.numParentLines += 1;
     }
 
     public boolean isEnd() {

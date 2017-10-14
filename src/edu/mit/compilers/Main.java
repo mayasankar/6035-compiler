@@ -1,8 +1,10 @@
 package edu.mit.compilers;
 
 import java.io.*;
+import java.util.Map;
 import antlr.Token;
 import antlr.collections.AST;
+
 import edu.mit.compilers.grammar.*;
 import edu.mit.compilers.tools.CLI;
 import edu.mit.compilers.tools.CLI.Action;
@@ -70,7 +72,7 @@ class Main {
         if (parser.getError()) {
           System.exit(1);
         }
-      } else if (CLI.target == Action.INTER ||
+      } else if (CLI.target == Action.INTER || CLI.target == Action.ASSEMBLY ||
                  CLI.target == Action.DEFAULT) { // TODO do something if CLI.debug
         DecafScanner scanner =
             new DecafScanner(new DataInputStream(inputStream));
@@ -94,9 +96,13 @@ class Main {
             System.exit(1);
         }
 
-        CFGCreator creator = new CFGCreator();
-        CFG graph = creator.destruct(ir);
-        System.out.println(graph.toString());
+        if (CLI.target == Action.ASSEMBLY){
+            CFGCreator creator = new CFGCreator();
+            Map<String, CFG> graphs = creator.destruct(ir);
+            //System.out.println(graphs.get("main").toString());
+            Assembler assembler = new Assembler();
+            assembler.makeCode(graphs, System.out, ir.methods);
+        }
       }
     } catch(Exception e) {
       // print the error:

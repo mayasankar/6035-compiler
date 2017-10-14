@@ -26,17 +26,14 @@ public class CFGCreator {
         return new CFGNoOp();
     }
 
-    public static CFG destruct(IRProgram tree) {
-        // TODO something with List<IRImportDecl> tree.imports
-        CFG mainCFG = null;
+    public static Map<String, CFG> destruct(IRProgram tree) {
+        Map<String, CFG> destructedMethods = new HashMap<>();
         for (IRMethodDecl method : tree.methods.getMethodList()) {
             CFG methodCFG = destructIRMethodDecl(method);
-            // TODO store this in some lookuptable?
-            if (method.getName().equals("main")) {
-                mainCFG = methodCFG;
-            }
+            String name = method.getName();
+            destructedMethods.put(name, methodCFG);
         }
-        return mainCFG;
+        return destructedMethods;
     }
 
     private static CFG destructIRStatement(IRStatement statement){
