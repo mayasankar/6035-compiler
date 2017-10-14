@@ -1,4 +1,4 @@
-// 22. All integer literals must be in the range −9223372036854775808 ≤ x ≤ 9223372036854775807
+// 22. All integer literals must be in the range -9223372036854775808 ≤ x ≤ 9223372036854775807
 int x;
 void main ( ) {
   x = 0xdeadbeefdeadbeefdeadbeef;
