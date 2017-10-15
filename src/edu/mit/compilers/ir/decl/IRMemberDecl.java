@@ -7,8 +7,9 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.symbol_tables.Named;
 
-public abstract class IRMemberDecl extends IRNode {
+public abstract class IRMemberDecl extends IRNode implements Named{
 
 	protected Token id;
 	protected IRType.Type irType;

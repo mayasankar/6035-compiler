@@ -9,9 +9,10 @@ import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
+import edu.mit.compilers.symbol_tables.Named;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
-public class IRMethodDecl extends IRNode {
+public class IRMethodDecl extends IRNode implements Named {
   IRType.Type returnType = IRType.Type.UNSPECIFIED;
   protected Token id;
   // ArrayList<IRParameterDecl> parameters = new ArrayList<IRParameterDecl>();
