@@ -18,6 +18,7 @@ public class IRBinaryOpExpression extends IRExpression{
 	private Token operator;
 
 	public IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
+		setLineNumbers(leftExpr);
 		expressionType = IRExpression.ExpressionType.BINARY;
 		this.leftExpr = leftExpr;
 		this.operator = operator;

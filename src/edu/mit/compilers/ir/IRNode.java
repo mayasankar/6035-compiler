@@ -29,5 +29,10 @@ public abstract class IRNode {
 		column = tk.getColumn();
 	}
 
+	public void setLineNumbers(IRNode node) {
+		this.line = node.line;
+		this.column = node.column;
+	}
+
 	public abstract List<? extends IRNode> getChildren();
 }
