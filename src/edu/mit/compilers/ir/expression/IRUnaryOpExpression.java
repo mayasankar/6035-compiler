@@ -17,6 +17,7 @@ public class IRUnaryOpExpression extends IRExpression {
 	private IRExpression argument;
 
 	public IRUnaryOpExpression(Token operator, IRExpression argument) {
+		setLineNumbers(operator);
 		expressionType = IRExpression.ExpressionType.UNARY;
 		this.operator = operator;
 		this.argument = argument;

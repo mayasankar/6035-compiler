@@ -17,6 +17,7 @@ public class IRTernaryOpExpression extends IRExpression {
 
 	public IRTernaryOpExpression(IRExpression condition, IRExpression trueExpression, IRExpression falseExpression) {
 		expressionType = IRExpression.ExpressionType.TERNARY;
+		setLineNumbers(condition);
 		this.condition = condition;
 		this.trueExpression = trueExpression;
 		this.falseExpression = falseExpression;
