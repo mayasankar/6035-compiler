@@ -21,6 +21,7 @@ public abstract class CFGLine {
     protected CFGLine trueBranch;
     protected CFGLine falseBranch;
     protected int numParentLines;
+    protected CFGBlock correspondingBlock;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -40,6 +41,14 @@ public abstract class CFGLine {
         this.trueBranch = null;
         this.falseBranch = null;
         this.numParentLines = 0;
+    }
+
+    public CFGBlock getCorrespondingBlock() {
+        return correspondingBlock;
+    }
+
+    public void setCorrespondingBlock(CFGBlock block) {
+        correspondingBlock = block;
     }
 
     public CFGLine getTrueBranch() {
