@@ -26,46 +26,69 @@ public class CFGCreator {
         return new CFGNoOp();
     }
 
-    public static Map<String, CFG> destruct(IRProgram tree) {
-        Map<String, CFG> destructedMethods = new HashMap<>();
+    public static Map<String, CFGBlock> destruct(IRProgram tree) {
+        Map<String, CFGBlock> destructedMethods = new HashMap<>();
         for (IRMethodDecl method : tree.methods.getMethodList()) {
             CFG methodCFG = destructIRMethodDecl(method);
-            CFG blockedCFG = condenseIntoBlocks(methodCFG);
+            CFGBlock blockedCFG = condenseIntoBlocks(methodCFG);
             String name = method.getName();
             destructedMethods.put(name, blockedCFG);
         }
         return destructedMethods;
     }
 
-    private static CFG condenseIntoBlocks(CFG cfg) {
-        /*CFGBlock block = CFGBlock();
+    private static CFGBlock condenseIntoBlocks(CFG cfg) {
+        // make a new block
+        // while we have lines that don't merge or branch, add them to block
+        // then, for each child that isn't already part of a block, recursively run this
+        CFGBlock block = new CFGBlock();
         CFGLine line = cfg.getStart();
+        boolean broke_as_merge = false;
         while (line != null) {
+            System.out.println("Condensing line: " + line.ownValue());
+            if (line.getCorrespondingBlock() != null) {
+                throw new RuntimeException("This should never happen. line: " + line.ownValue() +
+                ", Block: " + line.getCorrespondingBlock().toString());
+            }
             block.addLine(line);
+            line.setCorrespondingBlock(block);
             if (line.isBranch()) {
                 break;
             }
             line = line.getTrueBranch();
             if (line == null || line.isMerge()) {
+                broke_as_merge = true;
                 break;
             }
         }
         if (line != null) {
-            if (line.isBranch()) {
-                CFG trueBranchCFG =
-                block.setTrueBranch(trueBr);
-                block.setFalseBranch(line.getFalseBranch());
+            if (broke_as_merge) {
+                if (line.getCorrespondingBlock() == null) {
+                    CFG remainder = new CFG(line, cfg.getEnd());
+                    CFGBlock condensedRemainder = condenseIntoBlocks(remainder);
+                    block.setTrueBranch(condensedRemainder);
+                    block.setFalseBranch(condensedRemainder);
+                }
             }
-        }*/
-        /* TODO the above code is getting nowhere and idk how to do this
-            possible proposal: mark every CFGLine with some sort of "has been cleaned" boolean
-            then go through, at every line if the current fails isBranch and the child fails isMerge,
-            join them together into a block. otherwise if it's a branch go through both children
-            condensing, but stop when you see it marked as cleaned because that indicates rejoining
-            where you've already condensed. More generally, we should think out a traversal
-            strategy for this... -jamb
-        */
-        throw new RuntimeException("Unimplemented");
+            else if (line.isBranch()) {
+                CFGLine trueChild = line.getTrueBranch();
+                if (trueChild.getCorrespondingBlock() == null) {
+                    CFG remainder = new CFG(trueChild, cfg.getEnd());
+                    CFGBlock condensedRemainder = condenseIntoBlocks(remainder);
+                    block.setTrueBranch(condensedRemainder);
+                }
+                CFGLine falseChild = line.getFalseBranch();
+                if (falseChild.getCorrespondingBlock() == null) {
+                    CFG remainder = new CFG(falseChild, cfg.getEnd());
+                    CFGBlock condensedRemainder = condenseIntoBlocks(remainder);
+                    block.setFalseBranch(condensedRemainder);
+                }
+            }
+            else {
+                throw new RuntimeException("Impossible; if it broke it must be null, merge, or branch.");
+            }
+        }
+        return block;
     }
 
     private static CFG destructIRStatement(IRStatement statement){

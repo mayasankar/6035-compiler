@@ -21,9 +21,9 @@ import edu.mit.compilers.cfg.*;
 
 
 public class Assembler {
-    public static void makeCode(Map<String, CFG> methods, OutputStream os, MethodTable table) {
+    public static void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
         for (String methodName : methods.keySet()) {
-            CFG graph = methods.get(methodName);
+            CFGBlock graph = methods.get(methodName);
             VariableTable parameters = table.get(methodName).getParameters();
             int numParams;
             if (parameters == null){
@@ -42,14 +42,14 @@ public class Assembler {
         return;
     }
 
-    private static String makeCode(String label, CFG method, int numParams) {
+    private static String makeCode(String label, CFGBlock method, int numParams) {
         String prefix = label + ":\n";
         String code = "";
         // TODO mov input params to stack
         int numAllocs = numParams; // TODO increment numAllocs as we do stuff that needs new local vars / temps
 
-        CFGLine line = method.getStart();
-        code += makeCodeLineRecursively(line);
+        CFGBlock block = method;
+        code += makeCodeLineRecursively(block);
 
         String allocSpace = (new Integer(8*numAllocs)).toString();
         code += "leave\n" + "ret\n";
@@ -57,9 +57,9 @@ public class Assembler {
         return prefix + code;
     }
 
-    private static String makeCodeLineRecursively(CFGLine line) {
+    private static String makeCodeLineRecursively(CFGBlock block) {
         // TODO implement; also please make it use blocks once those work so we don't jump a gazillion times
-        // label the location with line.getLabel()
+        // label the location with line.getLabel() (basically just labels with the line's hashcode)
         // make the code for its statement (split cases for CFGMethodDecl, CFGDecl, CFGNoOp, CFGStatement, CFGExpression)
         // if branches, make code for each child, and have jump statements depending true or falseBranch
         // otherwise just make code for the one child and don't need to jump

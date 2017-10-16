@@ -98,7 +98,7 @@ class Main {
 
         if (CLI.target == Action.ASSEMBLY){
             CFGCreator creator = new CFGCreator();
-            Map<String, CFG> graphs = creator.destruct(ir);
+            Map<String, CFGBlock> graphs = creator.destruct(ir);
             //System.out.println(graphs.get("main").toString());
             Assembler assembler = new Assembler();
             assembler.makeCode(graphs, System.out, ir.methods);

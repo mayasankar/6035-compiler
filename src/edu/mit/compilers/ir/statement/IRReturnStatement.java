@@ -9,7 +9,7 @@ import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRReturnStatement extends IRStatement {
   private IRExpression expr;
-  
+
   public IRReturnStatement(ConcreteTree tree) {
     statementType = IRStatement.StatementType.RETURN_EXPR;
     ConcreteTree child = tree.getFirstChild();
@@ -20,7 +20,7 @@ public class IRReturnStatement extends IRStatement {
       expr = null;
     }
   }
-  
+
   public IRReturnStatement(IRExpression expr) {
     this.statementType = IRStatement.StatementType.RETURN_EXPR;
   	this.expr = expr;
@@ -32,7 +32,7 @@ public class IRReturnStatement extends IRStatement {
 
   @Override
   public String toString() {
-    return expr == null ? "void" : expr.toString();
+    return expr == null ? "void" : "return " + expr.toString();
   }
 
   @Override

@@ -29,18 +29,21 @@ public abstract class CFGLine {
         this.falseBranch = falseBranch;
         falseBranch.addParentLine();
         this.numParentLines = 0;
+        this.correspondingBlock = null;
     }
 
     protected CFGLine(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
         this.numParentLines = 0;
+        this.correspondingBlock = null;
     }
 
     protected CFGLine() {
         this.trueBranch = null;
         this.falseBranch = null;
         this.numParentLines = 0;
+        this.correspondingBlock = null;
     }
 
     public CFGBlock getCorrespondingBlock() {
@@ -111,6 +114,9 @@ public abstract class CFGLine {
         }
         String str = prefix + ownValue() + "\n";
         if (isBranch()) {
+            if (trueBranch == null || falseBranch == null) {
+                throw new RuntimeException("Branches should not be null: " + this.ownValue());
+            }
             str += trueBranch.stringHelper(numIndents+1, depthLimit-1);
             str += falseBranch.stringHelper(numIndents+1, depthLimit-1);
         }
@@ -120,7 +126,7 @@ public abstract class CFGLine {
         return str;
     }
 
-    protected String ownValue() {
+    public String ownValue() {
         return "<CFGLine Object>";
     }
 

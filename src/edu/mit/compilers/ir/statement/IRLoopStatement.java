@@ -11,7 +11,7 @@ public class IRLoopStatement extends IRStatement {
   public IRLoopStatement(IRStatement.StatementType st) {
     statementType = st;
   }
-  
+
   public static IRLoopStatement breakStatement = new IRLoopStatement(IRStatement.StatementType.BREAK);
 
   public static IRLoopStatement continueStatement = new IRLoopStatement(IRStatement.StatementType.CONTINUE);
@@ -22,7 +22,13 @@ public class IRLoopStatement extends IRStatement {
 
   @Override
   public String toString() {
-    return "";
+      if (statementType == IRStatement.StatementType.BREAK) {
+          return "break";
+      }
+      if (statementType == IRStatement.StatementType.CONTINUE) {
+          return "continue";
+      }
+      return "";
   }
 
   @Override

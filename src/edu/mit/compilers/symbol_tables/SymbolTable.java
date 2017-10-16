@@ -39,7 +39,7 @@ public class SymbolTable<T extends SymbolTable<T,D>, D extends Named> {
 		}
 		return null;
 	}
-	
+
 	public boolean isEmpty() {
 		return orderedChildren.size() == 0;
 	}
