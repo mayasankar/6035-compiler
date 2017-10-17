@@ -50,7 +50,7 @@ public class CFGCreator {
                 ", Block: " + line.getCorrespondingBlock().toString());
             }
             if (!line.isNoOp()) {
-                System.out.println("line: " + line.ownValue());
+                //System.out.println("line: " + line.ownValue());
                 block.addLine(line);
             }
             line.setCorrespondingBlock(block);
@@ -79,11 +79,17 @@ public class CFGCreator {
                     CFGBlock condensedRemainder = condenseIntoBlocks(remainder);
                     block.setTrueBranch(condensedRemainder);
                 }
+                else {
+                    block.setTrueBranch(trueChild.getCorrespondingBlock());
+                }
                 CFGLine falseChild = line.getFalseBranch();
                 if (falseChild.getCorrespondingBlock() == null) {
                     CFG remainder = new CFG(falseChild, cfg.getEnd());
                     CFGBlock condensedRemainder = condenseIntoBlocks(remainder);
                     block.setFalseBranch(condensedRemainder);
+                }
+                else {
+                    block.setFalseBranch(falseChild.getCorrespondingBlock());
                 }
             }
             else {

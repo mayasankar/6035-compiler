@@ -60,15 +60,16 @@ public class BlockAssembler {
         String childCode = "";
         CFGBlock child = (CFGBlock)block.getTrueBranch();
         if (child != null) {
-            if (blockLabels.containsKey(child)) {
-                // jump to it
-                code += "mov $1, %r11";
-                code += "cmp %r10, %r11";
-                code += "je " + blockLabels.get(child);
+            if (!blockLabels.containsKey(child)) {
+                childCode += makeCodeHelper(child);
+            }
+            else if (block.isBranch()) {
+                code += "mov $1, %r11\n";
+                code += "cmp %r10, %r11\n";
+                code += "je " + blockLabels.get(child) + "\n";
             }
             else {
-                // we don't need to jump to it because it's just the next block
-                childCode += makeCodeHelper(child);
+                code += "jmp " + blockLabels.get(child) + "\n";
             }
         }
         if (block.isBranch()) {
@@ -79,9 +80,9 @@ public class BlockAssembler {
                     childCode += makeCodeHelper(child);
                 }
                 // jump to it
-                code += "mov $0, %r11";
-                code += "cmp %r10, %r11";
-                code += "je " + blockLabels.get(child);
+                code += "mov $0, %r11\n";
+                code += "cmp %r10, %r11\n";
+                code += "je " + blockLabels.get(child) + "\n";
             }
             else {
                 throw new RuntimeException("null false child of block when true child is not null.");
@@ -92,7 +93,7 @@ public class BlockAssembler {
 
     private String makeCodeLine(CFGLine line) {
         //TODO
-        return line.ownValue();
+        return line.ownValue() + "\n";
         //throw new RuntimeException("Unimplemented");
     }
 }
