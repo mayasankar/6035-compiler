@@ -1,4 +1,4 @@
-import printf();
+import printf;
 void main ( ) {
   int i, sum;
   int j;

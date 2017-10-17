@@ -1,6 +1,6 @@
-import random();
-import srandom();
-import printf();
+import random;
+import srandom;
+import printf;
 // a quicksort program.  set the "length" parameter in main() to the
 // desired size of the sorted array.  if you want to sort an array
 // bigger than 100 elements, you'll also need to adjust the declaration

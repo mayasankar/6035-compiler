@@ -1,4 +1,4 @@
-import printf();
+import printf;
 // test shortcircuit and other stuff
 int field_in_class;
 int test_long_args ( int a, int b, int c, int d, int e, int f ) {

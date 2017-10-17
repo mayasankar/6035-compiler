@@ -1,4 +1,4 @@
-import printf();
+import printf;
 // test as many operators as we can
 void main ( ) {
   int a, b, c;

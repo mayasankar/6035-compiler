@@ -1,4 +1,4 @@
-import printf();
+import printf;
 bool fail ( bool b ) {
   printf ( "INCORRECT - shorcircuiting failed\n" );
   return b;

@@ -1,4 +1,4 @@
-import printf();
+import printf;
 int gurp ( int a, int b, bool c, int d, int e, int f, bool g, int h ) {
   int i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, a1, a2, a3, a4;
   printf ( "top of gurp\n" );

@@ -1,4 +1,4 @@
-import printf();
+import printf;
 int array[10];
 void main ( ) {
   int j;
