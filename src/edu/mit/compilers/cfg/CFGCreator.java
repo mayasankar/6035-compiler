@@ -45,12 +45,14 @@ public class CFGCreator {
         CFGLine line = cfg.getStart();
         boolean broke_as_merge = false;
         while (line != null) {
-            System.out.println("Condensing line: " + line.ownValue());
             if (line.getCorrespondingBlock() != null) {
                 throw new RuntimeException("This should never happen. line: " + line.ownValue() +
                 ", Block: " + line.getCorrespondingBlock().toString());
             }
-            block.addLine(line);
+            if (!line.isNoOp()) {
+                System.out.println("line: " + line.ownValue());
+                block.addLine(line);
+            }
             line.setCorrespondingBlock(block);
             if (line.isBranch()) {
                 break;

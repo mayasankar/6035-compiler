@@ -6,7 +6,7 @@ import edu.mit.compilers.cfg.CFGLine;
 public class CFGBlock extends CFGLine {
     private List<CFGLine> lines;
 
-    public CFGBlock(CFGLine trueBranch, CFGLine falseBranch) {
+    public CFGBlock(CFGBlock trueBranch, CFGBlock falseBranch) {
         super(trueBranch, falseBranch);
         this.lines = new ArrayList<CFGLine>();
     }
