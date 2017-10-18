@@ -51,7 +51,7 @@ public class BlockAssembler {
         blockCount += 1;
         String label = methodLabel+"_"+new Integer(blockCount).toString();
         blockLabels.put(block, label);
-        String code = label + ":\n";
+        String code = "\n" + label + ":\n";
         for (CFGLine line : block.getLines()) {
             code += makeCodeLine(line);
         }
@@ -59,6 +59,22 @@ public class BlockAssembler {
         // add code for true child
         String childCode = "";
         CFGBlock child = (CFGBlock)block.getTrueBranch();
+        // DEBUG
+        /*if (blockCount == 3){
+            code += "DEBUG: " + label + "\n";
+            if (child == null) {
+                code += "DEBUG: CHILD IS NULL\n";
+            }
+            else if (!blockLabels.containsKey(child)) {
+                code += "DEBUG: CHILD NOT IN BLOCK LABELS\n";
+            }
+            else if (block.isBranch()) {
+                code += "DEBUG: BLOCK IS BRANCH\n";
+            }
+            else {
+                code += "DEBUG: ELSE\n";
+            }
+        }*/
         if (child != null) {
             if (!blockLabels.containsKey(child)) {
                 childCode += makeCodeHelper(child);

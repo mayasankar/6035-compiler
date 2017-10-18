@@ -71,6 +71,10 @@ public class CFGCreator {
                     block.setTrueBranch(condensedRemainder);
                     block.setFalseBranch(condensedRemainder);
                 }
+                else {
+                    block.setTrueBranch(line.getCorrespondingBlock());
+                    block.setFalseBranch(line.getCorrespondingBlock());
+                }
             }
             else if (line.isBranch()) {
                 CFGLine trueChild = line.getTrueBranch();
@@ -94,6 +98,9 @@ public class CFGCreator {
             }
             else {
                 throw new RuntimeException("Impossible; if it broke it must be null, merge, or branch.");
+            }
+            if (block.getTrueBranch() == null || block.getFalseBranch() == null) {
+                throw new RuntimeException("Block children should have been set to non-null value.");
             }
         }
         return block;
