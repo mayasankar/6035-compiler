@@ -39,6 +39,7 @@ public class BlockAssembler {
         code += makeCodeHelper(block);
 
         String allocSpace = new Integer(8*numAllocs).toString();
+        code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
         prefix += "enter $" + allocSpace + ", $0\n";
         return prefix + code;
@@ -88,6 +89,10 @@ public class BlockAssembler {
                 code += "jmp " + blockLabels.get(child) + "\n";
             }
         }
+        else {
+            //null child means we want to jump to the end of method where we return
+            code += "jmp " + methodLabel + "_end\n";
+        }
         if (block.isBranch()) {
             //  add code for false child, and jump statement
             child = (CFGBlock)block.getFalseBranch();
@@ -108,7 +113,7 @@ public class BlockAssembler {
     }
 
     private String makeCodeLine(CFGLine line) {
-        //TODO
+        //TODO make this assembly instead of just printing the line
         return line.ownValue() + "\n";
         //throw new RuntimeException("Unimplemented");
     }
