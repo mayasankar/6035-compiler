@@ -21,7 +21,7 @@ public class CFGStatement extends CFGLine {
     public boolean isNoOp() { return false; }
 
     @Override
-    protected String ownValue() {
+    public String ownValue() {
         return statement.toString();
     }
 }

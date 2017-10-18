@@ -21,7 +21,7 @@ public class CFGDecl extends CFGLine {
     public boolean isNoOp() { return false; }
 
     @Override
-    protected String ownValue() {
+    public String ownValue() {
         return decl.toString();
     }
 }

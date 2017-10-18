@@ -11,7 +11,7 @@ public class CFGNoOp extends CFGLine {
     public boolean isNoOp() { return true; }
 
     @Override
-    protected String ownValue() {
+    public String ownValue() {
         return "NOOP";
     }
 }

@@ -21,7 +21,7 @@ public class CFGExpression extends CFGLine {
     public boolean isNoOp() { return false; }
 
     @Override
-    protected String ownValue() {
+    public String ownValue() {
         return expression.toString();
     }
 }
