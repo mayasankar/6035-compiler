@@ -41,49 +41,4 @@ public class Assembler {
         }
         return;
     }
-/*
-    private static String makeCodeLine(CFGBlock block, String blockLabel) {
-        String code = block.getLabel() + ":\n";
-        for (CFGLine line : block.getLines()) {
-            System.out.println(line.ownValue());
-            /*if (line instanceof CFGNoOp) {
-                code += "";
-            }
-            else if (line instanceof CFGDecl) {
-                code += makeCodeCFGDecl(line);
-            }
-            else if (line instanceof CFGExpression) {
-
-            }
-            else if (line instanceof CFGMethodDecl) {
-
-            }
-            else if (line instanceof CFGStatement) {
-
-            }
-            else {
-                throw new RuntimeException("CFGLine of unaccepted type.");
-            }*
-        }
-
-        // TODO implement; also please make it use blocks once those work so we don't jump a gazillion times
-        // label the location with line.getLabel() (basically just labels with the line's hashcode)
-        // make the code for its statement (split cases for CFGMethodDecl, CFGDecl, CFGNoOp, CFGStatement, CFGExpression)
-        // if branches, make code for each child, and have jump statements depending true or falseBranch
-        // otherwise just make code for the one child and don't need to jump
-        return code;
-    }*/
-
-    /*private static String makeCodeCFGDecl(CFGDecl line){
-
-    }
-    private static String makeCodeCFGMethodDecl(CFGMethodDecl line){
-
-    }
-    private static String makeCodeCFGStatement(CFGStatement line){
-
-    }
-    private static String makeCodeCFGExpression(CFGExpression line){
-
-    }*/
 }
