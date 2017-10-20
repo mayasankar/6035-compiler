@@ -23,22 +23,45 @@ public class BlockAssembler {
 
     String methodLabel;
     int blockCount;
+    int stringCount;
     int numAllocs;
     Map<CFGBlock, String> blockLabels;
+    Map<String, String> stringLabels;
 
     public BlockAssembler(String label, int numParams) {
         this.methodLabel = label;
         this.blockCount = 0;
+        this.stringCount = 0;
         this.numAllocs = numParams;  // will increment this as we add locals
         this.blockLabels = new HashMap<>();
+        this.stringLabels = new HashMap<>();
     }
 
-    public String makeCode(CFGBlock block) {
+    public String makeCode(CFGBlock block, VariableTable parameters) {
         String prefix = methodLabel + ":\n";
         String code = "";
-        // TODO mov input params to stack
+
+        if (parameters != null && parameters.getVariableList() != null){ // check for nonexistence of parameters in imports
+            for (IRMemberDecl v : parameters.getVariableList()) {
+                // TODO mov input params to stack
+                if (v.getLength() > 0) {
+                    // TODO arrays, allocate v.getLength, wait how do we do this???
+                    //this.numAllocs += (v.getLength() - 1);
+                    //addVariableToStack(v.getName());
+                }
+                else {
+                    addVariableToStack(v.getName());
+                }
+            }
+        }
 
         code += makeCodeHelper(block);
+
+        for (String stringLiteral : stringLabels.keySet()) {
+            String label = stringLabels.get(stringLiteral);
+            code += label + ":\n";
+            code += ".string " + stringLiteral + "\n\n";
+        }
 
         String allocSpace = new Integer(8*numAllocs).toString();
         code += "\n"+ methodLabel + "_end:\n";
@@ -52,7 +75,7 @@ public class BlockAssembler {
             throw new RuntimeException("Making code for a block that already has code generated.");
         }
         blockCount += 1;
-        String label = methodLabel+"_"+new Integer(blockCount).toString();
+        String label = "."+methodLabel+"_"+new Integer(blockCount).toString();
         blockLabels.put(block, label);
         String code = "\n" + label + ":\n";
         for (CFGLine line : block.getLines()) {
@@ -130,22 +153,26 @@ public class BlockAssembler {
             }
         }
         catch (RuntimeException e) {
+            // for printing niceness, show things for which we haven't yet implemented codegen
             code = line.ownValue() + "\n";
         }
         return code;
-        //return line.ownValue() + "\n";
-        //throw new RuntimeException("Unimplemented");
     }
 
     private String makeCodeCFGDecl(CFGDecl line) {
-        throw new RuntimeException("Unimplemented");
+        // allocate a space on stack for the declared variable, update the total number of allocations
+        numAllocs += 1;
+        IRMemberDecl v = line.getDecl();
+        addVariableToStack(v.getName());
+        return "";
     }
 
     private String makeCodeCFGExpression(CFGExpression line) {
-        throw new RuntimeException("Unimplemented");
+        return makeCodeIRExpression(line.getExpression());
     }
 
     private String makeCodeCFGMethodDecl(CFGMethodDecl line) {
+        // TODO
         throw new RuntimeException("Unimplemented");
     }
 
@@ -158,13 +185,7 @@ public class BlockAssembler {
             }
             case METHOD_CALL: {
                 IRMethodCallExpression methodCall = ((IRMethodCallStatement)statement).getMethodCall();
-                List<IRExpression> arguments = methodCall.getArguments();
-                for (int i=arguments.size()-1; i>=0; i--) {
-                    IRExpression arg = arguments.get(i);
-                    code += makeCodeIRExpression(arg);
-                    code += "push %r10\n";
-                }
-                code += "call " + methodCall.getName() + "\n";
+                code += makeCodeIRExpression(methodCall);
                 return code;
             }
             case RETURN_EXPR: {
@@ -176,39 +197,7 @@ public class BlockAssembler {
                 return code;
             }
             case ASSIGN_EXPR: {
-                IRAssignStatement s = (IRAssignStatement)statement;
-                IRVariableExpression varAssigned = s.getVarAssigned();
-            	String operator = s.getOperator();
-            	IRExpression value = s.getValue();
-                if (value != null){
-                    code += makeCodeIRExpression(value);  // value now in %r10
-                }
-                String stackLocation = getVariableStackLocation(varAssigned);
-                switch (operator) {
-                    case "=":
-                        code += "mov %r10, " + stackLocation + "\n";
-                        return code;
-                    case "+=":
-                        code += "mov " + stackLocation +", %r11\n";
-                        code += "add %r10, %r11\n";
-                        code += "mov %r11, " + stackLocation + "\n";
-                        return code;
-                    case "-=":
-                        code += "mov " + stackLocation +", %r11\n";
-                        code += "sub %r10, %r11\n";
-                        code += "mov %r11, " + stackLocation + "\n";
-                        return code;
-                    case "++":
-                        code += "mov " + stackLocation +", %r11\n";
-                        code += "add $1, %r11\n";
-                        code += "mov %r11, " + stackLocation + "\n";
-                        return code;
-                    case "--":
-                        code += "mov " + stackLocation +", %r11\n";
-                        code += "sub $1, %r11\n";
-                        code += "mov %r11, " + stackLocation + "\n";
-                        return code;
-                }
+                return makeCodeIRAssignStatement((IRAssignStatement)statement);
             }
             case BREAK: {
                 // TODO
@@ -221,11 +210,91 @@ public class BlockAssembler {
         }
     }
 
+    private String makeCodeIRAssignStatement(IRAssignStatement s) {
+        String code = "";
+        IRVariableExpression varAssigned = s.getVarAssigned();
+        String operator = s.getOperator();
+        IRExpression value = s.getValue();
+        if (value != null){
+            code += makeCodeIRExpression(value);  // value now in %r10
+        }
+        String stackLocation = getVariableStackLocation(varAssigned);
+        switch (operator) {
+            case "=":
+                code += "mov %r10, " + stackLocation + "\n";
+                return code;
+            case "+=":
+                code += "mov " + stackLocation +", %r11\n";
+                code += "add %r10, %r11\n";
+                code += "mov %r11, " + stackLocation + "\n";
+                return code;
+            case "-=":
+                code += "mov " + stackLocation +", %r11\n";
+                code += "sub %r10, %r11\n";
+                code += "mov %r11, " + stackLocation + "\n";
+                return code;
+            case "++":
+                code += "mov " + stackLocation +", %r11\n";
+                code += "add $1, %r11\n";
+                code += "mov %r11, " + stackLocation + "\n";
+                return code;
+            case "--":
+                code += "mov " + stackLocation +", %r11\n";
+                code += "sub $1, %r11\n";
+                code += "mov %r11, " + stackLocation + "\n";
+                return code;
+            default:
+                throw new RuntimeException("Operator must be an assignment of some kind.");
+        }
+    }
+
     // return the code to evaluate the expression and store its result in %r10
     private String makeCodeIRExpression(IRExpression expr) {
         //TODO
-        return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
-        //throw new RuntimeException("Unimplemented");
+        String code = "";
+        switch (expr.getExpressionType()) {
+    		/*
+    		UNARY,
+    		BINARY,
+    		TERNARY,
+    		LEN,
+    		METHOD_CALL,
+    		VARIABLE,*/
+            case INT_LITERAL:
+                String valueAsStr = ((IRIntLiteral)expr).toString();
+                return "mov $" + valueAsStr + ", %r10\n";
+            case BOOL_LITERAL:
+                Boolean booleanValue = ((IRBoolLiteral)expr).getValue();
+                return (booleanValue ? "mov $1, %r10" : "mov $0, %r10\n");
+            case STRING_LITERAL:
+                String stringValue = ((IRStringLiteral)expr).toString();
+                stringCount += 1;
+                String label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
+                stringLabels.put(stringValue, label);
+                return "mov $" + label + ", %r10\n";
+            case METHOD_CALL:
+                IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
+                List<IRExpression> arguments = methodCall.getArguments();
+                for (int i=arguments.size()-1; i>=0; i--) {
+                    IRExpression arg = arguments.get(i);
+                    code += makeCodeIRExpression(arg);
+                    code += "push %r10\n";
+                }
+                code += "call " + methodCall.getName() + "\n";
+                return code;
+            case VARIABLE:
+                String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
+                return "mov " + stackLoc + ", %r10\n";
+            default:
+                return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
+                //throw new RuntimeException("Unspecified expression type");
+        }
+        //return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
+    }
+
+    private void addVariableToStack(String var) {
+        // TODO
+        return;
     }
 
     private String getVariableStackLocation(IRVariableExpression var) {

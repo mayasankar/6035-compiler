@@ -32,7 +32,7 @@ public class Assembler {
                 numParams = parameters.getVariableList().size();
             }
             BlockAssembler ba = new BlockAssembler(methodName, numParams);
-            String code = ba.makeCode(graph) + "\n";
+            String code = ba.makeCode(graph, parameters) + "\n";
             try {
                 os.write(code.getBytes());
             } catch (IOException e) {

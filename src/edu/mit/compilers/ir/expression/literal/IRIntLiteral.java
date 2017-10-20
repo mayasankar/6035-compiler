@@ -31,6 +31,6 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 
 	@Override
 	public String toString() {
-		return "(" + value + ")";
+		return "" + value + "";
 	}
 }
