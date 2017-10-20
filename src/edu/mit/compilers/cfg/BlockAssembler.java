@@ -253,13 +253,6 @@ public class BlockAssembler {
         //TODO
         String code = "";
         switch (expr.getExpressionType()) {
-    		/*
-    		UNARY,
-    		BINARY,
-    		TERNARY,
-    		LEN,
-    		METHOD_CALL,
-    		VARIABLE,*/
             case INT_LITERAL:
                 String valueAsStr = ((IRIntLiteral)expr).toString();
                 return "mov $" + valueAsStr + ", %r10\n";
@@ -285,6 +278,30 @@ public class BlockAssembler {
             case VARIABLE:
                 String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
                 return "mov " + stackLoc + ", %r10\n";
+            case LEN:
+                String arg = ((IRLenExpression)expr).getArgument();
+                Integer lenValue = new Integer(0);
+                // ^ TODO lookup variable and put the len here
+                return "mov $" + lenValue.toString() + ", %r10\n";
+            case UNARY:
+                String op = ((IRUnaryOpExpression)expr).getOperator().getText();
+                IRExpression argExpr = ((IRUnaryOpExpression)expr).getArgument();
+                code += makeCodeIRExpression(argExpr); // value in %r10
+                if (op.equals("!")){
+                    code += "mov $1 %r11\n";
+                    code += "sub %r10 %r11\n";
+                    code += "mov %r11 %r10\n"; // TODO how do you ACTUALLY do ! ?
+                }
+                else { // "-"
+                    code += "mov $0 %r11\n";
+                    code += "sub %r10 %r11\n";
+                    code += "mov %r11 %r10\n"; // TODO is there a better way to do - ?
+                }
+                return code;
+            case TERNARY:
+                throw new RuntimeException("Ternary operations should have been deconstructed by CFGCreator.");
+            case BINARY:
+                // TODO
             default:
                 return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
                 //throw new RuntimeException("Unspecified expression type");
