@@ -260,7 +260,7 @@ public class SemanticChecker {
         // 12
         String argumentName = expr.getArgument();
         VariableTable lookupTable = env.getVariableTable();
-        IRMemberDecl argument = lookupTable.get(argumentName);
+        VariableDescriptor argument = lookupTable.get(argumentName);
         if (argument == null) {
             notifyError("Cannot apply len() to undeclared variable '" + argumentName + "'.", expr);
         }
@@ -347,13 +347,16 @@ public class SemanticChecker {
     private void checkIRVariableExpression(IRVariableExpression var) {
         // 10, 11
         VariableTable table = env.getVariableTable();
-        IRMemberDecl decl = table.get(var.getName());
+        VariableDescriptor desc = table.get(var.getName());
         IRExpression idxExpr = var.getIndexExpression();
 
-        if (decl == null) {
+        if (desc == null) {
             notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
             return;
         }
+
+        IRMemberDecl decl = desc.getDecl();
+        // TODO (mayars) -- why do we have this here?
         checkIRMemberDecl(decl);
 
         if (idxExpr != null) {
@@ -405,11 +408,12 @@ public class SemanticChecker {
             checkIRExpression(arrayIndex);
         }
         VariableTable lookupTable = env.getVariableTable();
-        IRMemberDecl assignee = lookupTable.get(varName);
-        if (assignee == null) {
+        VariableDescriptor assigneeDesc = lookupTable.get(varName);
+        if (assigneeDesc == null) {
             notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
             return;
         }
+        IRMemberDecl assignee = assigneeDesc.getDecl();
         if (op.equals("=")) {
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array

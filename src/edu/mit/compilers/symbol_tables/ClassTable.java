@@ -48,7 +48,7 @@ public class ClassTable {
 	}
 
 	public void addField(IRFieldDecl f){
-		this.fields.add(f);
+		this.fields.add(new VariableDescriptor(f));
 	}
 
 }

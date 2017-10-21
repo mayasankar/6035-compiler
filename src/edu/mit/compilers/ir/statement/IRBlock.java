@@ -12,6 +12,7 @@ import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class IRBlock extends IRNode {
 
@@ -23,7 +24,7 @@ public class IRBlock extends IRNode {
 		this.statements = statements;
 		this.fields = fields;
 	}
-	
+
 	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
 		setLineNumbers(tree);
 		fields = new VariableTable(parentScope);
@@ -37,9 +38,9 @@ public class IRBlock extends IRNode {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
 				} else {
-					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
 				}
 				grandchild = grandchild.getRightSibling();
 			}

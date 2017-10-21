@@ -5,23 +5,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import edu.mit.compilers.ir.decl.IRMemberDecl;
-import edu.mit.compilers.ir.decl.IRMethodDecl;
+import edu.mit.compilers.ir.decl.*;
 
-public class VariableTable extends SymbolTable<VariableTable, IRMemberDecl>{
+public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor>{
 
 	public VariableTable() {
 		super();
 	}
-	
+
 	public VariableTable(VariableTable parent) {
 		super(parent);
 	}
-	
+
 	public List<IRMemberDecl> getVariableList() {
-		return orderedChildren;
+		ArrayList<IRMemberDecl> answer = new ArrayList<>();
+		for (VariableDescriptor desc : orderedChildren) {
+			answer.add(desc.getDecl());
+		}
+		return answer;
 	}
-	
+
 	@Override
 	public String toString() {
 		return toString("Variables");
@@ -32,7 +35,7 @@ public class VariableTable extends SymbolTable<VariableTable, IRMemberDecl>{
 		if (orderedChildren.size() == 0) {
 			answer += "none";
 		} else {
-			for (IRMemberDecl var : orderedChildren) {
+			for (VariableDescriptor var : orderedChildren) {
 				answer += var.toString() + ", ";
 			}
 		}

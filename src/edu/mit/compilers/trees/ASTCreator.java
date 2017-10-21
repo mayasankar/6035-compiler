@@ -11,28 +11,14 @@ import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.decl.IRImportDecl;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
-import edu.mit.compilers.ir.expression.IRBinaryOpExpression;
-import edu.mit.compilers.ir.expression.IRExpression;
-import edu.mit.compilers.ir.expression.IRLenExpression;
-import edu.mit.compilers.ir.expression.IRMethodCallExpression;
-import edu.mit.compilers.ir.expression.IRTernaryOpExpression;
-import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
-import edu.mit.compilers.ir.expression.IRVariableExpression;
+import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
-import edu.mit.compilers.ir.statement.IRAssignStatement;
-import edu.mit.compilers.ir.statement.IRBlock;
-import edu.mit.compilers.ir.statement.IRForStatement;
-import edu.mit.compilers.ir.statement.IRIfStatement;
-import edu.mit.compilers.ir.statement.IRLoopStatement;
-import edu.mit.compilers.ir.statement.IRMethodCallStatement;
-import edu.mit.compilers.ir.statement.IRReturnStatement;
-import edu.mit.compilers.ir.statement.IRStatement;
-import edu.mit.compilers.ir.statement.IRStatement.StatementType;
-import edu.mit.compilers.ir.statement.IRWhileStatement;
+import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 // This class has a lot of the functions necessary to simplify the concrete tree
 // into an abstract tree.
@@ -99,9 +85,9 @@ public class ASTCreator {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
 				} else {
-					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
 				}
 				grandchild = grandchild.getRightSibling();
 			}
@@ -354,9 +340,9 @@ public class ASTCreator {
 				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
 					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
 				} else {
-					fields.add(new IRFieldDecl(IRType.getType(typeToken), id));
+					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
 				}
 				fieldName = fieldName.getRightSibling();
 			}

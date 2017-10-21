@@ -11,6 +11,7 @@ import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.symbol_tables.Named;
 import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class IRMethodDecl extends IRNode implements Named {
   IRType.Type returnType = IRType.Type.UNSPECIFIED;
@@ -52,7 +53,7 @@ public class IRMethodDecl extends IRNode implements Named {
       IRType.Type parameterType = IRType.getType(child.getToken());
       child = child.getRightSibling();
       Token parameterId = child.getToken();
-      parameters.add(new IRParameterDecl(parameterType, parameterId));
+      parameters.add(new VariableDescriptor(new IRParameterDecl(parameterType, parameterId)));
       child = child.getRightSibling();
     }
     code = new IRBlock(child, parameters);
