@@ -9,7 +9,7 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.symbol_tables.Named;
 
-public abstract class IRMemberDecl extends IRNode implements Named{
+public abstract class IRMemberDecl extends IRNode implements Named {
 
 	protected Token id;
 	protected IRType.Type irType;
@@ -37,6 +37,8 @@ public abstract class IRMemberDecl extends IRNode implements Named{
 	public IRType.Type getType() { return irType; }
 
 	public int getLength() { return length; }
+
+	public int getSpaceRequired() { return 8 * (length >= 0 ? length : 1); }
 
 	public String getName() { return id.getText(); }
 

@@ -5,6 +5,7 @@ import antlr.Token;
 import edu.mit.compilers.ir.IRType;
 
 public class IRFieldDecl extends IRMemberDecl {
+	// NOTE (mayars) -- do we even need this class? It is the only subclass of IRMemberDecl
 
 	public IRFieldDecl(IRType.Type irType, Token id) {
 		super(irType, id);

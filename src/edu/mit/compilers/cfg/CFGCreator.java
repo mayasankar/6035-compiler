@@ -158,6 +158,7 @@ public class CFGCreator {
         }
         return new CFG(condStart, noOp);
     }
+    
     private static CFG destructIRWhileStatement(IRWhileStatement statement) {
         IRExpression cond = statement.getCondition();
         IRBlock block = statement.getBlock();
