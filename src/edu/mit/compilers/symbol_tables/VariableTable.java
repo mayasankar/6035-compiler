@@ -7,14 +7,17 @@ import java.util.Map;
 import java.util.Set;
 import edu.mit.compilers.ir.decl.*;
 
-public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor>{
+public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor> {
+	int stackPointer;
 
 	public VariableTable() {
 		super();
+		stackPointer = 0; // TODO (mayars) do we want to initialize it to 8 instead?
 	}
 
 	public VariableTable(VariableTable parent) {
 		super(parent);
+		stackPointer = parent.stackPointer;
 	}
 
 	public List<IRMemberDecl> getVariableList() {
@@ -23,6 +26,11 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 			answer.add(desc.getDecl());
 		}
 		return answer;
+	}
+
+	@Override
+	protected void processDescriptor(VariableDescriptor desc) {
+		stackPointer = desc.pushOntoStack(stackPointer);
 	}
 
 	@Override

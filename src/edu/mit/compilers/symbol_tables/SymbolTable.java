@@ -26,9 +26,13 @@ public class SymbolTable<T extends SymbolTable<T,D>, D extends Named> {
 	}
 
 	public void add(D v){
+		processDescriptor(v);
 		childMap.put(v.getName(), v);
 		orderedChildren.add(v);
 	}
+
+	// overriden in subclasses; used to increment stack pointer in VariableTable
+	protected void processDescriptor(D v) {}
 
 	public D get(String name){
 		if (childMap.containsKey(name)){
