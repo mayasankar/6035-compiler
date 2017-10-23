@@ -49,10 +49,8 @@ public class CFGCreator {
                 throw new RuntimeException("This should never happen. line: " + line.ownValue() +
                 ", Block: " + line.getCorrespondingBlock().toString());
             }
-            if (!line.isNoOp()) {
-                //System.out.println("line: " + line.ownValue());
-                block.addLine(line);
-            }
+            //System.out.println("line: " + line.ownValue());
+            block.addLine(line);
             line.setCorrespondingBlock(block);
             if (line.isBranch()) {
                 break;
@@ -156,9 +154,11 @@ public class CFGCreator {
         else {
             condStart = shortcircuit(cond, thenStart, noOp);
         }
+        condStart.startEnv(CFGEnv.EnvType.BRANCH_BODY);
+        noOp.endEnv();
         return new CFG(condStart, noOp);
     }
-    
+
     private static CFG destructIRWhileStatement(IRWhileStatement statement) {
         IRExpression cond = statement.getCondition();
         IRBlock block = statement.getBlock();
@@ -168,6 +168,8 @@ public class CFGCreator {
         CFGLine noOp = makeNoOp();
         CFGLine condStart = shortcircuit(cond, blockStart, noOp);
         blockEnd.setNext(condStart);
+        condStart.startEnv(CFGEnv.EnvType.LOOP_BODY);
+        noOp.endEnv();
         return new CFG(condStart, noOp);
     }
 
@@ -187,6 +189,8 @@ public class CFGCreator {
         blockEnd.setNext(stepLine);
         stepLine.setNext(condStart);
         initLine.setNext(condStart);
+        initLine.startEnv(CFGEnv.EnvType.LOOP_BODY);
+        noOp.endEnv();
         return new CFG(initLine, noOp);
     }
 
@@ -228,6 +232,8 @@ public class CFGCreator {
     private static CFG destructStatementList(List<IRStatement> statements) {
         if (statements.size() == 0) {
             CFGLine noOp = makeNoOp();
+            noOp.startEnv(CFGEnv.EnvType.BLOCK);
+            noOp.endEnv();
             return new CFG(noOp);
         }
         CFG firstGraph = destructIRStatement(statements.remove(0));
@@ -236,6 +242,8 @@ public class CFGCreator {
         CFGLine restStart = restGraph.getStart();
         CFGLine restEnd = restGraph.getEnd();
         firstEnd.setNext(restStart);
+        firstGraph.getStart().startEnv(CFGEnv.EnvType.BRANCH_BODY);
+        restEnd.endEnv();
         return new CFG(firstGraph.getStart(), restEnd);
     }
 
