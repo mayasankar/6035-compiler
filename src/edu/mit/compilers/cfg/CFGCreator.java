@@ -129,7 +129,10 @@ public class CFGCreator {
             // it's an import
             return new CFG(new CFGMethodDecl(decl));
         }
-        return destructIRBlock(code);
+        CFG graph = destructIRBlock(code);
+        graph.getStart().startEnv(CFGEnv.EnvType.BLOCK);
+        graph.getEnd().endEnv();
+        return graph;
     }
 
     private static CFG destructIRIfStatement(IRIfStatement statement) {
@@ -232,8 +235,6 @@ public class CFGCreator {
     private static CFG destructStatementList(List<IRStatement> statements) {
         if (statements.size() == 0) {
             CFGLine noOp = makeNoOp();
-            noOp.startEnv(CFGEnv.EnvType.BLOCK);
-            noOp.endEnv();
             return new CFG(noOp);
         }
         CFG firstGraph = destructIRStatement(statements.remove(0));
@@ -242,8 +243,6 @@ public class CFGCreator {
         CFGLine restStart = restGraph.getStart();
         CFGLine restEnd = restGraph.getEnd();
         firstEnd.setNext(restStart);
-        firstGraph.getStart().startEnv(CFGEnv.EnvType.BRANCH_BODY);
-        restEnd.endEnv();
         return new CFG(firstGraph.getStart(), restEnd);
     }
 

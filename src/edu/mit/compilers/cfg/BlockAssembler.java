@@ -27,6 +27,7 @@ public class BlockAssembler {
     int numAllocs;
     Map<CFGBlock, String> blockLabels;
     Map<String, String> stringLabels;
+    CFGEnvStack envStack;
 
     public BlockAssembler(String label, int numParams) {
         this.methodLabel = label;
@@ -35,9 +36,11 @@ public class BlockAssembler {
         this.numAllocs = numParams;  // will increment this as we add locals
         this.blockLabels = new HashMap<>();
         this.stringLabels = new HashMap<>();
+        this.envStack = new CFGEnvStack();
     }
 
     public String makeCode(CFGBlock block, VariableTable parameters) {
+        envStack.pushEnvironment(CFGEnv.EnvType.BLOCK);
         String prefix = methodLabel + ":\n";
         String code = "";
 
@@ -67,6 +70,10 @@ public class BlockAssembler {
         code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
         prefix += "enter $" + allocSpace + ", $0\n";
+        envStack.removeEnvironment();
+        if (envStack.getSize() != 0){
+            throw new RuntimeException("envStack should push and pop equal numbers of things.");
+        }
         return prefix + code;
     }
 
@@ -130,6 +137,11 @@ public class BlockAssembler {
         CFGNoOp: empty code
         CFGMethodDecl: call methodName???
         */
+        if (line.getEnvType() != null){
+            envStack.pushEnvironment(line.getEnvType());
+            // System.out.println("Adding env: " + line.getEnvType() + ": " + line.ownValue());
+        }
+
         String code = "";
 
         try {
@@ -156,6 +168,14 @@ public class BlockAssembler {
             // for printing niceness, show things for which we haven't yet implemented codegen
             code = line.ownValue() + "\n";
         }
+
+        int numEnvsToRemove = line.getNumEnvsEnded();
+        while (numEnvsToRemove > 0) {
+            // System.out.println("Removing envs (" + new Integer(numEnvsToRemove).toString() + ")" + ": " + line.ownValue());
+            envStack.removeEnvironment();
+            numEnvsToRemove -= 1;
+        }
+
         return code;
     }
 

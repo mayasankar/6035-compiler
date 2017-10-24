@@ -34,6 +34,7 @@ public class CFGEnvStack {
         pushEnvironment(env);
     }
     protected void pushEnvironment(CFGEnv env) { environments.add(env); }
+    public int getSize() { return environments.size(); }
 
     public void addVariable(VariableDescriptor v) {
         this.getEnvironment().add(v);
