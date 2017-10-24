@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import antlr.Token;
 import edu.mit.compilers.ir.*;
@@ -303,20 +304,29 @@ public class BlockAssembler {
                 return (booleanValue ? "mov $1, %r10" : "mov $0, %r10\n");
             case STRING_LITERAL:
                 String stringValue = ((IRStringLiteral)expr).toString();
-                stringCount += 1;
-                String label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
-                stringLabels.put(stringValue, label);
+                String label;
+                if (! stringLabels.containsKey(stringValue)) {
+                    stringCount += 1;
+                    label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
+                    stringLabels.put(stringValue, label);
+                }
+                else {
+                    label = stringLabels.get(stringValue);
+                }
                 return "mov $" + label + ", %r10\n";
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
-                if (arguments.size() > 1) {
-                    // TODO other registers + stack pushes
-                    throw new RuntimeException("Not handled yet.");
+                List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
+                if (arguments.size() > 6) {
+                    // TODO so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
+                    throw new RuntimeException("More than 6 arguments: not handled yet.");
                 }
-                IRExpression firstArg = arguments.get(0);
-                code += makeCodeIRExpression(firstArg);
-                code += "mov %r10, %rdi\n";
+                for (int i=0; i<arguments.size(); i++) {
+                    IRExpression arg = arguments.get(i);
+                    code += makeCodeIRExpression(arg);
+                    code += "mov %r10, " + registers.get(i) + "\n";
+                }
                 code += "mov $0, %rax\n";
                 code += "call " + methodCall.getName() + "\n";
                 return code;
