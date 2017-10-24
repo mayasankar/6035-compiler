@@ -301,9 +301,15 @@ public class BlockAssembler {
                 return (booleanValue ? "mov $1, %r10" : "mov $0, %r10\n");
             case STRING_LITERAL:
                 String stringValue = ((IRStringLiteral)expr).toString();
-                stringCount += 1;
-                String label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
-                stringLabels.put(stringValue, label);
+                String label;
+                if (! stringLabels.containsKey(stringValue)) {
+                    stringCount += 1;
+                    label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
+                    stringLabels.put(stringValue, label);
+                }
+                else {
+                    label = stringLabels.get(stringValue);
+                }
                 return "mov $" + label + ", %r10\n";
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
