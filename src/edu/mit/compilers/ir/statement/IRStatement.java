@@ -38,7 +38,8 @@ public abstract class IRStatement extends IRNode {
   public StatementType getStatementType() { return statementType; }
 
   public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable scope) {
-      return ASTCreator.parseStatement(tree, scope);
+      //return ASTCreator.parseStatement(tree, scope);
+      return makeIRStatementOld(tree, scope);
   }
 
   public static IRStatement makeIRStatementOld(ConcreteTree tree, VariableTable parentScope) {

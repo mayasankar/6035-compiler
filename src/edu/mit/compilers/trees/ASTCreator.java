@@ -118,6 +118,9 @@ public class ASTCreator {
     }
 
     public static IRExpression parseExpressionTree(ConcreteTree tree) {
+        if (tree == null) {
+            throw new RuntimeException("trying to parse null expression tree");
+        }
         String nodeName = tree.getName();
         switch(nodeName) {
             case "expr_0": {

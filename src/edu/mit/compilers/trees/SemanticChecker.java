@@ -509,8 +509,10 @@ public class SemanticChecker {
     private void checkIRReturnStatement(IRReturnStatement statement){
         // 8, 9
         IRType.Type desiredReturnType = env.getReturnType();
-        checkIRExpression(statement.getReturnExpr());
-        IRType.Type actualReturnType = statement.getReturnExpr().getType();
+        if (! statement.isVoid()) {
+            checkIRExpression(statement.getReturnExpr());
+        }
+        IRType.Type actualReturnType = statement.getReturnType();
         if (desiredReturnType != actualReturnType){
             if (desiredReturnType == IRType.Type.VOID){
                 notifyError("Attempted to return value from a void function.", statement);
