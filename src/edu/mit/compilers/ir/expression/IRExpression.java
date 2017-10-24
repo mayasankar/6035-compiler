@@ -7,6 +7,7 @@ import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.ir.expression.literal.*;
 
 public abstract class IRExpression extends IRNode {
@@ -30,6 +31,10 @@ public abstract class IRExpression extends IRNode {
 	public ExpressionType getExpressionType() { return expressionType; }
 
 	public static IRExpression makeIRExpression(ConcreteTree tree) {
+		return ASTCreator.parseExpressionTree(tree);
+	}
+
+	public static IRExpression makeIRExpressionOld(ConcreteTree tree) {
 		if (tree.isNode()) { // TODO deal with case that string has escaped characters
 			String text = tree.getToken().getText();
 			IRExpression toReturn = new IRStringLiteral(text.substring(1, text.length()-1));
