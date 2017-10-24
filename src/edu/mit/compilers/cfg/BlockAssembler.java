@@ -221,10 +221,34 @@ public class BlockAssembler {
                 return makeCodeIRAssignStatement((IRAssignStatement)statement);
             }
             case BREAK: {
-                // TODO
+                // TODO break/continue should probably be addressed in the CFG instead of at assembly?
+                CFGLine nextLine = envStack.handleBreak();
+                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
+                String nextCode = "";
+                if (nextBlock != null) {
+                    if (!blockLabels.containsKey(nextBlock)) {
+                        nextCode += makeCodeHelper(nextBlock);
+                    }
+                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
+                }
+                else {
+                    throw new RuntimeException("Can't break to a null block.");
+                }
+                return code + nextCode;
             }
             case CONTINUE: {
-                // TODO
+                CFGLine nextLine = envStack.handleContinue();
+                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
+                if (nextBlock != null) {
+                    if (!blockLabels.containsKey(nextBlock)) {
+                        throw new RuntimeException("Code for continue statement must have already been generated.");
+                    }
+                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
+                }
+                else {
+                    throw new RuntimeException("Can't continue to a null block.");
+                }
+                return code;
             } default: {
                 throw new RuntimeException("destructIR error: UNSPECIFIED statement");
             }
