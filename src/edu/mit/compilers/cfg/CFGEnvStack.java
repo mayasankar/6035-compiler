@@ -44,6 +44,10 @@ public class CFGEnvStack {
         return this.getEnvironment().get(name);
     }
 
+    public int getStackOffset(String name) {
+        return this.getEnvironment().getStackOffset(name);
+    }
+
     // returns the CFGLine we go to after breaking, and removes broken envs from stack
     public CFGLine handleBreak() {
         while (true) {

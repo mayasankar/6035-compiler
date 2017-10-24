@@ -12,7 +12,7 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 
 	public VariableTable() {
 		super();
-		stackPointer = 0; // TODO (mayars) do we want to initialize it to 8 instead?
+		stackPointer = 8; // TODO (mayars) do we want to initialize it to 0 or 8?
 	}
 
 	public VariableTable(VariableTable parent) {
@@ -27,6 +27,15 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 		}
 		return answer;
 	}
+
+	 public List<VariableDescriptor> getVariableDescriptorList() {
+         return orderedChildren;
+	 }
+
+	 public int getStackOffset(String name) {
+	         VariableDescriptor var = this.get(name);
+	         return var.getStackOffset();
+	 }
 
 	@Override
 	protected void processDescriptor(VariableDescriptor desc) {

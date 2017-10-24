@@ -40,6 +40,7 @@ public class CFGEnv {
     }
 
     public VariableDescriptor get(String name) { return variables.get(name); }
+    public int getStackOffset(String name) { return variables.getStackOffset(name); }
     public void add(VariableDescriptor v) { variables.add(v); }
     public EnvType getType() { return type; }
     public CFGLine getStartLine() { return startLine; }
