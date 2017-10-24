@@ -307,16 +307,15 @@ public class BlockAssembler {
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
-                for (int i=arguments.size()-1; i>=0; i--) {
-                    IRExpression arg = arguments.get(i);
-                    code += makeCodeIRExpression(arg);
-                    code += "push %r10\n";
+                if (arguments.size() > 0) {
+                    // TODO other registers + stack pushes
+                    throw new RuntimeException("Not handled yet.");
                 }
+                IRExpression firstArg = arguments.get(0);
+                code += makeCodeIRExpression(firstArg);
+                code += "mov %r10, %rdi\n";
+                code += "mov $0, %rax\n";
                 code += "call " + methodCall.getName() + "\n";
-                for (int i=arguments.size()-1; i>=0; i--) {
-                    // TODO doesn't this completely fail at recovering variables? ;/
-                    code += "pop %r10\n";
-                }
                 return code;
             case VARIABLE:
                 String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
