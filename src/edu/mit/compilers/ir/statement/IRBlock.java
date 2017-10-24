@@ -16,7 +16,7 @@ import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class IRBlock extends IRNode {
 
-	//private ArrayList<IRFieldDecl> fields = new ArrayList<IRFieldDecl>();
+	private List<IRFieldDecl> fieldDecls = new ArrayList<IRFieldDecl>();
 	private List<IRStatement> statements = new ArrayList<IRStatement>();
 	private VariableTable fields;
 
@@ -35,13 +35,16 @@ public class IRBlock extends IRNode {
 			grandchild = grandchild.getRightSibling();
 			while (grandchild != null) {
 				Token id = grandchild.getFirstChild().getToken();
+				IRFieldDecl f;
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
+					f = new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt);
 				} else {
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
+					f = new IRFieldDecl(IRType.getType(typeToken), id);
 				}
+				fields.add(new VariableDescriptor(f));
+				fieldDecls.add(f);
 				grandchild = grandchild.getRightSibling();
 			}
 			child = child.getRightSibling();
@@ -52,13 +55,9 @@ public class IRBlock extends IRNode {
 		}
 	}
 
-	public List<IRStatement> getStatements(){
-		return this.statements;
-	}
-
-	public VariableTable getFields(){
-		return this.fields;
-	}
+	public List<IRStatement> getStatements(){ return this.statements; }
+	public VariableTable getFields(){ return this.fields; }
+	public List<IRFieldDecl> getFieldDecls() { return this.fieldDecls; }
 
 	@Override
 	public List<? extends IRNode> getChildren() {

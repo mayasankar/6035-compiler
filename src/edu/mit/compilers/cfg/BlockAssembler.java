@@ -331,6 +331,7 @@ public class BlockAssembler {
     }
 
     private void addVariableToStack(VariableDescriptor var) {
+        //System.out.println("Added variable: " + var.toString());
         envStack.addVariable(var);
         return;
     }
