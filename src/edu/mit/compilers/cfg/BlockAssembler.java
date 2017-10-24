@@ -313,6 +313,10 @@ public class BlockAssembler {
                     code += "push %r10\n";
                 }
                 code += "call " + methodCall.getName() + "\n";
+                for (int i=arguments.size()-1; i>=0; i--) {
+                    // TODO doesn't this completely fail at recovering variables? ;/
+                    code += "pop %r10\n";
+                }
                 return code;
             case VARIABLE:
                 String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
