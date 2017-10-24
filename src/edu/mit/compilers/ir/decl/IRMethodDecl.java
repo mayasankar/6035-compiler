@@ -61,8 +61,18 @@ public class IRMethodDecl extends IRNode implements Named {
 
   public String getName() { return id.getText(); }
   public IRType.Type getReturnType() { return returnType; }
-  public IRBlock getCode() { return code; }
-  public VariableTable getParameters() { return parameters; }
+  public IRBlock getCode() {
+      if (isImport()) {
+          throw new RuntimeException("Calling getCode on import declaration.");
+      }
+      return code;
+  }
+  public VariableTable getParameters() {
+      if (isImport()) {
+          throw new RuntimeException("Calling getParameters on import declaration.");
+      }
+      return parameters;
+  }
 
   public boolean isImport() { return false; } // overriden in import subclass
 
