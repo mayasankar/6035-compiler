@@ -295,7 +295,6 @@ public class BlockAssembler {
 
     // return the code to evaluate the expression and store its result in %r10
     private String makeCodeIRExpression(IRExpression expr) {
-        //TODO
         String code = "";
         switch (expr.getExpressionType()) {
             case INT_LITERAL:
@@ -325,8 +324,8 @@ public class BlockAssembler {
                 return "mov " + stackLoc + ", %r10\n";
             case LEN:
                 String arg = ((IRLenExpression)expr).getArgument();
-                Integer lenValue = new Integer(0);
-                // ^ TODO lookup variable and put the len here
+                VariableDescriptor var = envStack.get(arg);
+                Integer lenValue = new Integer(var.getLength());
                 return "mov $" + lenValue.toString() + ", %r10\n";
             case UNARY:
                 String op = ((IRUnaryOpExpression)expr).getOperator().getText();
