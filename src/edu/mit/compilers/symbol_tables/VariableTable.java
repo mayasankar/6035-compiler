@@ -8,11 +8,11 @@ import java.util.Set;
 import edu.mit.compilers.ir.decl.*;
 
 public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor> {
-	int stackPointer;
+	private int stackPointer;
 
 	public VariableTable() {
 		super();
-		stackPointer = 8; // TODO (mayars) do we want to initialize it to 0 or 8?
+		stackPointer = 0; // TODO (mayars) do we want to initialize it to 0 or 8?
 	}
 
 	public VariableTable(VariableTable parent) {
@@ -56,7 +56,7 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 
 	@Override
 	protected void processDescriptor(VariableDescriptor desc) {
-		stackPointer += desc.pushOntoStack(stackPointer);
+		stackPointer = desc.pushOntoStack(stackPointer);
 	}
 
 	@Override

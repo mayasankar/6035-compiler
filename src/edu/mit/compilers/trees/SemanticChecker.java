@@ -146,11 +146,10 @@ public class SemanticChecker {
 
     private void checkIRMemberDecl(IRMemberDecl variable) {
         // 4
-        IRType.Type type = variable.getType();
         int length = variable.getLength();
-        if (type == IRType.Type.BOOL_ARRAY || type == IRType.Type.INT_ARRAY) {
-            if (length == 0) {
-                notifyError("Cannot declare an array of size 0.", variable);
+        if (variable.isArray()) {
+            if (length <= 0) {
+                notifyError("Cannot declare an array of size " + length, variable);
             }
         }
         else {
