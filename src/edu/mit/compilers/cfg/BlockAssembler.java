@@ -188,7 +188,7 @@ public class BlockAssembler {
     }
 
     private String makeCodeCFGMethodDecl(CFGMethodDecl line) {
-        // TODO
+        // TODO I'm pretty sure we never use CFGMethodDecls and could probably remove them entirely
         throw new RuntimeException("Unimplemented: " + line.ownValue());
     }
 
@@ -340,13 +340,93 @@ public class BlockAssembler {
             case TERNARY:
                 throw new RuntimeException("Ternary operations should have been deconstructed by CFGCreator.");
             case BINARY:
-                // TODO
+                return makeCodeIRBinaryOpExpression((IRBinaryOpExpression)expr);
             default:
                 return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
                 //throw new RuntimeException("Unspecified expression type");
         }
         //return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
     }
+
+    private String makeCodeIRBinaryOpExpression(IRBinaryOpExpression expr){
+        // TODO this won't work if there are complicated things on each side overwriting registers (like more operations)
+        // so break it down into smaller statements
+        String op = expr.getOperator().getText();
+        IRExpression leftExpr = expr.getLeftExpr();
+        IRExpression rightExpr = expr.getRightExpr();
+        String code = "";
+        code += makeCodeIRExpression(rightExpr); // right value in %r10
+        code += "mov %r10 %r11\n"; // right value in %r11
+        code += makeCodeIRExpression(leftExpr); // left value in %r10, right value in %r11
+        switch (op) {
+            case "+":
+                code += "add %r11 %r10\n";  // expression output value in %r10
+                return code;
+            case "-":
+                code += "sub %r11 %r10\n";
+                return code;
+            case "*":
+                code += "imul %r11 %r10\n";
+                return code;
+            case "/":
+                code += "mov %r10 %rax\n";
+                code += "idiv %r11\n";
+                code += "mov %rax %r10\n";
+                return code;
+            case "%":
+                code += "mov %r10 %rax\n";
+                code += "idiv %r11\n";
+                code += "mov %rdx %r10\n";
+                return code;
+            case "&&":
+                code += "and %r11 %r10\n";
+                return code;
+            case "||":
+                code += "or %r11 %r10\n";
+                return code;
+            case "==":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmove %r11 %r10\n";
+                return code;
+            case "!=":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmovne %r11 %r10\n";
+                return code;
+            case "<":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmovl %r11 %r10\n";
+                return code;
+            case ">":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmovg %r11 %r10\n";
+                return code;
+            case "<=":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmovle %r11 %r10\n";
+                return code;
+            case ">=":
+                code += "cmp %r10 %r11\n";
+                code += "mov $0 %r10\n";
+                code += "mov $1 %r11\n";
+                code += "cmovge %r11 %r10\n";
+                return code;
+            default:
+                throw new RuntimeException("unsupported operation in binary expression");
+        }
+
+    }
+
+    //TODO UHHHHH WHERE DO WE HANDLE INDEXING INTO ARRAYS?
 
     private void addVariableToStack(VariableDescriptor var) {
         //System.out.println("Added variable: " + var.toString());
