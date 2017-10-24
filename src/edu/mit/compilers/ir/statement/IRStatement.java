@@ -5,6 +5,8 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
+import edu.mit.compilers.trees.ASTCreator;
+
 public abstract class IRStatement extends IRNode {
   public enum StatementType {
     UNSPECIFIED,
@@ -35,7 +37,11 @@ public abstract class IRStatement extends IRNode {
 
   public StatementType getStatementType() { return statementType; }
 
-  public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable parentScope) {
+  public static IRStatement makeIRStatement(ConcreteTree tree, VariableTable scope) {
+      return ASTCreator.parseStatement(tree, scope);
+  }
+
+  public static IRStatement makeIRStatementOld(ConcreteTree tree, VariableTable parentScope) {
     IRStatement toReturn = null;
     ConcreteTree child = tree.getFirstChild();
     if (child.isNode()) {

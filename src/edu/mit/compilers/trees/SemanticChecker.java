@@ -297,7 +297,7 @@ public class SemanticChecker {
                 notifyError("Method " + md.getName() + " called with " + arguments.size() +
                 " parameters; needs " + parameters.size() + ".", expr);
             }
-            for (int i = 0; i < parameters.size(); i++) {
+            for (int i = 0; i < parameters.size() && i < arguments.size(); i++) {
                 checkIRExpression(arguments.get(i));
                 IRType.Type parType = parameters.get(i).getType();
                 IRType.Type argType = arguments.get(i).getType();
