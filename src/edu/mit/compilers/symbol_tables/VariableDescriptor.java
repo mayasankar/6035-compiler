@@ -21,6 +21,7 @@ public class VariableDescriptor implements Named {
     // TODO should be removed
     public IRMemberDecl getDecl() { return declaration; }
 
+    public int getStackOffset() { return stackOffset; }
 	public String getName() { return declaration.getName(); }
 
     // returns the new value of rsp after putting this var on the stack

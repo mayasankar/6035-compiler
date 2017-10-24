@@ -44,16 +44,16 @@ public class BlockAssembler {
         String prefix = methodLabel + ":\n";
         String code = "";
 
-        if (parameters != null && parameters.getVariableList() != null){ // check for nonexistence of parameters in imports
-            for (IRMemberDecl v : parameters.getVariableList()) {
+        if (parameters != null && parameters.getVariableDescriptorList() != null){ // check for nonexistence of parameters in imports
+            for (VariableDescriptor v : parameters.getVariableDescriptorList()) {
                 // TODO mov input params to stack
-                if (v.getLength() > 0) {
+                if (v.getDecl().getLength() > 0) {
                     // TODO arrays, allocate v.getLength, wait how do we do this???
-                    //this.numAllocs += (v.getLength() - 1);
-                    //addVariableToStack(v.getName());
+                    //this.numAllocs += (v.getDecl().getLength() - 1);
+                    //addVariableToStack(v);
                 }
                 else {
-                    addVariableToStack(v.getName());
+                    addVariableToStack(v);
                 }
             }
         }
@@ -182,8 +182,9 @@ public class BlockAssembler {
     private String makeCodeCFGDecl(CFGDecl line) {
         // allocate a space on stack for the declared variable, update the total number of allocations
         numAllocs += 1;
-        IRMemberDecl v = line.getDecl();
-        addVariableToStack(v.getName());
+        IRMemberDecl vDecl = line.getDecl();
+        VariableDescriptor v = new VariableDescriptor(vDecl);
+        addVariableToStack(v);
         return "";
     }
 
@@ -329,14 +330,15 @@ public class BlockAssembler {
         //return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
     }
 
-    private void addVariableToStack(String var) {
-        // TODO
+    private void addVariableToStack(VariableDescriptor var) {
+        envStack.addVariable(var);
         return;
     }
 
     private String getVariableStackLocation(IRVariableExpression var) {
-        // TODO
-        return "-8(%rbp)";
+        // return "-8(%rbp)";
+        int offset = envStack.getStackOffset(var.getName());
+        return "-" + new Integer(offset).toString() + "(%rbp)";
         //throw new RuntimeException("Unimplemented");
     }
 }
