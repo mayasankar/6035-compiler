@@ -29,7 +29,7 @@ public class IRReturnStatement extends IRStatement {
 
   public IRExpression getReturnExpr(){
       if (expr == null) {
-          throw new RuntimeException("Trying to access expression of void return statement");
+          throw new RuntimeException("Trying to access expression of void return statement. Use isVoid() before calling getReturnExpr() to fix.");
       }
       return expr;
   }
