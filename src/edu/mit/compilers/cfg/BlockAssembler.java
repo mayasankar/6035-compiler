@@ -327,14 +327,14 @@ public class BlockAssembler {
                 IRExpression argExpr = ((IRUnaryOpExpression)expr).getArgument();
                 code += makeCodeIRExpression(argExpr); // value in %r10
                 if (op.equals("!")){
-                    code += "mov $1 %r11\n";
-                    code += "sub %r10 %r11\n";
-                    code += "mov %r11 %r10\n"; // TODO how do you ACTUALLY do ! ?
+                    code += "mov $1, %r11\n";
+                    code += "sub %r10, %r11\n";
+                    code += "mov %r11, %r10\n"; // TODO how do you ACTUALLY do ! ?
                 }
                 else { // "-"
-                    code += "mov $0 %r11\n";
-                    code += "sub %r10 %r11\n";
-                    code += "mov %r11 %r10\n"; // TODO is there a better way to do - ?
+                    code += "mov $0, %r11\n";
+                    code += "sub %r10, %r11\n";
+                    code += "mov %r11, %r10\n"; // TODO is there a better way to do - ?
                 }
                 return code;
             case TERNARY:
@@ -356,69 +356,69 @@ public class BlockAssembler {
         IRExpression rightExpr = expr.getRightExpr();
         String code = "";
         code += makeCodeIRExpression(rightExpr); // right value in %r10
-        code += "mov %r10 %r11\n"; // right value in %r11
+        code += "mov %r10, %r11\n"; // right value in %r11
         code += makeCodeIRExpression(leftExpr); // left value in %r10, right value in %r11
         switch (op) {
             case "+":
-                code += "add %r11 %r10\n";  // expression output value in %r10
+                code += "add %r11, %r10\n";  // expression output value in %r10
                 return code;
             case "-":
-                code += "sub %r11 %r10\n";
+                code += "sub %r11, %r10\n";
                 return code;
             case "*":
-                code += "imul %r11 %r10\n";
+                code += "imul %r11, %r10\n";
                 return code;
             case "/":
-                code += "mov %r10 %rax\n";
+                code += "mov %r10, %rax\n";
                 code += "idiv %r11\n";
-                code += "mov %rax %r10\n";
+                code += "mov %rax, %r10\n";
                 return code;
             case "%":
-                code += "mov %r10 %rax\n";
+                code += "mov %r10, %rax\n";
                 code += "idiv %r11\n";
-                code += "mov %rdx %r10\n";
+                code += "mov %rdx, %r10\n";
                 return code;
             case "&&":
-                code += "and %r11 %r10\n";
+                code += "and %r11, %r10\n";
                 return code;
             case "||":
-                code += "or %r11 %r10\n";
+                code += "or %r11, %r10\n";
                 return code;
             case "==":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmove %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmove %r11, %r10\n";
                 return code;
             case "!=":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmovne %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovne %r11, %r10\n";
                 return code;
             case "<":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmovl %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovl %r11, %r10\n";
                 return code;
             case ">":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmovg %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovg %r11, %r10\n";
                 return code;
             case "<=":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmovle %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovle %r11, %r10\n";
                 return code;
             case ">=":
-                code += "cmp %r10 %r11\n";
-                code += "mov $0 %r10\n";
-                code += "mov $1 %r11\n";
-                code += "cmovge %r11 %r10\n";
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovge %r11, %r10\n";
                 return code;
             default:
                 throw new RuntimeException("unsupported operation in binary expression");
