@@ -398,7 +398,7 @@ public class SemanticChecker {
         if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
             if (value.getType() == null){
-                System.out.println("Debugging: null value.getType(). value=" + value.toString());
+                System.out.println("Debugging: null value.getType(). value=" + value);
             }
         }
 
@@ -418,7 +418,7 @@ public class SemanticChecker {
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
                 if (assignee.getType() != value.getType()) {
-                    notifyError("Cannot assign a value of type " + value.getType().toString() +
+                    notifyError("Cannot assign a value of type " + value.getType() +
                     " to a variable of type " + assignee.getType() + ".", value);
                 }
                 if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
