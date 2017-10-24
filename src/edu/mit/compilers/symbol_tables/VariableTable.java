@@ -56,7 +56,7 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 
 	@Override
 	protected void processDescriptor(VariableDescriptor desc) {
-		stackPointer = desc.pushOntoStack(stackPointer);
+		stackPointer += desc.pushOntoStack(stackPointer);
 	}
 
 	@Override
