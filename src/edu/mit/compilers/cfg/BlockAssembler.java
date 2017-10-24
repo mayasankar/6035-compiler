@@ -307,7 +307,7 @@ public class BlockAssembler {
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
-                if (arguments.size() > 0) {
+                if (arguments.size() > 1) {
                     // TODO other registers + stack pushes
                     throw new RuntimeException("Not handled yet.");
                 }
