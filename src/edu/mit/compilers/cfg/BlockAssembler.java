@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import antlr.Token;
 import edu.mit.compilers.ir.*;
@@ -307,13 +308,16 @@ public class BlockAssembler {
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
-                if (arguments.size() > 1) {
-                    // TODO other registers + stack pushes
-                    throw new RuntimeException("Not handled yet.");
+                List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
+                if (arguments.size() > 6) {
+                    // TODO so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
+                    throw new RuntimeException("More than 6 arguments: not handled yet.");
                 }
-                IRExpression firstArg = arguments.get(0);
-                code += makeCodeIRExpression(firstArg);
-                code += "mov %r10, %rdi\n";
+                for (int i=0; i<arguments.size(); i++) {
+                    IRExpression arg = arguments.get(i);
+                    code += makeCodeIRExpression(arg);
+                    code += "mov %r10, " + registers.get(i) + "\n";
+                }
                 code += "mov $0, %rax\n";
                 code += "call " + methodCall.getName() + "\n";
                 return code;
