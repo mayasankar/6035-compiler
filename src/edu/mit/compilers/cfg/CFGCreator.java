@@ -131,7 +131,9 @@ public class CFGCreator {
         IRBlock code = decl.getCode();
         if (code == null) {
             // it's an import
-            return new CFG(new CFGMethodDecl(decl));
+            // return new CFG(new CFGMethodDecl(decl));
+            // TODO do we actually need to do anything with it?
+            return new CFG(makeNoOp());
         }
         CFG graph = destructIRBlock(code);
         graph.getStart().startEnv(CFGEnv.EnvType.BLOCK);

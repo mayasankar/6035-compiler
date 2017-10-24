@@ -46,15 +46,10 @@ public class BlockAssembler {
 
         if (parameters != null && parameters.getVariableDescriptorList() != null){ // check for nonexistence of parameters in imports
             for (VariableDescriptor v : parameters.getVariableDescriptorList()) {
-                // TODO mov input params to stack
                 if (v.getDecl().getLength() > 0) {
-                    // TODO arrays, allocate v.getLength, wait how do we do this???
-                    //this.numAllocs += (v.getDecl().getLength() - 1);
-                    //addVariableToStack(v);
+                    this.numAllocs += (v.getDecl().getLength() - 1);
                 }
-                else {
-                    addVariableToStack(v);
-                }
+                addVariableToStack(v);
             }
         }
 
@@ -144,7 +139,7 @@ public class BlockAssembler {
 
         String code = "";
 
-        try {
+        //try {
             if (line instanceof CFGNoOp) {
                 code += "";
             }
@@ -163,11 +158,11 @@ public class BlockAssembler {
             else {
                 throw new RuntimeException("CFGLine of unaccepted type.");
             }
-        }
-        catch (RuntimeException e) {
-            // for printing niceness, show things for which we haven't yet implemented codegen
-            code = line.ownValue() + "\n";
-        }
+        //}
+        // catch (RuntimeException e) {
+        //     // for printing niceness, show things for which we haven't yet implemented codegen
+        //     code = line.ownValue() + "\n";
+        // }
 
         int numEnvsToRemove = line.getNumEnvsEnded();
         while (numEnvsToRemove > 0) {
@@ -194,7 +189,7 @@ public class BlockAssembler {
 
     private String makeCodeCFGMethodDecl(CFGMethodDecl line) {
         // TODO
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Unimplemented: " + line.ownValue());
     }
 
     private String makeCodeCFGStatement(CFGStatement line) {
