@@ -25,25 +25,6 @@ public class IRBinaryOpExpression extends IRExpression{
 		this.rightExpr = rightExpr;
 	}
 
-	public IRBinaryOpExpression(ConcreteTree tree) {
-		expressionType = IRExpression.ExpressionType.BINARY;
-		setLineNumbers(tree);
-		ConcreteTree exprChild = tree.getFirstChild();
-		IRExpression lexpr = IRExpression.makeIRExpression(exprChild);
-		ConcreteTree opChild = exprChild.getRightSibling();
-		exprChild = opChild.getRightSibling();
-		ConcreteTree lastExprChild = tree.getLastChild();
-		while (exprChild != lastExprChild) {
-			IRExpression rexpr = IRExpression.makeIRExpression(exprChild);
-			lexpr = new IRBinaryOpExpression(lexpr, opChild.getToken(), rexpr);
-			opChild = exprChild.getRightSibling();
-			exprChild = opChild.getRightSibling();
-		}
-		leftExpr = lexpr;
-		operator = opChild.getToken();
-		rightExpr = makeIRExpression(exprChild);
-	}
-
 	public IRExpression getLeftExpr() { return leftExpr; }
 	public IRExpression getRightExpr() { return rightExpr; }
 	public Token getOperator() { return operator; }

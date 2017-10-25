@@ -26,21 +26,21 @@ public class SemanticChecker {
     private boolean hasError = false;
 
     public boolean checkProgram(IRProgram tree){
-        //System.out.println("Debugging: starts checkProgram().");
-        //notifyError("DEBUG: Checking program for semantic errors.", tree);
-        env.push(tree.methods);
-        env.push(tree.fields);
+        // System.out.println("Debugging: starts checkProgram().");
+        // notifyError("DEBUG: Checking program for semantic errors.", tree);
+        env.push(tree.getMethodTable());
+        env.push(tree.getVariableTable());
         env.push(IRType.Type.VOID);
-        checkGlobals(tree.fields, tree.methods);
-        checkVariableTable(tree.fields);
-        checkMethodTable(tree.methods);
+        checkGlobals(tree.getVariableTable(), tree.getMethodTable());
+        checkVariableTable(tree.getVariableTable());
+        checkMethodTable(tree.getMethodTable());
         checkHasMain(tree);
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
-        /*if (! hasError) { // maybe keep track of how many errors we've found?
-          System.err.println("No semantic errors found :)");
-      }*/
+        // if (! hasError) { // maybe keep track of how many errors we've found?
+        //     System.err.println("No semantic errors found :)");
+        // }
         return hasError;
     }
 
@@ -53,9 +53,13 @@ public class SemanticChecker {
 
     private void checkHasMain(IRProgram program){
         // 3
-        IRMethodDecl mainMethod = program.methods.get("main");
+        IRMethodDecl mainMethod = program.getMethodTable().get("main");
         if (mainMethod == null) {
             notifyError("Program has no main method.", program);
+            return;
+        }
+        if (mainMethod.isImport()) {
+            notifyError("Cannot import main.", program);
             return;
         }
         if (mainMethod.getReturnType() != IRType.Type.VOID){
@@ -179,6 +183,10 @@ public class SemanticChecker {
                 notifyError("Parameter " + param.getName() + " for method " + method.getName() +
                 " is not of type int or bool.", param);
             }
+            if (code.getVariableTable().get(param.getName()) != parameters.get(param.getName())) {
+            	notifyError("Parameter " + param.getName() + " for method " + method.getName() +
+    			 "is shadowed by a local variable.", code.getVariableTable().get(param.getName()).getDecl());
+            }
         }
         if (returnType != IRType.Type.BOOL && returnType != IRType.Type.INT && returnType != IRType.Type.VOID) {
             notifyError("Return type for method " + method.getName() + " is not int, bool, or void.", method);
@@ -274,11 +282,20 @@ public class SemanticChecker {
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr, boolean isInExpression) {
         // 5, 6
-        MethodTable lookupTable = env.getMethodTable();
+        VariableTable table = env.getVariableTable();
+        VariableDescriptor desc = table.get(expr.getName());
+        if (desc != null) {
+            notifyError(expr.getName() + " is most recently declared as a method, not a function", expr);
+            return;
+        }
 
+        MethodTable lookupTable = env.getMethodTable();
         IRMethodDecl md = lookupTable.get(expr.getName());
         if (md == null) {
             notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
+            return;
+        } else if (! expr.comesAfter(md)) {
+            notifyError("Calls method " + expr.getName() + " before method is declared.", expr);
             return;
         }
 
@@ -297,7 +314,7 @@ public class SemanticChecker {
                 notifyError("Method " + md.getName() + " called with " + arguments.size() +
                 " parameters; needs " + parameters.size() + ".", expr);
             }
-            for (int i = 0; i < parameters.size(); i++) {
+            for (int i = 0; i < parameters.size() && i < arguments.size(); i++) {
                 checkIRExpression(arguments.get(i));
                 IRType.Type parType = parameters.get(i).getType();
                 IRType.Type argType = arguments.get(i).getType();
@@ -396,9 +413,9 @@ public class SemanticChecker {
         IRExpression value = statement.getValue();
         if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
-            if (value.getType() == null){
-                System.out.println("Debugging: null value.getType(). value=" + value);
-            }
+            // if (value.getType() == null) { // happens when value is an undeclared variable
+            //     System.out.println("Debugging: null value.getType(). value=" + value);
+            // }
         }
 
         String varName = varAssigned.getName();
@@ -439,7 +456,7 @@ public class SemanticChecker {
         else if (op.equals("+=") || op.equals("-=") || op.equals("++") || op.equals("--")) {
             //System.out.println("DEBUG: this branch! op=" + op);
             if ((op.equals("+=") || op.equals("-=")) && value.getType() != IRType.Type.INT) {
-                notifyError("Cannot increment by a value of type " + value.getType().toString() + ".", value);
+                notifyError("Cannot increment by a value of type " + value.getType() + ".", value);
             }
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
@@ -509,8 +526,10 @@ public class SemanticChecker {
     private void checkIRReturnStatement(IRReturnStatement statement){
         // 8, 9
         IRType.Type desiredReturnType = env.getReturnType();
-        checkIRExpression(statement.getReturnExpr());
-        IRType.Type actualReturnType = statement.getReturnExpr().getType();
+        if (! statement.isVoid()) {
+            checkIRExpression(statement.getReturnExpr());
+        }
+        IRType.Type actualReturnType = statement.getReturnType();
         if (desiredReturnType != actualReturnType){
             if (desiredReturnType == IRType.Type.VOID){
                 notifyError("Attempted to return value from a void function.", statement);

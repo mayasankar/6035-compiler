@@ -25,38 +25,14 @@ public class IRBlock extends IRNode {
 		this.fields = fields;
 	}
 
-	public IRBlock(ConcreteTree tree, VariableTable parentScope) {
-		setLineNumbers(tree);
-		fields = new VariableTable(parentScope);
-		ConcreteTree child = tree.getFirstChild();
-		while (child != null && child.getName().equals("field_decl")) { // TODO for mayars: should these be locals?
-			ConcreteTree grandchild = child.getFirstChild();
-			Token typeToken = grandchild.getToken();
-			grandchild = grandchild.getRightSibling();
-			while (grandchild != null) {
-				Token id = grandchild.getFirstChild().getToken();
-				IRFieldDecl f;
-				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
-					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
-					int lengthAsInt = Integer.parseInt(length.getText());
-					f = new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt);
-				} else {
-					f = new IRFieldDecl(IRType.getType(typeToken), id);
-				}
-				fields.add(new VariableDescriptor(f));
-				fieldDecls.add(f);
-				grandchild = grandchild.getRightSibling();
-			}
-			child = child.getRightSibling();
-		}
-		while (child != null) {
-			statements.add(IRStatement.makeIRStatement(child, fields));
-			child = child.getRightSibling();
-		}
+	public List<IRStatement> getStatements(){
+		return this.statements;
 	}
 
-	public List<IRStatement> getStatements(){ return this.statements; }
-	public VariableTable getFields(){ return this.fields; }
+	public VariableTable getFields(){
+		return this.fields;
+	}
+
 	public List<IRFieldDecl> getFieldDecls() { return this.fieldDecls; }
 
 	@Override

@@ -28,41 +28,28 @@ public class IRMethodDecl extends IRNode implements Named {
     parameters = null;
     setLineNumbers(id);
   }
-
-  public IRMethodDecl(ConcreteTree tree, VariableTable parentScope) {
-    setLineNumbers(tree);
-
-    parameters = new VariableTable(parentScope);
-
-    ConcreteTree child = tree.getFirstChild();
-    switch (child.getToken().getType()) {
-      case DecafParserTokenTypes.TK_int: {
-        returnType = IRType.Type.INT; break;
-      }
-      case DecafParserTokenTypes.TK_bool: {
-        returnType = IRType.Type.BOOL; break;
-      }
-      case DecafParserTokenTypes.TK_void: {
-        returnType = IRType.Type.VOID; break;
-      }
-    }
-    child = child.getRightSibling();
-    id = child.getToken();
-    child = child.getRightSibling();
-    while(child.isNode()) {
-      IRType.Type parameterType = IRType.getType(child.getToken());
-      child = child.getRightSibling();
-      Token parameterId = child.getToken();
-      parameters.add(new VariableDescriptor(new IRParameterDecl(parameterType, parameterId)));
-      child = child.getRightSibling();
-    }
-    code = new IRBlock(child, parameters);
+  
+  public IRMethodDecl(IRType.Type returnType, Token id, VariableTable parameters, IRBlock code) {
+	  this.returnType = returnType;
+	  this.id = id;
+	  this.code = code;
+	  this.parameters = parameters;
   }
 
   public String getName() { return id.getText(); }
   public IRType.Type getReturnType() { return returnType; }
-  public IRBlock getCode() { return code; }
-  public VariableTable getParameters() { return parameters; }
+  public IRBlock getCode() {
+      if (isImport()) {
+          throw new RuntimeException("Calling getCode on import declaration.");
+      }
+      return code;
+  }
+  public VariableTable getParameters() {
+      if (isImport()) {
+          throw new RuntimeException("Calling getParameters on import declaration.");
+      }
+      return parameters;
+  }
 
   public boolean isImport() { return false; } // overriden in import subclass
 

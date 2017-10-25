@@ -34,7 +34,7 @@ public class CFGCreator {
 
     public Map<String, CFGBlock> destruct(IRProgram tree) {
         Map<String, CFGBlock> destructedMethods = new HashMap<>();
-        for (IRMethodDecl method : tree.methods.getMethodList()) {
+        for (IRMethodDecl method : tree.getMethodTable().getMethodList()) {
             CFG methodCFG = destructIRMethodDecl(method);
             CFGBlock blockedCFG = condenseIntoBlocks(methodCFG);
             String name = method.getName();
@@ -138,13 +138,12 @@ public class CFGCreator {
 
     private CFG destructIRMethodDecl(IRMethodDecl decl) {
         // todo do something w/ MethodTable parameters?
-        IRBlock code = decl.getCode();
-        if (code == null) {
-            // it's an import
+        if (decl.isImport()) {
             // return new CFG(new CFGMethodDecl(decl));
             // TODO do we actually need to do anything with it?
             return new CFG(makeNoOp());
         }
+        IRBlock code = decl.getCode();
         CFG graph = destructIRBlock(code);
         return graph;
     }

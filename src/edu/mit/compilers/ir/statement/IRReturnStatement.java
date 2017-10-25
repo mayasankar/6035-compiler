@@ -4,22 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
+import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRReturnStatement extends IRStatement {
-  private IRExpression expr;
+  private IRExpression expr; // null if void return statement
 
-  public IRReturnStatement(ConcreteTree tree) {
-    statementType = IRStatement.StatementType.RETURN_EXPR;
-    ConcreteTree child = tree.getFirstChild();
-    child = child.getRightSibling();
-    if (child != null) {
-      expr = IRExpression.makeIRExpression(child);
-    } else {
-      expr = null;
-    }
-  }
 
   public IRReturnStatement(IRExpression expr) {
     this.statementType = IRStatement.StatementType.RETURN_EXPR;
@@ -27,7 +18,16 @@ public class IRReturnStatement extends IRStatement {
   }
 
   public IRExpression getReturnExpr(){
+      if (expr == null) {
+          throw new RuntimeException("Trying to access expression of void return statement. Use isVoid() before calling getReturnExpr() to fix.");
+      }
       return expr;
+  }
+
+  public boolean isVoid() { return expr == null; }
+
+  public IRType.Type getReturnType() {
+      return expr == null ? IRType.Type.VOID : expr.getType();
   }
 
   @Override

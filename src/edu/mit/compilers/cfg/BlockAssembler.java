@@ -189,9 +189,12 @@ public class BlockAssembler {
                 return code;
             }
             case RETURN_EXPR: {
-                IRExpression returnExpr = ((IRReturnStatement) statement).getReturnExpr();
-                code += makeCodeIRExpression(returnExpr);  // return value now in %r10
-                code += "mov %r10, %rax\n";
+                IRReturnStatement retStatement = (IRReturnStatement) statement;
+                if (!retStatement.isVoid()) { // TODO from mayars -- make sure this is correct in case of void code
+                    IRExpression returnExpr = ((IRReturnStatement) statement).getReturnExpr();
+                    code += makeCodeIRExpression(returnExpr);  // return value now in %r10
+                    code += "mov %r10, %rax\n";
+                }
                 code += "leave\n";
                 code += "ret\n";
                 return code;

@@ -15,24 +15,6 @@ public class IRVariableExpression extends IRExpression {
 	private IRExpression arrayIndex = null;
 	private IRType.Type type = null;
 
-	public static IRVariableExpression makeIRVariableExpression(ConcreteTree tree) { // TODO make constructor
-		if (tree == null) {
-			System.err.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
-		}
-		ConcreteTree child = tree.getFirstChild();
-		String name = child.getToken().getText();
-		child = child.getRightSibling();
-		IRVariableExpression toReturn;
-		if (child == null) {
-			toReturn = new IRVariableExpression(name);
-		} else {
-			child = child.getRightSibling();
-			toReturn = new IRVariableExpression(name, makeIRExpression(child));
-		}
-		toReturn.expressionType = IRExpression.ExpressionType.VARIABLE;
-		toReturn.setLineNumbers(tree);
-		return toReturn;
-	}
 
 	public IRVariableExpression(Token id) {
 		expressionType = IRExpression.ExpressionType.VARIABLE;

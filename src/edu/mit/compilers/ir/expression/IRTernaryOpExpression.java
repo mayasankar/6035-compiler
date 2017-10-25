@@ -23,19 +23,6 @@ public class IRTernaryOpExpression extends IRExpression {
 		this.falseExpression = falseExpression;
 	}
 
-	public IRTernaryOpExpression(ConcreteTree tree) { // TODO for mayars make recursive
-		//tree.print();
-		//System.out.println();
-		expressionType = IRExpression.ExpressionType.TERNARY;
-		setLineNumbers(tree);
-		ConcreteTree child = tree.getFirstChild();
-		condition = IRExpression.makeIRExpression(child);
-		child = child.getRightSibling();
-		trueExpression = IRExpression.makeIRExpression(child);
-		child = child.getRightSibling();
-		falseExpression = IRExpression.makeIRExpression(child);
-	}
-
 	public IRExpression getCondition() { return condition; }
 	public IRExpression getTrueExpression() { return trueExpression; }
 	public IRExpression getFalseExpression() { return falseExpression; }
