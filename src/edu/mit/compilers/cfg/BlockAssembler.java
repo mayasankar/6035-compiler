@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import antlr.Token;
 import edu.mit.compilers.ir.*;
@@ -46,15 +47,10 @@ public class BlockAssembler {
 
         if (parameters != null && parameters.getVariableDescriptorList() != null){ // check for nonexistence of parameters in imports
             for (VariableDescriptor v : parameters.getVariableDescriptorList()) {
-                // TODO mov input params to stack
                 if (v.getDecl().getLength() > 0) {
-                    // TODO arrays, allocate v.getLength, wait how do we do this???
-                    //this.numAllocs += (v.getDecl().getLength() - 1);
-                    //addVariableToStack(v);
+                    this.numAllocs += (v.getDecl().getLength() - 1);
                 }
-                else {
-                    addVariableToStack(v);
-                }
+                addVariableToStack(v);
             }
         }
 
@@ -144,7 +140,7 @@ public class BlockAssembler {
 
         String code = "";
 
-        try {
+        //try {
             if (line instanceof CFGNoOp) {
                 code += "";
             }
@@ -163,11 +159,11 @@ public class BlockAssembler {
             else {
                 throw new RuntimeException("CFGLine of unaccepted type.");
             }
-        }
-        catch (RuntimeException e) {
-            // for printing niceness, show things for which we haven't yet implemented codegen
-            code = line.ownValue() + "\n";
-        }
+        //}
+        // catch (RuntimeException e) {
+        //     // for printing niceness, show things for which we haven't yet implemented codegen
+        //     code = line.ownValue() + "\n";
+        // }
 
         int numEnvsToRemove = line.getNumEnvsEnded();
         while (numEnvsToRemove > 0) {
@@ -193,8 +189,8 @@ public class BlockAssembler {
     }
 
     private String makeCodeCFGMethodDecl(CFGMethodDecl line) {
-        // TODO
-        throw new RuntimeException("Unimplemented");
+        // TODO I'm pretty sure we never use CFGMethodDecls and could probably remove them entirely
+        throw new RuntimeException("Unimplemented: " + line.ownValue());
     }
 
     private String makeCodeCFGStatement(CFGStatement line) {
@@ -210,9 +206,12 @@ public class BlockAssembler {
                 return code;
             }
             case RETURN_EXPR: {
-                IRExpression returnExpr = ((IRReturnStatement) statement).getReturnExpr();
-                code += makeCodeIRExpression(returnExpr);  // return value now in %r10
-                code += "mov %r10, %rax\n";
+                IRReturnStatement retStatement = (IRReturnStatement) statement;
+                if (!retStatement.isVoid()) { // TODO from mayars -- make sure this is correct in case of void code
+                    IRExpression returnExpr = ((IRReturnStatement) statement).getReturnExpr();
+                    code += makeCodeIRExpression(returnExpr);  // return value now in %r10
+                    code += "mov %r10, %rax\n";
+                }
                 code += "leave\n";
                 code += "ret\n";
                 return code;
@@ -221,10 +220,34 @@ public class BlockAssembler {
                 return makeCodeIRAssignStatement((IRAssignStatement)statement);
             }
             case BREAK: {
-                // TODO
+                // TODO break/continue should probably be addressed in the CFG instead of at assembly?
+                CFGLine nextLine = envStack.handleBreak();
+                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
+                String nextCode = "";
+                if (nextBlock != null) {
+                    if (!blockLabels.containsKey(nextBlock)) {
+                        nextCode += makeCodeHelper(nextBlock);
+                    }
+                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
+                }
+                else {
+                    throw new RuntimeException("Can't break to a null block.");
+                }
+                return code + nextCode;
             }
             case CONTINUE: {
-                // TODO
+                CFGLine nextLine = envStack.handleContinue();
+                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
+                if (nextBlock != null) {
+                    if (!blockLabels.containsKey(nextBlock)) {
+                        throw new RuntimeException("Code for continue statement must have already been generated.");
+                    }
+                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
+                }
+                else {
+                    throw new RuntimeException("Can't continue to a null block.");
+                }
+                return code;
             } default: {
                 throw new RuntimeException("destructIR error: UNSPECIFIED statement");
             }
@@ -271,7 +294,6 @@ public class BlockAssembler {
 
     // return the code to evaluate the expression and store its result in %r10
     private String makeCodeIRExpression(IRExpression expr) {
-        //TODO
         String code = "";
         switch (expr.getExpressionType()) {
             case INT_LITERAL:
@@ -282,18 +304,30 @@ public class BlockAssembler {
                 return (booleanValue ? "mov $1, %r10" : "mov $0, %r10\n");
             case STRING_LITERAL:
                 String stringValue = ((IRStringLiteral)expr).toString();
-                stringCount += 1;
-                String label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
-                stringLabels.put(stringValue, label);
+                String label;
+                if (! stringLabels.containsKey(stringValue)) {
+                    stringCount += 1;
+                    label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
+                    stringLabels.put(stringValue, label);
+                }
+                else {
+                    label = stringLabels.get(stringValue);
+                }
                 return "mov $" + label + ", %r10\n";
             case METHOD_CALL:
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
-                for (int i=arguments.size()-1; i>=0; i--) {
+                List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
+                if (arguments.size() > 6) {
+                    // TODO so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
+                    throw new RuntimeException("More than 6 arguments: not handled yet.");
+                }
+                for (int i=0; i<arguments.size(); i++) {
                     IRExpression arg = arguments.get(i);
                     code += makeCodeIRExpression(arg);
-                    code += "push %r10\n";
+                    code += "mov %r10, " + registers.get(i) + "\n";
                 }
+                code += "mov $0, %rax\n";
                 code += "call " + methodCall.getName() + "\n";
                 return code;
             case VARIABLE:
@@ -301,28 +335,28 @@ public class BlockAssembler {
                 return "mov " + stackLoc + ", %r10\n";
             case LEN:
                 String arg = ((IRLenExpression)expr).getArgument();
-                Integer lenValue = new Integer(0);
-                // ^ TODO lookup variable and put the len here
+                VariableDescriptor var = envStack.get(arg);
+                Integer lenValue = new Integer(var.getLength());
                 return "mov $" + lenValue.toString() + ", %r10\n";
             case UNARY:
                 String op = ((IRUnaryOpExpression)expr).getOperator().getText();
                 IRExpression argExpr = ((IRUnaryOpExpression)expr).getArgument();
                 code += makeCodeIRExpression(argExpr); // value in %r10
                 if (op.equals("!")){
-                    code += "mov $1 %r11\n";
-                    code += "sub %r10 %r11\n";
-                    code += "mov %r11 %r10\n"; // TODO how do you ACTUALLY do ! ?
+                    code += "mov $1, %r11\n";
+                    code += "sub %r10, %r11\n";
+                    code += "mov %r11, %r10\n"; // TODO how do you ACTUALLY do ! ?
                 }
                 else { // "-"
-                    code += "mov $0 %r11\n";
-                    code += "sub %r10 %r11\n";
-                    code += "mov %r11 %r10\n"; // TODO is there a better way to do - ?
+                    code += "mov $0, %r11\n";
+                    code += "sub %r10, %r11\n";
+                    code += "mov %r11, %r10\n"; // TODO is there a better way to do - ?
                 }
                 return code;
             case TERNARY:
                 throw new RuntimeException("Ternary operations should have been deconstructed by CFGCreator.");
             case BINARY:
-                // TODO
+                return makeCodeIRBinaryOpExpression((IRBinaryOpExpression)expr);
             default:
                 return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
                 //throw new RuntimeException("Unspecified expression type");
@@ -330,7 +364,88 @@ public class BlockAssembler {
         //return "<CODE FOR EXPRESSION " + expr.toString() + ">\n";
     }
 
+    private String makeCodeIRBinaryOpExpression(IRBinaryOpExpression expr){
+        // TODO this won't work if there are complicated things on each side overwriting registers (like more operations)
+        // so break it down into smaller statements
+        String op = expr.getOperator().getText();
+        IRExpression leftExpr = expr.getLeftExpr();
+        IRExpression rightExpr = expr.getRightExpr();
+        String code = "";
+        code += makeCodeIRExpression(rightExpr); // right value in %r10
+        code += "mov %r10, %r11\n"; // right value in %r11
+        code += makeCodeIRExpression(leftExpr); // left value in %r10, right value in %r11
+        switch (op) {
+            case "+":
+                code += "add %r11, %r10\n";  // expression output value in %r10
+                return code;
+            case "-":
+                code += "sub %r11, %r10\n";
+                return code;
+            case "*":
+                code += "imul %r11, %r10\n";
+                return code;
+            case "/":
+                code += "mov %r10, %rax\n";
+                code += "idiv %r11\n";
+                code += "mov %rax, %r10\n";
+                return code;
+            case "%":
+                code += "mov %r10, %rax\n";
+                code += "idiv %r11\n";
+                code += "mov %rdx, %r10\n";
+                return code;
+            case "&&":
+                code += "and %r11, %r10\n";
+                return code;
+            case "||":
+                code += "or %r11, %r10\n";
+                return code;
+            case "==":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmove %r11, %r10\n";
+                return code;
+            case "!=":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovne %r11, %r10\n";
+                return code;
+            case "<":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovl %r11, %r10\n";
+                return code;
+            case ">":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovg %r11, %r10\n";
+                return code;
+            case "<=":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovle %r11, %r10\n";
+                return code;
+            case ">=":
+                code += "cmp %r10, %r11\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                code += "cmovge %r11, %r10\n";
+                return code;
+            default:
+                throw new RuntimeException("unsupported operation in binary expression");
+        }
+
+    }
+
+    //TODO UHHHHH WHERE DO WE HANDLE INDEXING INTO ARRAYS?
+
     private void addVariableToStack(VariableDescriptor var) {
+        //System.out.println("Added variable: " + var.toString());
         envStack.addVariable(var);
         return;
     }

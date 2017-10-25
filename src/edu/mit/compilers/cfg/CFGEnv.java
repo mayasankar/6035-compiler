@@ -39,8 +39,17 @@ public class CFGEnv {
         followingLine = null;
     }
 
+    public CFGEnv(EnvType t, CFGEnv previousEnv){
+        VariableTable parent = previousEnv.getVariables();
+        type = t;
+        variables = new VariableTable(parent);
+        startLine = null;
+        followingLine = null;
+    }
+
     public VariableDescriptor get(String name) { return variables.get(name); }
     public int getStackOffset(String name) { return variables.getStackOffset(name); }
+    public VariableTable getVariables() { return variables; }
     public void add(VariableDescriptor v) { variables.add(v); }
     public EnvType getType() { return type; }
     public CFGLine getStartLine() { return startLine; }

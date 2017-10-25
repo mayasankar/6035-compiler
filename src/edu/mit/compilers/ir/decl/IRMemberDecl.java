@@ -36,9 +36,13 @@ public abstract class IRMemberDecl extends IRNode implements Named {
 
 	public IRType.Type getType() { return irType; }
 
+	public boolean isArray() { // could also be implemented by return length > 0
+		return irType == IRType.Type.INT_ARRAY || irType == IRType.Type.BOOL_ARRAY;
+	}
+
 	public int getLength() { return length; }
 
-	public int getSpaceRequired() { return 8 * (length >= 0 ? length : 1); }
+	public int getSpaceRequired() { return 8 * (isArray() ? length : 1); }
 
 	public String getName() { return id.getText(); }
 

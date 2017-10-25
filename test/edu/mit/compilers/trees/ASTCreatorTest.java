@@ -18,6 +18,7 @@ import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRStatement.StatementType;
+import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.VariableTable;;
 
 public class ASTCreatorTest {
@@ -171,7 +172,7 @@ public class ASTCreatorTest {
     //TODO: break, continue, return statements
     private IRStatement verifyStatType(String exprStr, StatementType statType) {
         ConcreteTree tree = makeTreeFromString(exprStr, STAT);
-        IRStatement stat = ASTCreator.parseStatement(tree, new VariableTable());
+        IRStatement stat = ASTCreator.parseStatement(tree, new VariableTable(), new MethodTable());
         assertEquals(statType, stat.getStatementType());
         
         return stat;
@@ -179,7 +180,7 @@ public class ASTCreatorTest {
     
     private IRExpression verifyExprType(String exprStr, IRExpression.ExpressionType exprType) {
         ConcreteTree tree = makeTreeFromString(exprStr, EXPR);
-        IRExpression expr = ASTCreator.parseExpressionTree(tree);
+        IRExpression expr = ASTCreator.parseExpressionTree(tree, new VariableTable(), new MethodTable());
         assertEquals(exprType, expr.getExpressionType());
         
         return expr;

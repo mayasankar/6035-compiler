@@ -5,6 +5,8 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
+import edu.mit.compilers.trees.ASTCreator;
+
 public abstract class IRStatement extends IRNode {
   public enum StatementType {
     UNSPECIFIED,
@@ -34,4 +36,5 @@ public abstract class IRStatement extends IRNode {
   }
 
   public StatementType getStatementType() { return statementType; }
+
 }

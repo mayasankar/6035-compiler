@@ -21,18 +21,22 @@ import edu.mit.compilers.cfg.*;
 
 public class Assembler {
     public static void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
+        String code = ".globl main\n";
+        try {
+            os.write(code.getBytes());
+        } catch (IOException e) {
+            System.err.println(e);
+        }
         for (String methodName : methods.keySet()) {
             CFGBlock graph = methods.get(methodName);
             VariableTable parameters = table.get(methodName).getParameters();
-            int numParams;
             if (parameters == null){
-                numParams = 0;
+                // skip imports
+                continue;
             }
-            else {
-                numParams = parameters.getVariableList().size();
-            }
+            int numParams = parameters.getVariableList().size();
             BlockAssembler ba = new BlockAssembler(methodName, numParams);
-            String code = ba.makeCode(graph, parameters) + "\n";
+            code = ba.makeCode(graph, parameters) + "\n";
             try {
                 os.write(code.getBytes());
             } catch (IOException e) {

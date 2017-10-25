@@ -104,6 +104,10 @@ public class CFGCreator {
         return block;
     }
 
+    private static CFG destructIRMemberDecl(IRMemberDecl decl) {
+        return new CFG(new CFGDecl(decl));
+    }
+
     private static CFG destructIRStatement(IRStatement statement){
         switch(statement.getStatementType()) {
           case IF_BLOCK: {
@@ -127,7 +131,9 @@ public class CFGCreator {
         IRBlock code = decl.getCode();
         if (code == null) {
             // it's an import
-            return new CFG(new CFGMethodDecl(decl));
+            // return new CFG(new CFGMethodDecl(decl));
+            // TODO do we actually need to do anything with it?
+            return new CFG(makeNoOp());
         }
         CFG graph = destructIRBlock(code);
         graph.getStart().startEnv(CFGEnv.EnvType.BLOCK);
@@ -229,7 +235,24 @@ public class CFGCreator {
 
     private static CFG destructIRBlock(IRBlock block) {
         List<IRStatement> statements = block.getStatements();
-        return destructStatementList(statements);
+        List<IRFieldDecl> fieldDecls = block.getFieldDecls();
+        CFG f = destructDeclList(fieldDecls);
+        CFG s = destructStatementList(statements);
+        f.getEnd().setNext(s.getStart());
+        return new CFG(f.getStart(), s.getEnd());
+    }
+
+    private static CFG destructDeclList(List<IRFieldDecl> decls) {
+        if (decls.size() == 0) {
+            CFGLine noOp = makeNoOp();
+            return new CFG(noOp);
+        }
+        CFG firstGraph = destructIRMemberDecl(decls.remove(0));
+        CFGLine firstEnd = firstGraph.getEnd();
+        CFG restGraph = destructDeclList(decls);
+        CFGLine restStart = restGraph.getStart();
+        firstEnd.setNext(restStart);
+        return new CFG(firstGraph.getStart(), restGraph.getEnd());
     }
 
     private static CFG destructStatementList(List<IRStatement> statements) {
@@ -241,9 +264,8 @@ public class CFGCreator {
         CFGLine firstEnd = firstGraph.getEnd();
         CFG restGraph = destructStatementList(statements);
         CFGLine restStart = restGraph.getStart();
-        CFGLine restEnd = restGraph.getEnd();
         firstEnd.setNext(restStart);
-        return new CFG(firstGraph.getStart(), restEnd);
+        return new CFG(firstGraph.getStart(), restGraph.getEnd());
     }
 
     private static CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {

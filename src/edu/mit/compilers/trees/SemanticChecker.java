@@ -58,6 +58,10 @@ public class SemanticChecker {
             notifyError("Program has no main method.", program);
             return;
         }
+        if (mainMethod.isImport()) {
+            notifyError("Cannot import main.", program);
+            return;
+        }
         if (mainMethod.getReturnType() != IRType.Type.VOID){
             notifyError("Main method return type is not void.", mainMethod);
         }
@@ -146,11 +150,10 @@ public class SemanticChecker {
 
     private void checkIRMemberDecl(IRMemberDecl variable) {
         // 4
-        IRType.Type type = variable.getType();
         int length = variable.getLength();
-        if (type == IRType.Type.BOOL_ARRAY || type == IRType.Type.INT_ARRAY) {
-            if (length == 0) {
-                notifyError("Cannot declare an array of size 0.", variable);
+        if (variable.isArray()) {
+            if (length <= 0) {
+                notifyError("Cannot declare an array of size " + length, variable);
             }
         }
         else {
@@ -298,7 +301,7 @@ public class SemanticChecker {
                 notifyError("Method " + md.getName() + " called with " + arguments.size() +
                 " parameters; needs " + parameters.size() + ".", expr);
             }
-            for (int i = 0; i < parameters.size(); i++) {
+            for (int i = 0; i < parameters.size() && i < arguments.size(); i++) {
                 checkIRExpression(arguments.get(i));
                 IRType.Type parType = parameters.get(i).getType();
                 IRType.Type argType = arguments.get(i).getType();
@@ -397,7 +400,7 @@ public class SemanticChecker {
         IRExpression value = statement.getValue();
         if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
-            if (value.getType() == null){
+            if (value.getType() == null) {
                 System.out.println("Debugging: null value.getType(). value=" + value);
             }
         }
@@ -440,7 +443,7 @@ public class SemanticChecker {
         else if (op.equals("+=") || op.equals("-=") || op.equals("++") || op.equals("--")) {
             //System.out.println("DEBUG: this branch! op=" + op);
             if ((op.equals("+=") || op.equals("-=")) && value.getType() != IRType.Type.INT) {
-                notifyError("Cannot increment by a value of type " + value.getType().toString() + ".", value);
+                notifyError("Cannot increment by a value of type " + value.getType() + ".", value);
             }
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
@@ -510,8 +513,10 @@ public class SemanticChecker {
     private void checkIRReturnStatement(IRReturnStatement statement){
         // 8, 9
         IRType.Type desiredReturnType = env.getReturnType();
-        checkIRExpression(statement.getReturnExpr());
-        IRType.Type actualReturnType = statement.getReturnExpr().getType();
+        if (! statement.isVoid()) {
+            checkIRExpression(statement.getReturnExpr());
+        }
+        IRType.Type actualReturnType = statement.getReturnType();
         if (desiredReturnType != actualReturnType){
             if (desiredReturnType == IRType.Type.VOID){
                 notifyError("Attempted to return value from a void function.", statement);

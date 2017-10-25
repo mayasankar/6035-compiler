@@ -30,7 +30,13 @@ public class CFGEnvStack {
     public void removeEnvironment() { environments.remove(environments.size()-1); }
     protected CFGEnv getEnvironment() { return environments.get(environments.size()-1); }
     public void pushEnvironment(CFGEnv.EnvType type) {
-        CFGEnv env = new CFGEnv(type);
+        CFGEnv env;
+        if (environments.size() > 0){
+            env = new CFGEnv(type, getEnvironment());
+        }
+        else {
+            env = new CFGEnv(type);
+        }
         pushEnvironment(env);
     }
     protected void pushEnvironment(CFGEnv env) { environments.add(env); }

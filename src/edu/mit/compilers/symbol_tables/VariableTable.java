@@ -8,11 +8,11 @@ import java.util.Set;
 import edu.mit.compilers.ir.decl.*;
 
 public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor> {
-	int stackPointer;
+	private int stackPointer;
 
 	public VariableTable() {
 		super();
-		stackPointer = 8; // TODO (mayars) do we want to initialize it to 0 or 8?
+		stackPointer = 0; // TODO (mayars) do we want to initialize it to 0 or 8?
 	}
 
 	public VariableTable(VariableTable parent) {
@@ -34,6 +34,23 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 
 	 public int getStackOffset(String name) {
 	         VariableDescriptor var = this.get(name);
+			 if (var == null) {
+				 String error = "attempted to get stack offset of undeclared variable: " + name;
+				 error += "\nown variables: ";
+				 for (VariableDescriptor v: orderedChildren) {
+					 error += "\n" + v.getName();
+				 }
+				 if (this.parent == null) {
+					 error += "\nnull parent";
+				 }
+				 else {
+					 error += "\nparent variables:";
+					 for (VariableDescriptor v: this.parent.getVariableDescriptorList()) {
+						 error += "\n" + v.getName();
+					 }
+				 }
+				 throw new RuntimeException(error);
+			 }
 	         return var.getStackOffset();
 	 }
 
