@@ -282,8 +282,14 @@ public class SemanticChecker {
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr, boolean isInExpression) {
         // 5, 6
-        MethodTable lookupTable = env.getMethodTable();
+        VariableTable table = env.getVariableTable();
+        VariableDescriptor desc = table.get(expr.getName());
+        if (desc != null) {
+            notifyError(expr.getName() + " is most recently declared as a method, not a function", expr);
+            return;
+        }
 
+        MethodTable lookupTable = env.getMethodTable();
         IRMethodDecl md = lookupTable.get(expr.getName());
         if (md == null) {
             notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
@@ -407,9 +413,9 @@ public class SemanticChecker {
         IRExpression value = statement.getValue();
         if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
-            if (value.getType() == null) {
-                System.out.println("Debugging: null value.getType(). value=" + value);
-            }
+            // if (value.getType() == null) { // happens when value is an undeclared variable
+            //     System.out.println("Debugging: null value.getType(). value=" + value);
+            // }
         }
 
         String varName = varAssigned.getName();
