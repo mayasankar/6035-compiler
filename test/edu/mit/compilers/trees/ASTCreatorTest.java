@@ -174,6 +174,8 @@ public class ASTCreatorTest {
         ConcreteTree tree = makeTreeFromString(exprStr, STAT);
         IRStatement stat = ASTCreator.parseStatement(tree, new VariableTable(), new MethodTable());
         assertEquals(statType, stat.getStatementType());
+        assertNotNull(stat.getVariableTable());
+
         
         return stat;
     }
@@ -182,6 +184,7 @@ public class ASTCreatorTest {
         ConcreteTree tree = makeTreeFromString(exprStr, EXPR);
         IRExpression expr = ASTCreator.parseExpressionTree(tree, new VariableTable(), new MethodTable());
         assertEquals(exprType, expr.getExpressionType());
+        assertNotNull(expr.getVariableTable());
         
         return expr;
     }

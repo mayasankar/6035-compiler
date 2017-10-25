@@ -267,7 +267,10 @@ public class ASTCreator {
       	if (child.isNode()) {
             int tokentype = child.getToken().getType();
             if (tokentype == DecafParserTokenTypes.TK_return) {
-            	IRExpression returnExpression = parseExpressionTree(child.getRightSibling(), scope, methods);
+            	IRExpression returnExpression = null;
+            	if (child.getRightSibling() != null) {
+            		returnExpression = parseExpressionTree(child.getRightSibling(), scope, methods);
+            	}
                 toReturn = new IRReturnStatement(returnExpression);
             } else if (tokentype == DecafParserTokenTypes.TK_break) {
                 toReturn = IRLoopStatement.breakStatement;

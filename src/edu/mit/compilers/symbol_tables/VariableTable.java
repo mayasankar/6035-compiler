@@ -33,25 +33,25 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 	 }
 
 	 public int getStackOffset(String name) {
-	         VariableDescriptor var = this.get(name);
-			 if (var == null) {
-				 String error = "attempted to get stack offset of undeclared variable: " + name;
-				 error += "\nown variables: ";
-				 for (VariableDescriptor v: orderedChildren) {
+         VariableDescriptor var = this.get(name);
+		 if (var == null) {
+			 String error = "attempted to get stack offset of undeclared variable: " + name;
+			 error += "\nown variables: ";
+			 for (VariableDescriptor v: orderedChildren) {
+				 error += "\n" + v.getName();
+			 }
+			 if (this.parent == null) {
+				 error += "\nnull parent";
+			 }
+			 else {
+				 error += "\nparent variables:";
+				 for (VariableDescriptor v: this.parent.getVariableDescriptorList()) {
 					 error += "\n" + v.getName();
 				 }
-				 if (this.parent == null) {
-					 error += "\nnull parent";
-				 }
-				 else {
-					 error += "\nparent variables:";
-					 for (VariableDescriptor v: this.parent.getVariableDescriptorList()) {
-						 error += "\n" + v.getName();
-					 }
-				 }
-				 throw new RuntimeException(error);
 			 }
-	         return var.getStackOffset();
+			 throw new RuntimeException(error);
+		 }
+         return var.getStackOffset();
 	 }
 
 	@Override
