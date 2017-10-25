@@ -23,19 +23,6 @@ public class IRMethodCallExpression extends IRExpression {
 		//TODO: some code to get the method descriptor
 	}
 
-	public IRMethodCallExpression(ConcreteTree tree) {
-		expressionType = IRExpression.ExpressionType.METHOD_CALL;
-		setLineNumbers(tree);
-		ConcreteTree child = tree.getFirstChild();
-		functionName = child.getToken().getText();
-		child = child.getRightSibling();
-		arguments = new ArrayList<IRExpression>();
-		while (child != null) {
-			arguments.add(IRExpression.makeIRExpression(child));
-			child = child.getRightSibling();
-		}
-	}
-
 	@Override
 	public IRType.Type getType() {
 		return type;

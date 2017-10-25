@@ -23,21 +23,6 @@ public class IRUnaryOpExpression extends IRExpression {
 		this.argument = argument;
 	}
 
-	public IRUnaryOpExpression(ConcreteTree tree) {
-		expressionType = IRExpression.ExpressionType.UNARY;
-		setLineNumbers(tree);
-		ConcreteTree exprChild = tree.getLastChild();
-		ConcreteTree opChild = exprChild.getLeftSibling();
-		ConcreteTree firstOpChild = tree.getFirstChild();
-		IRExpression expression = IRExpression.makeIRExpression(exprChild);
-		while (opChild != firstOpChild) {
-			expression = new IRUnaryOpExpression(opChild.getToken(), expression);
-			opChild = opChild.getLeftSibling();
-		}
-		this.operator = opChild.getToken();
-		this.argument = expression;
-	}
-
 	public Token getOperator() { return operator; }
 	public IRExpression getArgument() { return argument; }
 

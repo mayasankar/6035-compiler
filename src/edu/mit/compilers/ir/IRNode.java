@@ -3,12 +3,15 @@ package edu.mit.compilers.ir;
 import java.util.List;
 
 import antlr.Token;
-
+import edu.mit.compilers.symbol_tables.MethodTable;
+import edu.mit.compilers.symbol_tables.VariableTable;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public abstract class IRNode {
 	public int line = -1;
 	public int column = -1;
+	protected VariableTable variableScope;
+	protected MethodTable methodTable;
 
 	public String location(){
 		return Integer.toString(line) + "," + Integer.toString(column);
@@ -35,4 +38,17 @@ public abstract class IRNode {
 	}
 
 	public abstract List<? extends IRNode> getChildren();
+	
+	public void setTables(VariableTable varTable, MethodTable methodTable) {
+		this.variableScope = varTable;
+		this.methodTable = methodTable;
+	}
+	
+	public MethodTable getMethodTable() {
+		return methodTable;
+	}
+	
+	public VariableTable getVariableTable() {
+		return variableScope;
+	}
 }

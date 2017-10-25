@@ -10,16 +10,6 @@ import edu.mit.compilers.trees.ConcreteTree;
 public class IRReturnStatement extends IRStatement {
   private IRExpression expr;
 
-  public IRReturnStatement(ConcreteTree tree) {
-    statementType = IRStatement.StatementType.RETURN_EXPR;
-    ConcreteTree child = tree.getFirstChild();
-    child = child.getRightSibling();
-    if (child != null) {
-      expr = IRExpression.makeIRExpression(child);
-    } else {
-      expr = null;
-    }
-  }
 
   public IRReturnStatement(IRExpression expr) {
     this.statementType = IRStatement.StatementType.RETURN_EXPR;

@@ -24,23 +24,6 @@ public class IRForStatement extends IRStatement {
 		statementType = IRStatement.StatementType.FOR_BLOCK;
 	}
 
-	public IRForStatement(ConcreteTree tree, VariableTable parentScope) {
-		statementType = IRStatement.StatementType.FOR_BLOCK;
-		ConcreteTree child = tree.getFirstChild();
-		if (child == null) {
-			System.out.println("ERROR: null child tree in IRForStatement.IRForStatement.");
-		}
-		initializer = IRAssignStatement.makeForLoopInitializer(child);
-		child = child.getRightSibling().getRightSibling().getRightSibling();
-		condition = IRExpression.makeIRExpression(child);
-		child = child.getRightSibling();
-		stepFunction = IRAssignStatement.makeForLoopStepFunction(child);
-		while (!child.getName().equals("block")) {
-			child = child.getRightSibling();
-		}
-		block = new IRBlock(child, parentScope);
-	}
-
 	@Override
 	String toString(int indent) {
 		String whitespace = "";

@@ -13,14 +13,6 @@ public class IRWhileStatement extends IRStatement {
 	private IRExpression condition;
 	private IRBlock block;
 
-	public IRWhileStatement(ConcreteTree tree, VariableTable parentScope) {
-		statementType = IRStatement.StatementType.WHILE_BLOCK;
-		ConcreteTree child = tree.getFirstChild();
-		condition = IRExpression.makeIRExpression(child);
-		child = child.getRightSibling();
-		block = new IRBlock(child, parentScope);
-	}
-
 	public IRWhileStatement(IRExpression condition, IRBlock block) {
 		this.condition = condition;
 		this.block = block;

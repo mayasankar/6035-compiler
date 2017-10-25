@@ -28,12 +28,12 @@ public class SemanticChecker {
     public boolean checkProgram(IRProgram tree){
         //System.out.println("Debugging: starts checkProgram().");
         //notifyError("DEBUG: Checking program for semantic errors.", tree);
-        env.push(tree.methods);
-        env.push(tree.fields);
+        env.push(tree.getMethodTable());
+        env.push(tree.getVariableTable());
         env.push(IRType.Type.VOID);
-        checkGlobals(tree.fields, tree.methods);
-        checkVariableTable(tree.fields);
-        checkMethodTable(tree.methods);
+        checkGlobals(tree.getVariableTable(), tree.getMethodTable());
+        checkVariableTable(tree.getVariableTable());
+        checkMethodTable(tree.getMethodTable());
         checkHasMain(tree);
         env.popMethodTable();
         env.popVariableTable();
@@ -53,7 +53,7 @@ public class SemanticChecker {
 
     private void checkHasMain(IRProgram program){
         // 3
-        IRMethodDecl mainMethod = program.methods.get("main");
+        IRMethodDecl mainMethod = program.getMethodTable().get("main");
         if (mainMethod == null) {
             notifyError("Program has no main method.", program);
             return;

@@ -11,6 +11,7 @@ import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.decl.IRImportDecl;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
+import edu.mit.compilers.ir.decl.IRParameterDecl;
 import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
@@ -52,12 +53,6 @@ public class ASTCreator {
 	    }
     }
 
-    // deprecated
-    public static IRProgram getIR(ConcreteTree tree) {
-        simplifyTree(tree);
-        return new IRProgram(tree);
-    }
-
     public static IRProgram getIRNew(ConcreteTree tree) {
 	    simplifyTree(tree);
 	    return parseProgram(tree);
@@ -95,7 +90,7 @@ public class ASTCreator {
 		}
 
 		while (child != null && child.getName().equals("method_decl")) {
-			methods.add(new IRMethodDecl(child, fields));
+			methods.add(makeIRMethodDecl(child, fields, methods));
 			child = child.getRightSibling();
 		}
 
@@ -104,27 +99,30 @@ public class ASTCreator {
 		return toReturn;
     }
 
-    public static IRMethodCallExpression parseMethodExpression(ConcreteTree tree) {
+    public static IRMethodCallExpression parseMethodExpression(ConcreteTree tree, VariableTable fields, MethodTable methods) {
         List<IRExpression> arguments = new ArrayList<>();
         String methodName = tree.getFirstChild().getToken().getText();
         ConcreteTree nextChild = tree.getFirstChild().getRightSibling();
         while (nextChild != null) {
-            arguments.add(parseExpressionTree(nextChild));
+            arguments.add(parseExpressionTree(nextChild, fields, methods));
             nextChild = nextChild.getRightSibling();
         }
         IRMethodCallExpression answer = new IRMethodCallExpression(methodName, arguments);
+        answer.setTables(fields, methods);
         answer.setLineNumbers(tree);
         return answer;
     }
 
-    public static IRExpression parseExpressionTree(ConcreteTree tree) {
+    public static IRExpression parseExpressionTree(ConcreteTree tree, VariableTable fields, MethodTable methods) {
+        IRExpression toReturn = null;
         String nodeName = tree.getName();
         switch(nodeName) {
             case "expr_0": {
-                return parseExpressionTree(tree.getFirstChild());
+                toReturn = parseExpressionTree(tree.getFirstChild(), fields, methods);
+                break;
             }
             case "expr_1": {
-                IRExpression returnValue = parseExpressionTree(tree.getLastChild());
+                IRExpression returnValue = parseExpressionTree(tree.getLastChild(), fields, methods);
                 ConcreteTree subTree = tree.getLastChild().getLeftSibling();
                 if (returnValue.getExpressionType() == IRExpression.ExpressionType.INT_LITERAL) {
                     IRIntLiteral literalValue = (IRIntLiteral) returnValue;
@@ -137,7 +135,8 @@ public class ASTCreator {
                     returnValue = new IRUnaryOpExpression(subTree.getToken(), returnValue);
                     subTree = subTree.getLeftSibling();
                 }
-                return returnValue;
+                toReturn = returnValue;
+                break;
             }
             case "expr_2":
             case "expr_3":
@@ -146,49 +145,50 @@ public class ASTCreator {
             case "expr_6":
             case "expr_7": {
                 ConcreteTree nextNode = tree.getFirstChild();
-                IRExpression returnExpression = parseExpressionTree(nextNode);
+                IRExpression returnExpression = parseExpressionTree(nextNode, fields, methods);
                 while(nextNode.getRightSibling() != null) {
                     ConcreteTree operator = nextNode.getRightSibling();
                     nextNode = operator.getRightSibling();
                     if (nextNode == null) {
                         throw new RuntimeException("This binary operator node does not have odd number of children.");
                     }
-                    IRExpression nextTerm = parseExpressionTree(nextNode);
+                    IRExpression nextTerm = parseExpressionTree(nextNode, fields, methods);
                     returnExpression = new IRBinaryOpExpression(returnExpression, operator.getToken(), nextTerm);
                 }
-                return returnExpression;
+                toReturn = returnExpression;
+                break;
             }
             case "expr_8": {
                 ConcreteTree nextNode = tree.getLastChild();
-                IRExpression returnExpression = parseExpressionTree(nextNode);
+                IRExpression returnExpression = parseExpressionTree(nextNode, fields, methods);
                 while(nextNode.getLeftSibling() != null) {
                     ConcreteTree trueExpressionTree = nextNode.getLeftSibling();
                     ConcreteTree conditionTree = trueExpressionTree.getLeftSibling();
                     nextNode = conditionTree;
-                    IRExpression trueExpression = parseExpressionTree(trueExpressionTree);
-                    IRExpression condition = parseExpressionTree(conditionTree);
+                    IRExpression trueExpression = parseExpressionTree(trueExpressionTree, fields, methods);
+                    IRExpression condition = parseExpressionTree(conditionTree, fields, methods);
                     returnExpression = new IRTernaryOpExpression(condition, trueExpression, returnExpression);
                 }
-                return returnExpression;
+                toReturn = returnExpression;
+                break;
             }
             case "expr_base": {
                 ConcreteTree firstChild = tree.getFirstChild();
                 if(firstChild.isNode()) {
-                    IRExpression toReturn = new IRLenExpression(firstChild.getRightSibling().getToken());
+                    toReturn = new IRLenExpression(firstChild.getRightSibling().getToken());
                     toReturn.setLineNumbers(firstChild);
-                    return toReturn;
                 }
                 else if(firstChild.getName().equals("method_call")) {
-                    return parseMethodExpression(firstChild);
+                    toReturn = parseMethodExpression(firstChild, fields, methods);
                 }
                 else if(firstChild.getName().equals("location")) {
-                    return parseLocation(firstChild);
+                    toReturn = parseLocation(firstChild, fields, methods);
                 }
                 else if(firstChild.getName().equals("literal")) {
                     ConcreteTree literalValue = firstChild.getFirstChild();
                     Token token = literalValue.getToken();
                     int tokentype = token.getType();
-                    IRExpression toReturn = null;
+
                     if (tokentype == DecafParserTokenTypes.INT) {
                         String numAsString = token.getText();
                         int radix = 10;
@@ -220,21 +220,25 @@ public class ASTCreator {
                         throw new RuntimeException("Literal " + token.getText() + " could not be parsed.");
                     }
                     toReturn.setLineNumbers(token);
-                    return toReturn;
                 }
+                break;
             }
             default:
             if (tree.isNode()) { // TODO deal with case that string has escaped characters
                 String text = tree.getToken().getText();
                 IRExpression returnExpression = new IRStringLiteral(text.substring(1, text.length()-1));
                 returnExpression.setLineNumbers(tree);
-                return returnExpression;
+                toReturn = returnExpression;
+                break;
             }
             throw new RuntimeException("You tried parsing a badly formatted expression!");
         }
+        toReturn.setLineNumbers(tree);
+        toReturn.setTables(fields, methods);
+        return toReturn;
     }
 
-    public static IRVariableExpression parseLocation(ConcreteTree tree) {
+    public static IRVariableExpression parseLocation(ConcreteTree tree, VariableTable fields, MethodTable methods) {
 		if (tree == null) {
 			throw new RuntimeException("Location node is empty");
 		}
@@ -246,19 +250,21 @@ public class ASTCreator {
 			returnExpression =  new IRVariableExpression(name);
 		} else {
 			child = child.getRightSibling();
-			returnExpression = new IRVariableExpression(name, parseExpressionTree(child));
+			returnExpression = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));
 		}
         returnExpression.setLineNumbers(tree);
+		returnExpression.setTables(fields, methods);
+
         return returnExpression;
     }
 
-    public static IRStatement parseStatement(ConcreteTree tree, VariableTable scope) {
+    public static IRStatement parseStatement(ConcreteTree tree, VariableTable scope, MethodTable methods) {
         ConcreteTree child = tree.getFirstChild();
         IRStatement toReturn = null;
       	if (child.isNode()) {
             int tokentype = child.getToken().getType();
             if (tokentype == DecafParserTokenTypes.TK_return) {
-            	IRExpression returnExpression = parseExpressionTree(child.getRightSibling());
+            	IRExpression returnExpression = parseExpressionTree(child.getRightSibling(), scope, methods);
                 toReturn = new IRReturnStatement(returnExpression);
             } else if (tokentype == DecafParserTokenTypes.TK_break) {
                 toReturn = IRLoopStatement.breakStatement;
@@ -273,28 +279,28 @@ public class ASTCreator {
       	switch(nodeName) {
       	case "assign_expr": {
       	    ConcreteTree locationTree = child.getFirstChild();
-      		IRVariableExpression location = parseLocation(locationTree);
+      		IRVariableExpression location = parseLocation(locationTree, scope, methods);
       		ConcreteTree operatorTree = locationTree.getRightSibling();
       		Token operator = operatorTree.getToken();
       		ConcreteTree expressionTree = operatorTree.getRightSibling();
       		IRExpression assignment = null;
       		if(expressionTree != null) {
-      			assignment = parseExpressionTree(expressionTree);
+      			assignment = parseExpressionTree(expressionTree, scope, methods);
       		}
       		toReturn = new IRAssignStatement(location, operator, assignment);
       		break;
         }
       	case "method_call": {
-      		IRExpression methodCall = parseMethodExpression(child);
+      		IRExpression methodCall = parseMethodExpression(child, scope, methods);
       		toReturn = new IRMethodCallStatement(methodCall);
       		break;
         }
       	case "if_block": {
       	    child = child.getFirstChild();
-      		IRExpression ifCondition = parseExpressionTree(child);
-      		IRBlock ifBlock = parseBlock(child.getRightSibling(), scope);
+      		IRExpression ifCondition = parseExpressionTree(child, scope, methods);
+      		IRBlock ifBlock = parseBlock(child.getRightSibling(), scope, methods);
       		if(child.getRightSibling().getRightSibling() != null) {
-      			IRBlock elseBlock = parseBlock(child.getRightSibling().getRightSibling(), scope);
+      			IRBlock elseBlock = parseBlock(child.getRightSibling().getRightSibling(), scope, methods);
       			toReturn = new IRIfStatement(ifCondition, ifBlock, elseBlock);
       		} else {
       			toReturn = new IRIfStatement(ifCondition, ifBlock);
@@ -303,31 +309,32 @@ public class ASTCreator {
         }
       	case "for_block":{
       	    child = child.getFirstChild();
-    		IRAssignStatement initializer = makeForLoopInitializer(child);
+    		IRAssignStatement initializer = makeForLoopInitializer(child, scope, methods);
     		child = child.getRightSibling().getRightSibling().getRightSibling();
-    		IRExpression condition = parseExpressionTree(child);
+    		IRExpression condition = parseExpressionTree(child, scope, methods);
     		child = child.getRightSibling();
-    		IRAssignStatement stepFunction = makeForLoopStepFunction(child);
+    		IRAssignStatement stepFunction = makeForLoopStepFunction(child, scope, methods);
     		while (!child.getName().equals("block")) {
     			child = child.getRightSibling();
     		}
-    		IRBlock block = parseBlock(child, scope);
+    		IRBlock block = parseBlock(child, scope, methods);
     		toReturn = new IRForStatement(initializer, condition, stepFunction, block);
     		break;
       	}
       	case "while_block": {
       	    child = child.getFirstChild();
-      		IRExpression loopCondition = parseExpressionTree(child);
-      		IRBlock block = parseBlock(child.getRightSibling(), scope);
+      		IRExpression loopCondition = parseExpressionTree(child, scope, methods);
+      		IRBlock block = parseBlock(child.getRightSibling(), scope, methods);
       		toReturn = new IRWhileStatement(loopCondition, block);
       		break;
       	}
       	}
       	toReturn.setLineNumbers(tree);
+		toReturn.setTables(scope, methods);
       	return toReturn;
     }
 
-    public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope) {
+    public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope, MethodTable methods) {
 		VariableTable fields = new VariableTable(parentScope);
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {
@@ -350,28 +357,32 @@ public class ASTCreator {
 
 		List<IRStatement> statements = new ArrayList<>();
 		while (child != null) {
-			statements.add(parseStatement(child, fields));
+			statements.add(parseStatement(child, fields, methods));
 			child = child.getRightSibling();
 		}
 		IRBlock block = new IRBlock(statements, fields);
 		block.setLineNumbers(tree);
+		block.setTables(fields, methods);
 
 		return block;
 	}
 
-	private static IRAssignStatement makeForLoopInitializer(ConcreteTree child) {
+	private static IRAssignStatement makeForLoopInitializer(ConcreteTree child, VariableTable fields, MethodTable methods) {
 		IRVariableExpression varAssigned = new IRVariableExpression(child.getToken());
 		child = child.getRightSibling();
 		Token operator = child.getToken();
 		child = child.getRightSibling();
-		IRExpression value = parseExpressionTree(child);
+		IRExpression value = parseExpressionTree(child, fields, methods);
 		IRAssignStatement toReturn = new IRAssignStatement(varAssigned, operator, value);
+		
 		toReturn.setLineNumbers(child);
+		toReturn.setTables(fields, methods);
+
 		return toReturn;
   }
 
-	private static IRAssignStatement makeForLoopStepFunction(ConcreteTree child) {
-		IRVariableExpression varAssigned = IRVariableExpression.makeIRVariableExpression(child);
+	private static IRAssignStatement makeForLoopStepFunction(ConcreteTree child, VariableTable fields, MethodTable methods) {
+		IRVariableExpression varAssigned = makeIRVariableExpression(child, fields, methods);
 		child = child.getRightSibling();
 		Token operator = child.getToken();
 		IRAssignStatement toReturn;
@@ -379,9 +390,63 @@ public class ASTCreator {
 			toReturn = new IRAssignStatement(varAssigned, operator, null);
 		} else {
 			child = child.getRightSibling();
-			toReturn = new IRAssignStatement(varAssigned, operator, parseExpressionTree(child));
+			toReturn = new IRAssignStatement(varAssigned, operator, parseExpressionTree(child, fields, methods));
 		}
+		toReturn.setTables(fields, methods);
 		toReturn.setLineNumbers(child);
 		return toReturn;
 	}
+	
+	private static IRVariableExpression makeIRVariableExpression(ConcreteTree tree, VariableTable fields, MethodTable methods) {
+		if (tree == null) {
+			System.err.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
+		}
+		ConcreteTree child = tree.getFirstChild();
+		String name = child.getToken().getText();
+		child = child.getRightSibling();
+		IRVariableExpression toReturn;
+		if (child == null) {
+			toReturn = new IRVariableExpression(name);
+		} else {
+			child = child.getRightSibling();
+			toReturn = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));
+		}
+		toReturn.setLineNumbers(tree);
+		toReturn.setTables(fields, methods);
+		return toReturn;
+	}
+	
+	private static IRMethodDecl makeIRMethodDecl(ConcreteTree tree, VariableTable parentScope, MethodTable methods) {
+	    VariableTable parameters = new VariableTable(parentScope);
+	    IRType.Type returnType = null;
+	    ConcreteTree child = tree.getFirstChild();
+	    switch (child.getToken().getType()) {
+        case DecafParserTokenTypes.TK_int: {
+            returnType = IRType.Type.INT; break;
+        }
+        case DecafParserTokenTypes.TK_bool: {
+            returnType = IRType.Type.BOOL; break;
+        }
+        case DecafParserTokenTypes.TK_void: {
+        	returnType = IRType.Type.VOID; break;
+        }
+	    }
+	    child = child.getRightSibling();
+	    Token id = child.getToken();
+	    child = child.getRightSibling();
+	    while(child.isNode()) {
+	        IRType.Type parameterType = IRType.getType(child.getToken());
+	        child = child.getRightSibling();
+	        Token parameterId = child.getToken();
+	        parameters.add(new VariableDescriptor(new IRParameterDecl(parameterType, parameterId)));
+	        child = child.getRightSibling();
+	    }
+	    IRBlock code = parseBlock(child, parameters, methods);
+	    IRMethodDecl decl = new IRMethodDecl(returnType, id, parameters, code);
+	    
+	    decl.setLineNumbers(tree);
+	    decl.setTables(parentScope, methods);
+	    
+	    return decl;
+	  }
 }
