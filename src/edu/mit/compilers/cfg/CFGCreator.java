@@ -125,7 +125,7 @@ public class CFGCreator {
           } case METHOD_CALL: case RETURN_EXPR: {
             // TODO idk how we're handling methods and returns? I think just as lines
           } case ASSIGN_EXPR: {
-            return new CFG(new CFGStatement(statement));
+            return destructIRAssignStatement((IRAssignStatement) statement);
           } case BREAK: {
               return destructBreakStatement();
           } case CONTINUE: {
@@ -274,8 +274,37 @@ public class CFGCreator {
         f.getEnd().setNext(s.getStart());
         return new CFG(f.getStart(), s.getEnd());
     }
+    
+    private CFG destructIRAssignStatement(IRAssignStatement stat) {
+    	if(stat.getValue().getDepth() == 0) {
+    		return new CFG(new CFGStatement(stat));
+    	} else {
+    		String lastVar = "placeholderStringAHHHHHHHH";
+    		CFG expandedExpr = destructIRExpression(stat.getValue(), lastVar);
+    		CFGLine assignLine = new CFGAssignStatement(stat.getVariableName(), stat.getOperatorToken(), new IRVariableExpression(lastVar));
+    		
+    		expandedExpr.getEnd().setNext(assignLine);
+    		return new CFG(expandedExpr.getStart(), assignLine);
+    	}
+    }
+    
+    /** 
+     * 
+     * @param value an expression with depth >0
+     * @param lastVar the name to assign to the last temporary variable created
+     * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
+     */
+    private CFG destructIRExpression(IRExpression value, String lastVar) {
+    	throw new RuntimeException("not finished yet");
+    /*	int numTempVars = 0;
+    	for(IRNode node: value.getChildren()) {
+    		IRExpression subExpr = (IRExpression) node;
+    		
+    	}*/
 
-    private CFG destructDeclList(List<IRFieldDecl> decls) {
+	}
+
+	private CFG destructDeclList(List<IRFieldDecl> decls) {
         if (decls.size() == 0) {
             CFGLine noOp = makeNoOp();
             return new CFG(noOp);

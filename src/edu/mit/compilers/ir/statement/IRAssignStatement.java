@@ -30,6 +30,7 @@ public class IRAssignStatement extends IRStatement {
 	public IRVariableExpression getVarAssigned() { return varAssigned; }
 	public String getOperator() { return operator.getText(); }
 	public IRExpression getValue() { return value; }
+	public Token getOperatorToken() { return operator; }
 
 	//@Override
 	public List<? extends IRNode> getChildren() {
