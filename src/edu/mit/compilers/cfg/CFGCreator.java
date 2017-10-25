@@ -127,7 +127,8 @@ public class CFGCreator {
             return destructIRWhileStatement((IRWhileStatement) statement);
           } case METHOD_CALL: case RETURN_EXPR: {
             // TODO idk how we're handling methods and returns? I think just as lines
-          } case ASSIGN_EXPR: {
+            return new CFG(new CFGStatement(statement));
+	  } case ASSIGN_EXPR: {
             return destructIRAssignStatement((IRAssignStatement) statement);
           } case BREAK: {
               return destructBreakStatement();
@@ -307,14 +308,15 @@ public class CFGCreator {
     		if(subExpr.getDepth() > 0) {
     		    String tempVarName = lastVar + "_" + numTempVars;
     		    numTempVars += 1;
-    		    CFG expandedSubExpr = destructIRExpression(subExpr, tempVarName);
+                    CFG expandedSubExpr = destructIRExpression(subExpr, tempVarName);
     		    subExpr = new IRVariableExpression(tempVarName);
     		    answer.concat(expandedSubExpr);
     		}
     	}
-    	
+        IRMemberDecl lastVarDecl = new IRLocalDecl(value.getType(), new CommonToken(lastVar));
+    	CFG lastVarDeclCFG = destructIRMemberDecl(lastVarDecl);
     	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, value);
-    	answer.concat(new CFG(lastStatement));
+    	answer.concat(lastVarDeclCFG).concat(new CFG(lastStatement));	
     	return answer;
 	}
     
