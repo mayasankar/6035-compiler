@@ -34,6 +34,6 @@ public class VariableDescriptor implements Named {
     // TODO (mayars) fix
     @Override
     public String toString() {
-        return "rsp: " + stackOffset + "; " + declaration.toString();
+        return declaration.toString() + " (rsp: " + stackOffset + ")";
     }
 }

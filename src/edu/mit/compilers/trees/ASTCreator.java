@@ -342,6 +342,7 @@ public class ASTCreator {
 
     public static IRBlock parseBlock(ConcreteTree tree, VariableTable parentScope, MethodTable methods) {
 		VariableTable fields = new VariableTable(parentScope);
+        List<IRFieldDecl> fieldDecls = new ArrayList<IRFieldDecl>();
 		ConcreteTree child = tree.getFirstChild();
 		while (child != null && child.getName().equals("field_decl")) {
 			ConcreteTree fieldType = child.getFirstChild();
@@ -349,13 +350,16 @@ public class ASTCreator {
 			ConcreteTree fieldName = fieldType.getRightSibling();
 			while (fieldName != null) {
 				Token id = fieldName.getFirstChild().getToken();
+                IRFieldDecl field;
 				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
 					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
+					field = new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt);
 				} else {
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
+					field = new IRFieldDecl(IRType.getType(typeToken), id);
 				}
+                fieldDecls.add(field);
+                fields.add(new VariableDescriptor(field));
 				fieldName = fieldName.getRightSibling();
 			}
 			child = child.getRightSibling();
@@ -366,7 +370,7 @@ public class ASTCreator {
 			statements.add(parseStatement(child, fields, methods));
 			child = child.getRightSibling();
 		}
-		IRBlock block = new IRBlock(statements, fields);
+		IRBlock block = new IRBlock(fieldDecls, statements, fields);
 		block.setLineNumbers(tree);
 		block.setTables(fields, methods);
 
@@ -380,7 +384,7 @@ public class ASTCreator {
 		child = child.getRightSibling();
 		IRExpression value = parseExpressionTree(child, fields, methods);
 		IRAssignStatement toReturn = new IRAssignStatement(varAssigned, operator, value);
-		
+
 		toReturn.setLineNumbers(child);
 		toReturn.setTables(fields, methods);
 
@@ -402,7 +406,7 @@ public class ASTCreator {
 		toReturn.setLineNumbers(child);
 		return toReturn;
 	}
-	
+
 	private static IRVariableExpression makeIRVariableExpression(ConcreteTree tree, VariableTable fields, MethodTable methods) {
 		if (tree == null) {
 			System.err.println("ERROR: null tree in IRVariableExpression.makeIRVariableExpression.");
@@ -421,7 +425,7 @@ public class ASTCreator {
 		toReturn.setTables(fields, methods);
 		return toReturn;
 	}
-	
+
 	private static IRMethodDecl makeIRMethodDecl(ConcreteTree tree, VariableTable parentScope, MethodTable methods) {
 	    VariableTable parameters = new VariableTable(parentScope);
 	    IRType.Type returnType = null;
@@ -449,10 +453,10 @@ public class ASTCreator {
 	    }
 	    IRBlock code = parseBlock(child, parameters, methods);
 	    IRMethodDecl decl = new IRMethodDecl(returnType, id, parameters, code);
-	    
+
 	    decl.setLineNumbers(tree);
 	    decl.setTables(parentScope, methods);
-	    
+
 	    return decl;
 	  }
 }

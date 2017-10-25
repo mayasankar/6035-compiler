@@ -24,7 +24,7 @@ import edu.mit.compilers.cfg.*;
 
 public class CFGCreator {
     private static final Token EQ_OP = new CommonToken("=");
-    
+
     List<CFGLoopEnv> envStack;
 
     public CFGCreator() {
@@ -280,7 +280,7 @@ public class CFGCreator {
         f.getEnd().setNext(s.getStart());
         return new CFG(f.getStart(), s.getEnd());
     }
-    
+
     private CFG destructIRAssignStatement(IRAssignStatement stat) {
     	if(stat.getValue().getDepth() == 0) {
     		return new CFG(new CFGStatement(stat));
@@ -288,14 +288,14 @@ public class CFGCreator {
     		String lastVar = "placeholderStringAHHHHHHHH";
     		CFG expandedExpr = destructIRExpression(stat.getValue(), lastVar);
     		CFGLine assignLine = new CFGAssignStatement(stat.getVariableName(), stat.getOperatorToken(), new IRVariableExpression(lastVar));
-    		
+
     		expandedExpr.getEnd().setNext(assignLine);
     		return new CFG(expandedExpr.getStart(), assignLine);
     	}
     }
-    
-    /** 
-     * 
+
+    /**
+     *
      * @param value an expression with depth >0
      * @param lastVar the name to assign to the last temporary variable created
      * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
@@ -316,10 +316,10 @@ public class CFGCreator {
         IRMemberDecl lastVarDecl = new IRLocalDecl(value.getType(), new CommonToken(lastVar));
     	CFG lastVarDeclCFG = destructIRMemberDecl(lastVarDecl);
     	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, value);
-    	answer.concat(lastVarDeclCFG).concat(new CFG(lastStatement));	
+    	answer.concat(lastVarDeclCFG).concat(new CFG(lastStatement));
     	return answer;
 	}
-    
+
 	private CFG destructDeclList(List<IRFieldDecl> decls) {
         if (decls.size() == 0) {
             CFGLine noOp = makeNoOp();

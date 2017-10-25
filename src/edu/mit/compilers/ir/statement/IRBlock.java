@@ -20,7 +20,8 @@ public class IRBlock extends IRNode {
 	private List<IRStatement> statements = new ArrayList<IRStatement>();
 	private VariableTable fields;
 
-	public IRBlock(List<IRStatement> statements, VariableTable fields) {
+	public IRBlock(List<IRFieldDecl> fieldDecls, List<IRStatement> statements, VariableTable fields) {
+		this.fieldDecls = fieldDecls;
 		this.statements = statements;
 		this.fields = fields;
 	}
