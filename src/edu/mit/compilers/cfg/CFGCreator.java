@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.HashSet;
 import java.math.BigInteger;
 
+import antlr.CommonToken;
 import antlr.Token;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
@@ -22,6 +23,8 @@ import edu.mit.compilers.cfg.*;
 // IRMethodCallExpression destructor
 
 public class CFGCreator {
+    private static final Token EQ_OP = new CommonToken("=");
+    
     List<CFGLoopEnv> envStack;
 
     public CFGCreator() {
@@ -256,7 +259,9 @@ public class CFGCreator {
             return destructIRMethodCallExpression((IRMethodCallExpression) expr);
           }
           default: {
-            return new CFG(new CFGExpression(expr));
+              String varName = "expr_" + expr.hashCode();
+              CFG varExpr = new CFG(new CFGExpression(new IRVariableExpression(varName)));
+              return destructIRExpression(expr, varName).concat(varExpr);
           }
         }
     }
@@ -295,15 +300,24 @@ public class CFGCreator {
      * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
      */
     private CFG destructIRExpression(IRExpression value, String lastVar) {
-    	throw new RuntimeException("not finished yet");
-    /*	int numTempVars = 0;
+        CFG answer = new CFG(makeNoOp());
+    	int numTempVars = 0;
     	for(IRNode node: value.getChildren()) {
     		IRExpression subExpr = (IRExpression) node;
-    		
-    	}*/
-
+    		if(subExpr.getDepth() > 0) {
+    		    String tempVarName = lastVar + "_" + numTempVars;
+    		    numTempVars += 1;
+    		    CFG expandedSubExpr = destructIRExpression(subExpr, tempVarName);
+    		    subExpr = new IRVariableExpression(tempVarName);
+    		    answer.concat(expandedSubExpr);
+    		}
+    	}
+    	
+    	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, value);
+    	answer.concat(new CFG(lastStatement));
+    	return answer;
 	}
-
+    
 	private CFG destructDeclList(List<IRFieldDecl> decls) {
         if (decls.size() == 0) {
             CFGLine noOp = makeNoOp();

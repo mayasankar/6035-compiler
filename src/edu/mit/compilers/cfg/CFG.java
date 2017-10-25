@@ -47,5 +47,11 @@ public class CFG {
     public String toString() {
         return start.toString();
     }
-
+    
+    public CFG concat(CFG newEnd) {
+        this.end.setNext(newEnd.getStart());
+        end = newEnd.getEnd();
+        
+        return this;
+    }
 }
