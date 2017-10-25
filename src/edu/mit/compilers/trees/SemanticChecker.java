@@ -26,8 +26,8 @@ public class SemanticChecker {
     private boolean hasError = false;
 
     public boolean checkProgram(IRProgram tree){
-        //System.out.println("Debugging: starts checkProgram().");
-        //notifyError("DEBUG: Checking program for semantic errors.", tree);
+        // System.out.println("Debugging: starts checkProgram().");
+        // notifyError("DEBUG: Checking program for semantic errors.", tree);
         env.push(tree.getMethodTable());
         env.push(tree.getVariableTable());
         env.push(IRType.Type.VOID);
@@ -38,9 +38,9 @@ public class SemanticChecker {
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
-        /*if (! hasError) { // maybe keep track of how many errors we've found?
-          System.err.println("No semantic errors found :)");
-      }*/
+        // if (! hasError) { // maybe keep track of how many errors we've found?
+        //     System.err.println("No semantic errors found :)");
+        // }
         return hasError;
     }
 
@@ -282,11 +282,20 @@ public class SemanticChecker {
 
     private void checkIRMethodCallExpression(IRMethodCallExpression expr, boolean isInExpression) {
         // 5, 6
-        MethodTable lookupTable = env.getMethodTable();
+        VariableTable table = env.getVariableTable();
+        VariableDescriptor desc = table.get(expr.getName());
+        if (desc != null) {
+            notifyError(expr.getName() + " is most recently declared as a method, not a function", expr);
+            return;
+        }
 
+        MethodTable lookupTable = env.getMethodTable();
         IRMethodDecl md = lookupTable.get(expr.getName());
         if (md == null) {
             notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
+            return;
+        } else if (! expr.comesAfter(md)) {
+            notifyError("Calls method " + expr.getName() + " before method is declared.", expr);
             return;
         }
 
@@ -404,9 +413,9 @@ public class SemanticChecker {
         IRExpression value = statement.getValue();
         if (!op.equals("++") && !op.equals("--")){
             checkIRExpression(value);
-            if (value.getType() == null) {
-                System.out.println("Debugging: null value.getType(). value=" + value);
-            }
+            // if (value.getType() == null) { // happens when value is an undeclared variable
+            //     System.out.println("Debugging: null value.getType(). value=" + value);
+            // }
         }
 
         String varName = varAssigned.getName();
