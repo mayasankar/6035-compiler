@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -21,12 +22,17 @@ import edu.mit.compilers.cfg.*;
 // IRMethodCallExpression destructor
 
 public class CFGCreator {
+    List<CFGLoopEnv> envStack;
 
-    public static CFGLine makeNoOp() {
+    public CFGCreator() {
+        envStack = new ArrayList<>();
+    }
+
+    public CFGLine makeNoOp() {
         return new CFGNoOp();
     }
 
-    public static Map<String, CFGBlock> destruct(IRProgram tree) {
+    public Map<String, CFGBlock> destruct(IRProgram tree) {
         Map<String, CFGBlock> destructedMethods = new HashMap<>();
         for (IRMethodDecl method : tree.methods.getMethodList()) {
             CFG methodCFG = destructIRMethodDecl(method);
@@ -37,7 +43,7 @@ public class CFGCreator {
         return destructedMethods;
     }
 
-    private static CFGBlock condenseIntoBlocks(CFG cfg) {
+    private CFGBlock condenseIntoBlocks(CFG cfg) {
         // make a new block
         // while we have lines that don't merge or branch, add them to block
         // then, for each child that isn't already part of a block, recursively run this
@@ -104,11 +110,11 @@ public class CFGCreator {
         return block;
     }
 
-    private static CFG destructIRMemberDecl(IRMemberDecl decl) {
+    private CFG destructIRMemberDecl(IRMemberDecl decl) {
         return new CFG(new CFGDecl(decl));
     }
 
-    private static CFG destructIRStatement(IRStatement statement){
+    private CFG destructIRStatement(IRStatement statement){
         switch(statement.getStatementType()) {
           case IF_BLOCK: {
             return destructIRIfStatement((IRIfStatement) statement);
@@ -118,15 +124,19 @@ public class CFGCreator {
             return destructIRWhileStatement((IRWhileStatement) statement);
           } case METHOD_CALL: case RETURN_EXPR: {
             // TODO idk how we're handling methods and returns? I think just as lines
-          } case ASSIGN_EXPR: case BREAK: case CONTINUE: {
+          } case ASSIGN_EXPR: {
             return new CFG(new CFGStatement(statement));
+          } case BREAK: {
+              return destructBreakStatement();
+          } case CONTINUE: {
+              return destructContinueStatement();
           } default: {
             throw new RuntimeException("destructIR error: UNSPECIFIED statement");
           }
         }
     }
 
-    private static CFG destructIRMethodDecl(IRMethodDecl decl) {
+    private CFG destructIRMethodDecl(IRMethodDecl decl) {
         // todo do something w/ MethodTable parameters?
         IRBlock code = decl.getCode();
         if (code == null) {
@@ -136,16 +146,32 @@ public class CFGCreator {
             return new CFG(makeNoOp());
         }
         CFG graph = destructIRBlock(code);
-        graph.getStart().startEnv(CFGEnv.EnvType.BLOCK);
-        graph.getEnd().endEnv();
         return graph;
     }
 
-    private static CFG destructIRIfStatement(IRIfStatement statement) {
+    private CFG destructBreakStatement() {
+        CFGLine noOp = makeNoOp();
+        CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+        CFGLine followingLine = containingLoop.getFollowingLine();
+        noOp.setNext(followingLine);
+        return new CFG(noOp);
+    }
+
+    private CFG destructContinueStatement() {
+        CFGLine noOp = makeNoOp();
+        CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+        CFGLine startLine = containingLoop.getStartLine();
+        noOp.setNext(startLine);
+        return new CFG(noOp);
+    }
+
+    private CFG destructIRIfStatement(IRIfStatement statement) {
         // TODO handle nonexistence of else blocks
         IRExpression cond = statement.getCondition();
         IRBlock thenBlock = statement.getThenBlock();
         IRBlock elseBlock = statement.getElseBlock();
+
+        List<CFGLoopEnv> envStackCopy = new ArrayList<>(envStack);
 
         CFG thenGraph = destructIRBlock(thenBlock);
         CFGLine thenStart = thenGraph.getStart();
@@ -154,6 +180,7 @@ public class CFGCreator {
         thenEnd.setNext(noOp);
         CFGLine condStart;
         if (elseBlock != null) {
+            envStack = new ArrayList<>(envStackCopy); // restore, removing any changes we did while destructing child
             CFG elseGraph = destructIRBlock(elseBlock);
             CFGLine elseStart = elseGraph.getStart();
             CFGLine elseEnd = elseGraph.getEnd();
@@ -163,26 +190,32 @@ public class CFGCreator {
         else {
             condStart = shortcircuit(cond, thenStart, noOp);
         }
-        condStart.startEnv(CFGEnv.EnvType.BRANCH_BODY);
-        noOp.endEnv();
         return new CFG(condStart, noOp);
     }
 
-    private static CFG destructIRWhileStatement(IRWhileStatement statement) {
+    private CFG destructIRWhileStatement(IRWhileStatement statement) {
+        CFGLine startNoOp = makeNoOp();
+        CFGLine endNoOp = makeNoOp();
+        envStack.add(new CFGLoopEnv(startNoOp, endNoOp));
+
         IRExpression cond = statement.getCondition();
         IRBlock block = statement.getBlock();
         CFG blockGraph = destructIRBlock(block);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
-        CFGLine noOp = makeNoOp();
-        CFGLine condStart = shortcircuit(cond, blockStart, noOp);
+        CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
         blockEnd.setNext(condStart);
-        condStart.startEnv(CFGEnv.EnvType.LOOP_BODY);
-        noOp.endEnv();
-        return new CFG(condStart, noOp);
+        startNoOp.setNext(condStart);
+
+        envStack.remove(envStack.size()-1);
+        return new CFG(startNoOp, endNoOp);
     }
 
-    private static CFG destructIRForStatement(IRForStatement statement) {
+    private CFG destructIRForStatement(IRForStatement statement) {
+        CFGLine continueNoOp = makeNoOp(); // when we continue, jump to here, which will go to the incrementor
+        CFGLine endNoOp = makeNoOp();
+        envStack.add(new CFGLoopEnv(continueNoOp, endNoOp));
+
         IRExpression cond = statement.getCondition();
         IRAssignStatement initializer = statement.getInitializer();
         IRAssignStatement stepFunction = statement.getStepFunction();
@@ -194,16 +227,17 @@ public class CFGCreator {
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
         CFGLine noOp = makeNoOp();
-        CFGLine condStart = shortcircuit(cond, blockStart, noOp);
+        CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
         blockEnd.setNext(stepLine);
         stepLine.setNext(condStart);
         initLine.setNext(condStart);
-        initLine.startEnv(CFGEnv.EnvType.LOOP_BODY);
-        noOp.endEnv();
-        return new CFG(initLine, noOp);
+        continueNoOp.setNext(stepLine);
+
+        envStack.remove(envStack.size()-1);
+        return new CFG(initLine, endNoOp);
     }
 
-    private static CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr) {
+    private CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr) {
         IRExpression condition = expr.getCondition();
 
         CFGLine trueBranch = destructIRExpression(expr.getTrueExpression()).getStart();
@@ -214,7 +248,7 @@ public class CFGCreator {
         return new CFG(condLine, noOp);
     }
 
-    private static CFG destructIRExpression(IRExpression expr) {
+    private CFG destructIRExpression(IRExpression expr) {
         switch(expr.getExpressionType()) {
           case TERNARY: {
             return destructIRTernaryOpExpression((IRTernaryOpExpression) expr);
@@ -228,12 +262,12 @@ public class CFGCreator {
         }
     }
 
-    private static CFG destructIRMethodCallExpression(IRMethodCallExpression expr) {
+    private CFG destructIRMethodCallExpression(IRMethodCallExpression expr) {
         // TODO
         throw new RuntimeException("Unimplemented");
     }
 
-    private static CFG destructIRBlock(IRBlock block) {
+    private CFG destructIRBlock(IRBlock block) {
         List<IRStatement> statements = block.getStatements();
         List<IRFieldDecl> fieldDecls = block.getFieldDecls();
         CFG f = destructDeclList(fieldDecls);
@@ -242,7 +276,7 @@ public class CFGCreator {
         return new CFG(f.getStart(), s.getEnd());
     }
 
-    private static CFG destructDeclList(List<IRFieldDecl> decls) {
+    private CFG destructDeclList(List<IRFieldDecl> decls) {
         if (decls.size() == 0) {
             CFGLine noOp = makeNoOp();
             return new CFG(noOp);
@@ -255,20 +289,26 @@ public class CFGCreator {
         return new CFG(firstGraph.getStart(), restGraph.getEnd());
     }
 
-    private static CFG destructStatementList(List<IRStatement> statements) {
+    private CFG destructStatementList(List<IRStatement> statements) {
         if (statements.size() == 0) {
             CFGLine noOp = makeNoOp();
             return new CFG(noOp);
         }
         CFG firstGraph = destructIRStatement(statements.remove(0));
         CFGLine firstEnd = firstGraph.getEnd();
-        CFG restGraph = destructStatementList(statements);
-        CFGLine restStart = restGraph.getStart();
-        firstEnd.setNext(restStart);
-        return new CFG(firstGraph.getStart(), restGraph.getEnd());
+        if (firstEnd.getTrueBranch() == null){
+            CFG restGraph = destructStatementList(statements);
+            CFGLine restStart = restGraph.getStart();
+            firstEnd.setNext(restStart);
+            return new CFG(firstGraph.getStart(), restGraph.getEnd());
+        }
+        else {
+            // firstEnd had a break/continue statement so we don't evaluate rest of block
+            return new CFG(firstGraph.getStart(), firstEnd);
+        }
     }
 
-    private static CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+    private CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         switch(expr.getExpressionType()) {
           case UNARY: {
             IRUnaryOpExpression unExpr = (IRUnaryOpExpression) expr;
@@ -294,24 +334,24 @@ public class CFGCreator {
         }
     }
 
-    private static CFGLine shortcircuitAndExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+    private CFGLine shortcircuitAndExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
         CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), beginSecond, falseBranch);
         return beginFirst;
     }
 
-    private static CFGLine shortcircuitOrExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+    private CFGLine shortcircuitOrExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
         CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), trueBranch, beginSecond);
         return beginFirst;
     }
 
-    private static CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+    private CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         // todo do we ever need to destruct this?
         return new CFGExpression(trueBranch, falseBranch, expr);
     }
 
-    private static CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+    private CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
         CFGLine beginNot = shortcircuit(expr.getArgument(), falseBranch, trueBranch);
         return beginNot;
     }

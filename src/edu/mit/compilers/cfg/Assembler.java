@@ -20,7 +20,7 @@ import edu.mit.compilers.cfg.*;
 
 
 public class Assembler {
-    public static void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
+    public void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
         String code = ".globl main\n";
         try {
             os.write(code.getBytes());
