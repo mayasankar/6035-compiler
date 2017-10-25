@@ -50,5 +50,10 @@ public class IRUnaryOpExpression extends IRExpression {
 	public String toString() { //TODO remove if null
 		return operator.getText() + ((argument == null) ? "var" : argument);
 	}
+	
+	@Override
+	public int getDepth() {
+		return argument.getDepth() + 1;
+	}
 
 }

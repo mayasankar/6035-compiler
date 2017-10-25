@@ -29,4 +29,6 @@ public abstract class IRExpression extends IRNode {
 	protected ExpressionType expressionType = ExpressionType.UNSPECIFIED;
 
 	public ExpressionType getExpressionType() { return expressionType; }
+	
+	public abstract int getDepth();
 }

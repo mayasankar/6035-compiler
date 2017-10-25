@@ -55,4 +55,9 @@ public class IRBinaryOpExpression extends IRExpression{
 		return (leftExpr == null ? "var" : leftExpr.toString()) + " " + operator.getText() + " " + (rightExpr == null ? "var" : rightExpr.toString());
 	}
 
+	@Override
+	public int getDepth() {
+		return Math.max(leftExpr.getDepth(), rightExpr.getDepth()) + 1;
+	}
+
 }

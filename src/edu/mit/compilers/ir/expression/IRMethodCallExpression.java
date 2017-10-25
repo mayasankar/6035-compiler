@@ -49,5 +49,14 @@ public class IRMethodCallExpression extends IRExpression {
 		answer += ")";
 		return answer;
 	}
+	
+	@Override
+	public int getDepth() {
+		int maxArgDepth = 0;
+		for(IRExpression arg: arguments) {
+			maxArgDepth = Math.max(maxArgDepth, arg.getDepth());
+		}
+		return maxArgDepth + 1;
+	}
 
 }

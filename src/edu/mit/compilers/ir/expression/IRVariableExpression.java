@@ -59,4 +59,9 @@ public class IRVariableExpression extends IRExpression {
 		}
 	}
 
+	@Override
+	public int getDepth() {
+		return 0;
+	}
+
 }
