@@ -184,8 +184,8 @@ public class SemanticChecker {
                 " is not of type int or bool.", param);
             }
             if (code.getVariableTable().get(param.getName()) != parameters.get(param.getName())) {
-            	notifyError("Parameter " + param.getName() + " for method " + method.getName() +
-    			 "is shadowed by a local variable.", code.getVariableTable().get(param.getName()).getDecl());
+            	notifyError("Parameter " + param.getName() + " for method " + method.getName() + 
+    			 " is shadowed by a local variable.", code.getVariableTable().get(param.getName()).getDecl());
             }
         }
         if (returnType != IRType.Type.BOOL && returnType != IRType.Type.INT && returnType != IRType.Type.VOID) {

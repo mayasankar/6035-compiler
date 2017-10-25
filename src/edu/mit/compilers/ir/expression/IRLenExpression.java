@@ -29,4 +29,9 @@ public class IRLenExpression extends IRExpression {
   public List<? extends IRNode> getChildren() {
     return Arrays.asList();
   }
+  
+	@Override
+	public int getDepth() {
+		return 1;
+	}
 }

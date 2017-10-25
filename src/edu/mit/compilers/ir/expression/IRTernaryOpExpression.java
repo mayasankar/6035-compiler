@@ -41,5 +41,10 @@ public class IRTernaryOpExpression extends IRExpression {
 	public String toString() {
 		return condition + " ? " + trueExpression + " : " + falseExpression;
 	}
+	
+	@Override
+	public int getDepth() {
+		return Math.max(Math.max(trueExpression.getDepth(), falseExpression.getDepth()), condition.getDepth()) + 1;
+	}
 
 }
