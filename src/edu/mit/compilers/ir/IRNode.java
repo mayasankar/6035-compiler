@@ -37,17 +37,32 @@ public abstract class IRNode {
 		this.column = node.column;
 	}
 
+	// returns true if this comes after other, via line + col numbers.
+	// returns false if other = this.
+	public boolean comesAfter(IRNode other) {
+		if (this.line < 0 || other.line < 0) {
+			throw new RuntimeException("Comparing IRNode with uninitialized line number");
+		} else if (this.line != other.line) {
+			return this.line > other.line;
+		} else {
+			if (this.column < 0 || other.column < 0) {
+				throw new RuntimeException("Comparing IRNode with uninitialized column number");
+			}
+			return this.column > other.column;
+		}
+	}
+
 	public abstract List<? extends IRNode> getChildren();
-	
+
 	public void setTables(VariableTable varTable, MethodTable methodTable) {
 		this.variableScope = varTable;
 		this.methodTable = methodTable;
 	}
-	
+
 	public MethodTable getMethodTable() {
 		return methodTable;
 	}
-	
+
 	public VariableTable getVariableTable() {
 		return variableScope;
 	}

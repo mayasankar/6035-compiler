@@ -26,8 +26,8 @@ public class SemanticChecker {
     private boolean hasError = false;
 
     public boolean checkProgram(IRProgram tree){
-        //System.out.println("Debugging: starts checkProgram().");
-        //notifyError("DEBUG: Checking program for semantic errors.", tree);
+        // System.out.println("Debugging: starts checkProgram().");
+        // notifyError("DEBUG: Checking program for semantic errors.", tree);
         env.push(tree.getMethodTable());
         env.push(tree.getVariableTable());
         env.push(IRType.Type.VOID);
@@ -38,9 +38,9 @@ public class SemanticChecker {
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
-        /*if (! hasError) { // maybe keep track of how many errors we've found?
-          System.err.println("No semantic errors found :)");
-      }*/
+        // if (! hasError) { // maybe keep track of how many errors we've found?
+        //     System.err.println("No semantic errors found :)");
+        // }
         return hasError;
     }
 
@@ -184,7 +184,7 @@ public class SemanticChecker {
                 " is not of type int or bool.", param);
             }
             if (code.getVariableTable().get(param.getName()) != parameters.get(param.getName())) {
-            	notifyError("Parameter " + param.getName() + " for method " + method.getName() + 
+            	notifyError("Parameter " + param.getName() + " for method " + method.getName() +
     			 "is shadowed by a local variable.", code.getVariableTable().get(param.getName()).getDecl());
             }
         }
@@ -287,6 +287,9 @@ public class SemanticChecker {
         IRMethodDecl md = lookupTable.get(expr.getName());
         if (md == null) {
             notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
+            return;
+        } else if (! expr.comesAfter(md)) {
+            notifyError("Calls method " + expr.getName() + " before method is declared.", expr);
             return;
         }
 
