@@ -16,7 +16,6 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
-import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
 
 
@@ -28,7 +27,7 @@ public class BlockAssembler {
     int numAllocs;
     Map<CFGBlock, String> blockLabels;
     Map<String, String> stringLabels;
-    CFGEnvStack envStack;
+    VariableTable universalVariableTable;
 
     public BlockAssembler(String label, int numParams) {
         this.methodLabel = label;
@@ -37,11 +36,10 @@ public class BlockAssembler {
         this.numAllocs = numParams;  // will increment this as we add locals
         this.blockLabels = new HashMap<>();
         this.stringLabels = new HashMap<>();
-        this.envStack = new CFGEnvStack();
+        this.universalVariableTable = new VariableTable();
     }
 
     public String makeCode(CFGBlock block, VariableTable parameters) {
-        envStack.pushEnvironment(CFGEnv.EnvType.BLOCK);
         String prefix = methodLabel + ":\n";
         String code = "";
 
@@ -66,10 +64,6 @@ public class BlockAssembler {
         code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
         prefix += "enter $" + allocSpace + ", $0\n";
-        envStack.removeEnvironment();
-        if (envStack.getSize() != 0){
-            throw new RuntimeException("envStack should push and pop equal numbers of things.");
-        }
         return prefix + code;
     }
 
@@ -133,10 +127,6 @@ public class BlockAssembler {
         CFGNoOp: empty code
         CFGMethodDecl: call methodName???
         */
-        if (line.getEnvType() != null){
-            envStack.pushEnvironment(line.getEnvType());
-            // System.out.println("Adding env: " + line.getEnvType() + ": " + line.ownValue());
-        }
 
         String code = "";
 
@@ -164,13 +154,6 @@ public class BlockAssembler {
         //     // for printing niceness, show things for which we haven't yet implemented codegen
         //     code = line.ownValue() + "\n";
         // }
-
-        int numEnvsToRemove = line.getNumEnvsEnded();
-        while (numEnvsToRemove > 0) {
-            // System.out.println("Removing envs (" + new Integer(numEnvsToRemove).toString() + ")" + ": " + line.ownValue());
-            envStack.removeEnvironment();
-            numEnvsToRemove -= 1;
-        }
 
         return code;
     }
@@ -220,34 +203,11 @@ public class BlockAssembler {
                 return makeCodeIRAssignStatement((IRAssignStatement)statement);
             }
             case BREAK: {
-                // TODO break/continue should probably be addressed in the CFG instead of at assembly?
-                CFGLine nextLine = envStack.handleBreak();
-                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
-                String nextCode = "";
-                if (nextBlock != null) {
-                    if (!blockLabels.containsKey(nextBlock)) {
-                        nextCode += makeCodeHelper(nextBlock);
-                    }
-                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
-                }
-                else {
-                    throw new RuntimeException("Can't break to a null block.");
-                }
-                return code + nextCode;
+                //  addressed in the CFG instead of at assembly
+                return "";
             }
             case CONTINUE: {
-                CFGLine nextLine = envStack.handleContinue();
-                CFGBlock nextBlock = nextLine.getCorrespondingBlock();
-                if (nextBlock != null) {
-                    if (!blockLabels.containsKey(nextBlock)) {
-                        throw new RuntimeException("Code for continue statement must have already been generated.");
-                    }
-                    code += "jmp " + blockLabels.get(nextBlock) + "\n";
-                }
-                else {
-                    throw new RuntimeException("Can't continue to a null block.");
-                }
-                return code;
+                return "";
             } default: {
                 throw new RuntimeException("destructIR error: UNSPECIFIED statement");
             }
@@ -335,7 +295,7 @@ public class BlockAssembler {
                 return "mov " + stackLoc + ", %r10\n";
             case LEN:
                 String arg = ((IRLenExpression)expr).getArgument();
-                VariableDescriptor var = envStack.get(arg);
+                VariableDescriptor var = universalVariableTable.get(arg);
                 Integer lenValue = new Integer(var.getLength());
                 return "mov $" + lenValue.toString() + ", %r10\n";
             case UNARY:
@@ -445,14 +405,14 @@ public class BlockAssembler {
     //TODO UHHHHH WHERE DO WE HANDLE INDEXING INTO ARRAYS?
 
     private void addVariableToStack(VariableDescriptor var) {
-        //System.out.println("Added variable: " + var.toString());
-        envStack.addVariable(var);
+        // System.out.println("Added variable: " + var.toString());
+        universalVariableTable.add(var);
         return;
     }
 
     private String getVariableStackLocation(IRVariableExpression var) {
         // return "-8(%rbp)";
-        int offset = envStack.getStackOffset(var.getName());
+        int offset = universalVariableTable.getStackOffset(var.getName());
         return "-" + new Integer(offset).toString() + "(%rbp)";
         //throw new RuntimeException("Unimplemented");
     }

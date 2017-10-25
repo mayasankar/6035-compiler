@@ -22,8 +22,6 @@ public abstract class CFGLine {
     protected CFGLine falseBranch;
     protected int numParentLines;
     protected CFGBlock correspondingBlock;
-    protected CFGEnv.EnvType addEnvType; // null if this isn't the start of a new scope, type of scope if it is
-    protected int numEnvsEnded; // 0 if this isn't the end of a scope, number of scopes ended if it is
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -32,8 +30,6 @@ public abstract class CFGLine {
         falseBranch.addParentLine();
         this.numParentLines = 0;
         this.correspondingBlock = null;
-        this.addEnvType = null;
-        this.numEnvsEnded = 0;
     }
 
     protected CFGLine(CFGLine next) {
@@ -41,8 +37,6 @@ public abstract class CFGLine {
         this.falseBranch = next;
         this.numParentLines = 0;
         this.correspondingBlock = null;
-        this.addEnvType = null;
-        this.numEnvsEnded = 0;
     }
 
     protected CFGLine() {
@@ -50,24 +44,6 @@ public abstract class CFGLine {
         this.falseBranch = null;
         this.numParentLines = 0;
         this.correspondingBlock = null;
-        this.addEnvType = null;
-        this.numEnvsEnded = 0;
-    }
-
-    public void startEnv(CFGEnv.EnvType t) {
-        addEnvType = t;
-    }
-
-    public void endEnv() {
-        numEnvsEnded += 1;
-    }
-
-    public CFGEnv.EnvType getEnvType() {
-        return addEnvType;
-    }
-
-    public int getNumEnvsEnded() {
-        return numEnvsEnded;
     }
 
     public CFGBlock getCorrespondingBlock() {

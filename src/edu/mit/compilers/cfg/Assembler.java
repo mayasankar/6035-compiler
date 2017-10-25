@@ -20,7 +20,7 @@ import edu.mit.compilers.cfg.*;
 
 
 public class Assembler {
-    public static void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
+    public void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table) {
         String code = ".globl main\n";
         try {
             os.write(code.getBytes());
@@ -29,11 +29,11 @@ public class Assembler {
         }
         for (String methodName : methods.keySet()) {
             CFGBlock graph = methods.get(methodName);
-            VariableTable parameters = table.get(methodName).getParameters();
-            if (parameters == null){
-                // skip imports
+            IRMethodDecl md = table.get(methodName);
+            if (md.isImport()) { // skip imports
                 continue;
             }
+            VariableTable parameters = md.getParameters();
             int numParams = parameters.getVariableList().size();
             BlockAssembler ba = new BlockAssembler(methodName, numParams);
             code = ba.makeCode(graph, parameters) + "\n";
