@@ -29,14 +29,14 @@ public class BlockAssembler {
     Map<String, String> stringLabels;
     VariableTable universalVariableTable;
 
-    public BlockAssembler(String label, int numParams) {
+    public BlockAssembler(String label, int numParams, VariableTable globalVars) {
         this.methodLabel = label;
         this.blockCount = 0;
         this.stringCount = 0;
         this.numAllocs = numParams;  // will increment this as we add locals
         this.blockLabels = new HashMap<>();
         this.stringLabels = new HashMap<>();
-        this.universalVariableTable = new VariableTable();
+        this.universalVariableTable = new VariableTable(globalVars);
     }
 
     public String makeCode(CFGBlock block, VariableTable parameters) {

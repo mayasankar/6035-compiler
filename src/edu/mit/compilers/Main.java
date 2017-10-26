@@ -101,7 +101,7 @@ class Main {
             Map<String, CFGBlock> graphs = creator.destruct(ir);
             //System.out.println(graphs.get("main").toString());
             Assembler assembler = new Assembler();
-            assembler.makeCode(graphs, outputStream, ir.getMethodTable());
+            assembler.makeCode(graphs, outputStream, ir.getMethodTable(), ir.getVariableTable());
         }
       }
     } catch(Exception e) {
