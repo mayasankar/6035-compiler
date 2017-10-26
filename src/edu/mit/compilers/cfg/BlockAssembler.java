@@ -345,11 +345,13 @@ public class BlockAssembler {
                 code += "imul %r11, %r10\n";
                 return code;
             case "/":
+                code += "mov $0, %rdx\n";
                 code += "mov %r10, %rax\n";
                 code += "idiv %r11\n";
                 code += "mov %rax, %r10\n";
                 return code;
             case "%":
+                code += "mov $0, %rdx\n";
                 code += "mov %r10, %rax\n";
                 code += "idiv %r11\n";
                 code += "mov %rdx, %r10\n";
