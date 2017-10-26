@@ -20,10 +20,10 @@ public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor
 		stackPointer = parent.stackPointer;
 	}
 
-	public List<IRMemberDecl> getVariableList() {
-		ArrayList<IRMemberDecl> answer = new ArrayList<>();
+	public List<VariableDescriptor> getVariableList() {
+		ArrayList<VariableDescriptor> answer = new ArrayList<>();
 		for (VariableDescriptor desc : orderedChildren) {
-			answer.add(desc.getDecl());
+			answer.add(desc);
 		}
 		return answer;
 	}

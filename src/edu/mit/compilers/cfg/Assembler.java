@@ -22,6 +22,15 @@ import edu.mit.compilers.cfg.*;
 public class Assembler {
     public void makeCode(Map<String, CFGBlock> methods, OutputStream os, MethodTable table, VariableTable globals) {
         String code = ".globl main\n";
+
+        int allocCount = 0;
+        VariableTable globalsOnStack = new VariableTable();
+        for (VariableDescriptor var : globals.getVariableList()) {
+            globalsOnStack.add(var);
+            allocCount++;
+        }
+        code += "enter $"  + new Integer(8*allocCount).toString() + ", $0";
+
         try {
             os.write(code.getBytes());
         } catch (IOException e) {
@@ -35,8 +44,8 @@ public class Assembler {
             }
             VariableTable parameters = md.getParameters();
             int numParams = parameters.getVariableList().size();
-            BlockAssembler ba = new BlockAssembler(methodName, numParams, globals);
-            code = ba.makeCode(graph, parameters) + "\n";
+            BlockAssembler ba = new BlockAssembler(methodName, numParams, globalsOnStack);
+            code = ba.makeCode(graph, parameters) + "\nleave\n";
             try {
                 os.write(code.getBytes());
             } catch (IOException e) {
