@@ -88,7 +88,7 @@ public class BlockAssembler {
             }
             else if (block.isBranch()) {
                 code += "mov $1, %r11\n";
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "je " + blockLabels.get(child) + "\n";
             }
             else {
@@ -108,7 +108,7 @@ public class BlockAssembler {
                 }
                 // jump to it
                 code += "mov $0, %r11\n";
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "je " + blockLabels.get(child) + "\n";
             }
             else {
@@ -363,37 +363,37 @@ public class BlockAssembler {
                 code += "or %r11, %r10\n";
                 return code;
             case "==":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmove %r11, %r10\n";
                 return code;
             case "!=":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmovne %r11, %r10\n";
                 return code;
             case "<":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmovl %r11, %r10\n";
                 return code;
             case ">":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmovg %r11, %r10\n";
                 return code;
             case "<=":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmovle %r11, %r10\n";
                 return code;
             case ">=":
-                code += "cmp %r10, %r11\n";
+                code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
                 code += "cmovge %r11, %r10\n";
