@@ -300,7 +300,7 @@ public class BlockAssembler {
                 String stackLoc = getVariableStackLocation(varExpr);
                 if (varExpr.getIndexExpression() != null) {
                     code += makeCodeIRExpression(varExpr.getIndexExpression());
-                    code += "imul $8 %r10\n"; // compute array offset
+                    code += "imul $8, %r10\n"; // compute array offset
                     code += "add " + stackLoc + ", %r10\n"; // compute stack location
                 }
                 else {
