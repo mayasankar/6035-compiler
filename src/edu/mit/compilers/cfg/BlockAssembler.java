@@ -278,17 +278,22 @@ public class BlockAssembler {
                 IRMethodCallExpression methodCall = (IRMethodCallExpression)expr;
                 List<IRExpression> arguments = methodCall.getArguments();
                 List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
-                if (arguments.size() > 6) {
-                    // TODO so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
-                    throw new RuntimeException("More than 6 arguments: not handled yet.");
+                for (int i=arguments.size()-1; i>=6; i--) {
+                    // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
+                    IRExpression arg = arguments.get(i);
+                    code += makeCodeIRExpression(arg);
+                    code += "push %r10\n";
                 }
-                for (int i=0; i<arguments.size(); i++) {
+                for (int i=0; i<arguments.size() && i < 6; i++) {
                     IRExpression arg = arguments.get(i);
                     code += makeCodeIRExpression(arg);
                     code += "mov %r10, " + registers.get(i) + "\n";
                 }
                 code += "mov $0, %rax\n";
                 code += "call " + methodCall.getName() + "\n";
+                for (int i=arguments.size()-1; i>=6; i--) {
+                    code += "pop %r10\n";
+                }
                 return code;
             case VARIABLE:
                 String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
