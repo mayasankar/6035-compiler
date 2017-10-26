@@ -25,7 +25,7 @@ public class Assembler {
 
         int allocCount = 0;
         VariableTable globalsOnStack = new VariableTable();
-        for (VariableDescriptor var : globals.getVariableList()) {
+        for (VariableDescriptor var : globals.getVariableDescriptorList()) {
             globalsOnStack.add(var);
             allocCount++;
         }
