@@ -18,9 +18,4 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
 	public IRType.Type getType() {
 		return IRType.Type.BOOL;
 	}
-
-	@Override
-	public List<? extends IRNode> getChildren() {
-		return new ArrayList<IRNode>();
-	}
 }

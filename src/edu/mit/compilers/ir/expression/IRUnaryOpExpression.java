@@ -42,7 +42,7 @@ public class IRUnaryOpExpression extends IRExpression {
 	}
 
 	@Override
-	public List<? extends IRNode> getChildren() {
+	public List<IRExpression> getChildren() {
 		return Arrays.asList(argument);
 	}
 

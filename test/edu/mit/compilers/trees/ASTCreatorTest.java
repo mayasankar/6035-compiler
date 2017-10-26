@@ -7,7 +7,9 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
+import antlr.CommonToken;
 import antlr.RecognitionException;
+import antlr.Token;
 import antlr.TokenStreamException;
 import edu.mit.compilers.grammar.DecafParser;
 import edu.mit.compilers.grammar.DecafScanner;
@@ -167,6 +169,13 @@ public class ASTCreatorTest {
     @Test
     public void testWhileBlock() {
         verifyStatType("while(true){}", StatementType.WHILE_BLOCK);
+    }
+    
+    @Test
+    public void testToken() {
+        Token tk = new CommonToken("=");
+        
+        assertEquals("=", tk.getText());
     }
     
     //TODO: break, continue, return statements

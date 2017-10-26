@@ -2,6 +2,7 @@ package edu.mit.compilers.ir.expression;
 
 import antlr.Token;
 import java.math.BigInteger;
+import java.util.List;
 
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
@@ -31,4 +32,7 @@ public abstract class IRExpression extends IRNode {
 	public ExpressionType getExpressionType() { return expressionType; }
 	
 	public abstract int getDepth();
+	
+	@Override
+	public abstract List<IRExpression> getChildren();
 }

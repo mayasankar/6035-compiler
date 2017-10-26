@@ -25,11 +25,6 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 	}
 
 	@Override
-	public List<? extends IRNode> getChildren() {
-		return new ArrayList<IRNode>();
-	}
-
-	@Override
 	public String toString() {
 		return "" + value + "";
 	}

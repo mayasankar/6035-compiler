@@ -24,14 +24,15 @@ public class IRLenExpression extends IRExpression {
   public IRType.Type getType() {
     return IRType.Type.INT;
   }
-
-  @Override
-  public List<? extends IRNode> getChildren() {
-    return Arrays.asList();
-  }
   
 	@Override
 	public int getDepth() {
 		return 1;
 	}
+
+    @Override
+    public List<IRExpression> getChildren() {
+        // TODO Auto-generated method stub
+        return Arrays.asList();
+    }
 }

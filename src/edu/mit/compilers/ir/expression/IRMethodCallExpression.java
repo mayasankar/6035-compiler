@@ -36,7 +36,7 @@ public class IRMethodCallExpression extends IRExpression {
 	}
 
 	@Override
-	public List<? extends IRNode> getChildren() {
+	public List<IRExpression> getChildren() {
 		return arguments;
 	}
 

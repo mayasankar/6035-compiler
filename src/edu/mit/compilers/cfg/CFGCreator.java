@@ -117,7 +117,7 @@ public class CFGCreator {
         return new CFG(new CFGDecl(decl));
     }
 
-    private CFG destructIRStatement(IRStatement statement){
+    public CFG destructIRStatement(IRStatement statement){
         switch(statement.getStatementType()) {
           case IF_BLOCK: {
             return destructIRIfStatement((IRIfStatement) statement);
@@ -285,7 +285,7 @@ public class CFGCreator {
     	if(stat.getValue().getDepth() == 0) {
     		return new CFG(new CFGStatement(stat));
     	} else {
-    		String lastVar = "placeholderStringAHHHHHHHH";
+    		String lastVar = "stat_helper_" + stat.hashCode();
     		CFG expandedExpr = destructIRExpression(stat.getValue(), lastVar);
     		CFGLine assignLine = new CFGAssignStatement(stat.getVariableName(), stat.getOperatorToken(), new IRVariableExpression(lastVar));
 
@@ -303,24 +303,49 @@ public class CFGCreator {
     private CFG destructIRExpression(IRExpression value, String lastVar) {
         CFG answer = new CFG(makeNoOp());
     	int numTempVars = 0;
-    	for(IRNode node: value.getChildren()) {
-    		IRExpression subExpr = (IRExpression) node;
+    	List<IRExpression> tempedChildren = new ArrayList<>();
+    	for(IRExpression subExpr: value.getChildren()) {
     		if(subExpr.getDepth() > 0) {
     		    String tempVarName = lastVar + "_" + numTempVars;
     		    numTempVars += 1;
-                    CFG expandedSubExpr = destructIRExpression(subExpr, tempVarName);
-    		    subExpr = new IRVariableExpression(tempVarName);
+                CFG expandedSubExpr = destructIRExpression(subExpr, tempVarName);
+    		    tempedChildren.add(new IRVariableExpression(tempVarName));
     		    answer.concat(expandedSubExpr);
+    		} else {
+    		    tempedChildren.add(subExpr);
     		}
     	}
         IRMemberDecl lastVarDecl = new IRLocalDecl(value.getType(), new CommonToken(lastVar));
     	CFG lastVarDeclCFG = destructIRMemberDecl(lastVarDecl);
-    	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, value);
+    	IRExpression modifiedValue = putInTempVars(value, tempedChildren);
+    	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, modifiedValue);
     	answer.concat(lastVarDeclCFG).concat(new CFG(lastStatement));
     	return answer;
 	}
 
-	private CFG destructDeclList(List<IRFieldDecl> decls) {
+	private IRExpression putInTempVars(IRExpression value, List<IRExpression> children) {
+	    switch(value.getExpressionType()) {
+	    case BINARY: {
+	        IRBinaryOpExpression convertedValue = (IRBinaryOpExpression) value;
+	        return new IRBinaryOpExpression(children.get(0), convertedValue.getOperator(), children.get(1));
+	    }
+	    case METHOD_CALL: {
+	        IRMethodCallExpression convertedValue = (IRMethodCallExpression) value;
+            return new IRMethodCallExpression(convertedValue.getName(), children);
+	    }
+	    case TERNARY: {
+            return new IRTernaryOpExpression(children.get(0), children.get(1), children.get(2));
+	    }
+	    case UNARY: {
+	        IRUnaryOpExpression convertedValue = (IRUnaryOpExpression) value;
+            return new IRUnaryOpExpression(convertedValue.getOperator(), children.get(0));
+	    }
+	    default:
+	        return value;
+	    }
+    }
+
+    private CFG destructDeclList(List<IRFieldDecl> decls) {
         if (decls.size() == 0) {
             CFGLine noOp = makeNoOp();
             return new CFG(noOp);
