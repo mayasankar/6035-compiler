@@ -223,6 +223,11 @@ public class BlockAssembler {
             code += makeCodeIRExpression(value);  // value now in %r10
         }
         String stackLocation = getVariableStackLocation(varAssigned);
+        if (varAssigned.getIndexExpression() != null) {
+            code += makeCodeIRExpression(varAssigned.getIndexExpression());
+             // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
+            stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
+        }
         switch (operator) {
             case "=":
                 code += "mov %r10, " + stackLocation + "\n";
@@ -300,8 +305,8 @@ public class BlockAssembler {
                 String stackLoc = getVariableStackLocation(varExpr);
                 if (varExpr.getIndexExpression() != null) {
                     code += makeCodeIRExpression(varExpr.getIndexExpression());
-                    code += "imul $8, %r10\n"; // compute array offset
-                    code += "add " + stackLoc + ", %r10\n"; // compute stack location
+                     // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
+                    code += "mov " + stackLoc.substring(0, stackLoc.length()-1) + ", %r10, 8), %r10\n";
                 }
                 else {
                     code += "mov " + stackLoc + ", %r10\n"; // just directly take stack location
@@ -427,9 +432,7 @@ public class BlockAssembler {
     }
 
     private String getVariableStackLocation(IRVariableExpression var) {
-        // return "-8(%rbp)";
         int offset = universalVariableTable.getStackOffset(var.getName());
         return "-" + new Integer(offset).toString() + "(%rbp)";
-        //throw new RuntimeException("Unimplemented");
     }
 }
