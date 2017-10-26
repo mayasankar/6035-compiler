@@ -29,7 +29,7 @@ public class Assembler {
             globalsOnStack.add(var);
             allocCount++;
         }
-        code += "enter $"  + new Integer(8*allocCount).toString() + ", $0";
+        code += "enter $"  + new Integer(8*allocCount).toString() + ", $0\n";
 
         try {
             os.write(code.getBytes());
