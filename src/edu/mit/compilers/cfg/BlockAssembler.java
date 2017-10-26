@@ -261,7 +261,7 @@ public class BlockAssembler {
                 return "mov $" + valueAsStr + ", %r10\n";
             case BOOL_LITERAL:
                 Boolean booleanValue = ((IRBoolLiteral)expr).getValue();
-                return (booleanValue ? "mov $1, %r10" : "mov $0, %r10\n");
+                return (booleanValue ? "mov $1, %r10\n" : "mov $0, %r10\n");
             case STRING_LITERAL:
                 String stringValue = ((IRStringLiteral)expr).toString();
                 String label;
