@@ -296,8 +296,17 @@ public class BlockAssembler {
                 }
                 return code;
             case VARIABLE:
-                String stackLoc = getVariableStackLocation((IRVariableExpression)expr);
-                return "mov " + stackLoc + ", %r10\n";
+                IRVariableExpression varExpr = (IRVariableExpression)expr;
+                String stackLoc = getVariableStackLocation(varExpr);
+                if (varExpr.getIndexExpression() != null) {
+                    code += makeCodeIRExpression(varExpr.getIndexExpression());
+                    code += "imul $8 %r10\n"; // compute array offset
+                    code += "add " + stackLoc + ", %r10\n"; // compute stack location
+                }
+                else {
+                    code += "mov " + stackLoc + ", %r10\n"; // just directly take stack location
+                }
+                return code;
             case LEN:
                 String arg = ((IRLenExpression)expr).getArgument();
                 VariableDescriptor var = universalVariableTable.get(arg);
