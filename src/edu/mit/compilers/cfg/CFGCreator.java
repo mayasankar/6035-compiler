@@ -12,6 +12,7 @@ import antlr.Token;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.ir.expression.*;
+import edu.mit.compilers.ir.expression.IRExpression.ExpressionType;
 import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
@@ -271,11 +272,14 @@ public class CFGCreator {
     private CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr) {
         IRExpression condition = expr.getCondition();
 
-        CFGLine trueBranch = destructIRExpression(expr.getTrueExpression()).getStart();
-        CFGLine falseBranch = destructIRExpression(expr.getFalseExpression()).getStart();
+        CFGLine trueBranch = destructIRExpression(expr.getTrueExpression(),"temp_tern_true_" + expr.hashCode()).getStart();
+        CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(),"temp_tern_false_" + expr.hashCode()).getStart();
 
         CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
+        
         CFGLine noOp = makeNoOp();
+        trueBranch.setNext(noOp);
+        falseBranch.setNext(noOp);
         return new CFG(condLine, noOp);
     }
 
@@ -296,8 +300,7 @@ public class CFGCreator {
     }
 
     private CFG destructIRMethodCallExpression(IRMethodCallExpression expr) {
-        // TODO do we need this?
-        throw new RuntimeException("Unimplemented");
+        return destructIRStatement(new IRMethodCallStatement(expr));
     }
 
     private CFG destructIRBlock(IRBlock block) {
@@ -342,6 +345,20 @@ public class CFGCreator {
      * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
      */
     private CFG destructIRExpression(IRExpression value, String lastVar) {
+        if(value.getExpressionType() == ExpressionType.TERNARY) {
+            IRTernaryOpExpression expr = (IRTernaryOpExpression) value;
+            IRExpression condition = expr.getCondition();
+
+            CFGLine trueBranch = destructIRExpression(expr.getTrueExpression(), lastVar).getStart();
+            CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(), lastVar).getStart();
+
+            CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
+            
+            CFGLine noOp = makeNoOp();
+            trueBranch.setNext(noOp);
+            falseBranch.setNext(noOp);
+            return new CFG(condLine, noOp);
+        }
         CFG answer = new CFG(makeNoOp());
     	int numTempVars = 0;
     	List<IRExpression> tempedChildren = new ArrayList<>();
@@ -457,7 +474,10 @@ public class CFGCreator {
     }
 
     private CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
-        return new CFGExpression(trueBranch, falseBranch, expr);
+        CFG exprCFG = destructIRExpression(expr);
+        exprCFG.getEnd().falseBranch = falseBranch;
+        exprCFG.getEnd().trueBranch = trueBranch;
+        return exprCFG.getStart();
     }
 
     private CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
