@@ -474,9 +474,10 @@ public class CFGCreator {
     }
 
     private CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
-        CFG exprCFG = destructIRExpression(expr);
-        exprCFG.getEnd().falseBranch = falseBranch;
-        exprCFG.getEnd().trueBranch = trueBranch;
+        String tempName = "short_temp_" + expr.hashCode();
+        CFG exprCFG = destructIRExpression(expr, tempName);
+        CFGLine tempExpr = new CFGExpression(trueBranch, falseBranch, new IRVariableExpression(tempName));
+        exprCFG.getEnd().setNext(tempExpr);
         return exprCFG.getStart();
     }
 
