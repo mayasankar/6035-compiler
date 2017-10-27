@@ -107,6 +107,16 @@ public class BlockAssembler {
                 code += "jmp " + blockLabels.get(child) + "\n";
             }
         }
+        else {
+            if (this.returnType != IRType.Type.VOID) {
+                // if it doesn't have anywhere returning, have it jump to the runtime error
+                code += "jmp .nonreturning_method\n";
+            }
+            else {
+                //null child means we want to jump to the end of method where we return
+                code += "jmp " + methodLabel + "_end\n";
+            }
+        }
         if (block.isBranch()) {
             //  add code for false child, and jump statement
             child = (CFGBlock)block.getFalseBranch();
