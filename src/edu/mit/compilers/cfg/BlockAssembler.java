@@ -178,31 +178,31 @@ public class BlockAssembler {
     		IRMemberDecl param = parameters.get(i);
     		String paramStackLoc = getVariableStackLocation(param.getName());
     		String paramLoc = getParamLoc(i);
-    		if(i<=6) {
-    			code += String.format("mov %s, %s", paramLoc, paramStackLoc);
+    		if(i<=5) {
+    			code += String.format("mov %s, %s\n", paramLoc, paramStackLoc);
     		} else {
-    			code += String.format("mov %s, %r10", paramLoc);
-    			code += String.format("mov %r10, %s", paramStackLoc);
+    			code += String.format("mov %s, %%r10\n", paramLoc);
+    			code += String.format("mov %%r10, %s\n", paramStackLoc);
     		}
     	}
     	return code;
     }
     
     private String getParamLoc(int i) {
-    	if(i==1) {
+    	if(i==0) {
     		return "%rdi";
-    	} else if (i==2) {
+    	} else if (i==1) {
     		return "%rsi";
-    	} else if (i==3) {
+    	} else if (i==2) {
     		return "%rdx";
-    	} else if (i==4) {
+    	} else if (i==3) {
     		return "%rcx";
-    	} else if (i==5) {
+    	} else if (i==4) {
     		return "%r8";
-    	} else if (i==6) {
+    	} else if (i==5) {
     		return "%r9";
     	} else {
-    		return (i-5)*8 + "(%rbp)";
+    		return (i-4)*8 + "(%rbp)";
     	}
     }
 
