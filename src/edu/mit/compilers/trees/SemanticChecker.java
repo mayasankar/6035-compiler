@@ -184,7 +184,7 @@ public class SemanticChecker {
                 " is not of type int or bool.", param);
             }
             if (code.getVariableTable().get(param.getName()) != parameters.get(param.getName())) {
-            	notifyError("Parameter " + param.getName() + " for method " + method.getName() + 
+            	notifyError("Parameter " + param.getName() + " for method " + method.getName() +
     			 " is shadowed by a local variable.", code.getVariableTable().get(param.getName()).getDecl());
             }
         }
@@ -306,10 +306,11 @@ public class SemanticChecker {
         if (isInExpression && md.getReturnType() == IRType.Type.VOID) {
             notifyError("Expression uses method with return value of void.", expr);
         }
+
+        List<IRExpression> arguments = expr.getArguments();
         // == CODE TO CHECK PARAMETER LISTS ARE THE SAME
         if (!md.isImport()) { // don't check imports match parameter lengths
             List<IRMemberDecl> parameters = md.getParameters().getVariableList();
-            List<IRExpression> arguments = expr.getArguments();
             if (parameters.size() != arguments.size()) {
                 notifyError("Method " + md.getName() + " called with " + arguments.size() +
                 " parameters; needs " + parameters.size() + ".", expr);
@@ -322,6 +323,10 @@ public class SemanticChecker {
                     notifyError("Method " + md.getName() + " requires parameter " + parameters.get(i).getName() +
                     " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
                 }
+            }
+        } else {
+            for (IRExpression arg : arguments) {
+                checkIRExpression(arg); // useful to initialize types for that expression
             }
         }
     }

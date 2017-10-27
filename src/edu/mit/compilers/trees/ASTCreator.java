@@ -250,7 +250,7 @@ public class ASTCreator {
 		child = child.getRightSibling();
         IRVariableExpression returnExpression;
 		if (child == null) {
-			returnExpression =  new IRVariableExpression(name);
+			returnExpression = new IRVariableExpression(name);
 		} else {
 			child = child.getRightSibling();
 			returnExpression = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));

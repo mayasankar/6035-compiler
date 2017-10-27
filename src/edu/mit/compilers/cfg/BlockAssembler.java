@@ -249,9 +249,6 @@ public class BlockAssembler {
         IRVariableExpression varAssigned = s.getVarAssigned();
         String stackLocation = getVariableStackLocation(varAssigned);
         if (varAssigned.isArray()){
-            if (varAssigned.getIndexExpression() == null) {
-                throw new RuntimeException("Array variable should have index expression.");
-            }
             code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
             // check bounds
             int max_index = universalVariableTable.get(varAssigned.getName()).getLength();
@@ -346,6 +343,7 @@ public class BlockAssembler {
                 for (int i=arguments.size()-1; i>=6; i--) {
                     code += "pop %r10\n";
                 }
+		code += "mov %rax, %r10\n";
                 return code;
             case VARIABLE:
                 IRVariableExpression varExpr = (IRVariableExpression)expr;

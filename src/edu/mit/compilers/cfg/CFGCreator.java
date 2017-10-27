@@ -320,9 +320,22 @@ public class CFGCreator {
     	} else {
     		String lastVar = "stat_helper_" + stat.hashCode();
     		CFG expandedExpr = destructIRExpression(stat.getValue(), lastVar);
-    		CFGLine assignLine = new CFGAssignStatement(stat.getVariableName(), stat.getOperatorToken(), new IRVariableExpression(lastVar));
-
-    		expandedExpr.getEnd().setNext(assignLine);
+            IRVariableExpression location = stat.getVarAssigned();
+            CFGLine assignLine;
+            if (location.isArray()) {
+                String locationLastVar = "location_helper_" + location.hashCode();
+                CFG expandedIndexExpr = destructIRExpression(location.getIndexExpression(), locationLastVar);
+                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
+                assignLine = new CFGAssignStatement(
+                        stat.getVariableName(),
+                        locationLastVar,
+                        stat.getOperatorToken(),
+                        new IRVariableExpression(lastVar));
+                expandedIndexExpr.getEnd().setNext(assignLine);
+            } else {
+        		assignLine = new CFGAssignStatement(stat.getVariableName(), stat.getOperatorToken(), new IRVariableExpression(lastVar));
+        		expandedExpr.getEnd().setNext(assignLine);
+            }
     		return new CFG(expandedExpr.getStart(), assignLine);
     	}
     }
