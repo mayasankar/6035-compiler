@@ -247,29 +247,41 @@ public class BlockAssembler {
     private String makeCodeIRAssignStatement(IRAssignStatement s) {
         String code = "";
         IRVariableExpression varAssigned = s.getVarAssigned();
+        String stackLocation = getVariableStackLocation(varAssigned);
+        if (varAssigned.isArray()){
+            if (varAssigned.getIndexExpression() == null) {
+                throw new RuntimeException("Array variable should have index expression.");
+            }
+            code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
+             // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
+            stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
+        }
+        code += "push %r10\n";
         String operator = s.getOperator();
         IRExpression value = s.getValue();
         if (value != null){
             code += makeCodeIRExpression(value);  // value now in %r10
+            code += "mov %r10, %r11\n"; // now in %r11
         }
-        String stackLocation = getVariableStackLocation(varAssigned);
-        if (varAssigned.getIndexExpression() != null) {
-            code += makeCodeIRExpression(varAssigned.getIndexExpression());
-             // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
-            stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
-        }
+        code += "pop %r10\n";
         switch (operator) {
             case "=":
-                code += "mov %r10, " + stackLocation + "\n";
+                code += "mov %r11, " + stackLocation + "\n";
                 return code;
             case "+=":
-                code += "mov " + stackLocation +", %r11\n";
-                code += "add %r10, %r11\n";
+                code += "push %r10\n";
+                code += "mov " + stackLocation +", %r10\n";
+                code += "add %r11, %r10\n";
+                code += "mov %r10, %r11\n";
+                code += "pop %r10\n";
                 code += "mov %r11, " + stackLocation + "\n";
                 return code;
             case "-=":
-                code += "mov " + stackLocation +", %r11\n";
-                code += "sub %r10, %r11\n";
+                code += "push %r10\n";
+                code += "mov " + stackLocation +", %r10\n";
+                code += "sub %r11, %r10\n";
+                code += "mov %r10, %r11\n";
+                code += "pop %r10\n";
                 code += "mov %r11, " + stackLocation + "\n";
                 return code;
             case "++":

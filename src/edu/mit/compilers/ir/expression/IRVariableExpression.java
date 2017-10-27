@@ -45,6 +45,10 @@ public class IRVariableExpression extends IRExpression {
 		type = t;
 	}
 
+	public boolean isArray() {
+		return type == IRType.Type.INT_ARRAY || type == IRType.Type.BOOL_ARRAY;
+	}
+
 	@Override
 	public List<IRExpression> getChildren() {
 		return Arrays.asList();

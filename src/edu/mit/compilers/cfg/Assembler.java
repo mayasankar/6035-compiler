@@ -27,7 +27,7 @@ public class Assembler {
         VariableTable globalsOnStack = new VariableTable();
         for (VariableDescriptor var : globals.getVariableDescriptorList()) {
             globalsOnStack.add(var);
-            allocCount++;
+            allocCount += var.getLength();
         }
         code += "enter $"  + new Integer(8*allocCount).toString() + ", $0\n";
 
