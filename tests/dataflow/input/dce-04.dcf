@@ -1,0 +1,23 @@
+import printf;
+int get_int ( int x ) {
+  return x;
+}
+bool get_bool ( bool y ) {
+  return y;
+}
+void main ( ) {
+  int a, b, c, d, e;
+  bool x;
+  a = get_int ( 2 );
+  b = get_int ( 3 );
+  x = get_bool ( true );
+  c = 2 * a;
+  d = 3 * b;
+  e = 0;
+  if (x) {
+    e = 2 + c;
+  } else {
+    e = 3 + d;
+  }
+  printf ( "%d\n", e );
+}

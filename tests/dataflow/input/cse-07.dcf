@@ -1,0 +1,19 @@
+import printf;
+int a, b, c, d;
+int get_int ( int x ) {
+  return x;
+}
+void foo ( ) {
+  a = 1;
+}
+void main ( ) {
+  a = get_int ( 2 );
+  b = get_int ( 3 );
+  c = 0;
+  d = 0;
+  c = a + b;
+  foo ( );
+  d = a + b;
+  printf ( "%d\n", c );
+  printf ( "%d\n", d );
+}

@@ -1,0 +1,16 @@
+import printf;
+int a[10];
+int get_int ( int x ) {
+  return x;
+}
+void foo ( ) {
+  int i;
+  i = get_int ( 2 );
+  // Reuse bounds check
+  a[i] = 7;
+  a[i] = 3;
+}
+void main ( ) {
+  foo ( );
+  printf ( "%d\n", a[2] );
+}
