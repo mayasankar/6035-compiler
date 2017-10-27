@@ -54,10 +54,14 @@ public class BlockAssembler {
 
         code += makeCodeHelper(block);
 
+        code += "\n.out_of_bounds:\n";
+        code += "mov $-1, %rax\n";  // TODO how do we actually exit with error code -1???  internet suggests mov 60, eax; mov -1, edi
+        code += "leave\nret\n";
+
         for (String stringLiteral : stringLabels.keySet()) {
             String label = stringLabels.get(stringLiteral);
-            code += label + ":\n";
-            code += ".string " + stringLiteral + "\n\n";
+            code += "\n" + label + ":\n";
+            code += ".string " + stringLiteral + "\n";
         }
 
         String allocSpace = new Integer(8*numAllocs).toString();
@@ -253,7 +257,12 @@ public class BlockAssembler {
                 throw new RuntimeException("Array variable should have index expression.");
             }
             code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
-             // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
+            // check bounds
+            int max_index = universalVariableTable.get(varAssigned.getName()).getLength();
+            code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "jge .out_of_bounds\n";
+            // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
             stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
         }
         code += "push %r10\n";
@@ -347,7 +356,12 @@ public class BlockAssembler {
                 IRVariableExpression varExpr = (IRVariableExpression)expr;
                 String stackLoc = getVariableStackLocation(varExpr);
                 if (varExpr.getIndexExpression() != null) {
-                    code += makeCodeIRExpression(varExpr.getIndexExpression());
+                    code += makeCodeIRExpression(varExpr.getIndexExpression()); // index now in %r10
+                    // check bounds
+                    int max_index = universalVariableTable.get(varExpr.getName()).getLength();
+                    code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
+                    code += "cmp %r11, %r10\n";
+                    code += "jge .out_of_bounds\n";
                      // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
                     code += "mov " + stackLoc.substring(0, stackLoc.length()-1) + ", %r10, 8), %r10\n";
                 }
