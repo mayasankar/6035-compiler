@@ -125,10 +125,11 @@ public class CFGCreator {
             return destructIRForStatement((IRForStatement) statement);
           } case WHILE_BLOCK: {
             return destructIRWhileStatement((IRWhileStatement) statement);
-          } case METHOD_CALL: case RETURN_EXPR: {
-            // TODO idk how we're handling methods and returns? I think just as lines
-            return new CFG(new CFGStatement(statement));
-	  } case ASSIGN_EXPR: {
+          } case METHOD_CALL: {
+            return destructIRMethodCall((IRMethodCallStatement) statement);
+          } case RETURN_EXPR: {
+            return destructIRReturnStatement((IRReturnStatement) statement);
+          } case ASSIGN_EXPR: {
             return destructIRAssignStatement((IRAssignStatement) statement);
           } case BREAK: {
               return destructBreakStatement();
@@ -140,6 +141,37 @@ public class CFGCreator {
         }
     }
 
+    private CFG destructIRMethodCall(IRMethodCallStatement statement) {
+    	CFG answer = new CFG(makeNoOp());
+    	int tempCounter = 0;
+    	List<IRExpression> argsWithTemps = new ArrayList<>();
+    	for(IRExpression arg: statement.getMethodCall().getArguments()) {
+    		if(arg.getDepth() > 0) {
+    			String tempVarName = "temp_" + statement.hashCode() + "_" + tempCounter;
+    			tempCounter += 1;
+    			CFG expandExpr = destructIRExpression(arg, tempVarName);
+    			IRVariableExpression temp = new IRVariableExpression(tempVarName);
+    			argsWithTemps.add(temp);
+    			answer.concat(expandExpr);
+    		} else {
+    			argsWithTemps.add(arg);
+    		}
+    	}
+    	IRMethodCallStatement newStat = new IRMethodCallStatement(new IRMethodCallExpression(statement.getMethodCall().getName(), argsWithTemps));
+    	CFG newStatCFG = new CFG(new CFGStatement(newStat));
+    	return answer.concat(newStatCFG);
+	}
+
+	private CFG destructIRReturnStatement(IRReturnStatement statement) {
+        IRExpression returnExpr = statement.getReturnExpr();
+        String name = "temp_return_" + statement.hashCode();
+        CFG returnCFG = destructIRExpression(returnExpr, name);
+        IRVariableExpression returnVar = new IRVariableExpression(name);
+        CFG returnStat = new CFG(new CFGStatement(new IRReturnStatement(returnVar)));
+        return returnCFG.concat(returnStat);
+    }
+
+
     private CFG destructIRMethodDecl(IRMethodDecl decl) {
         // todo do something w/ MethodTable parameters?
         if (decl.isImport()) {
@@ -148,8 +180,9 @@ public class CFGCreator {
             return new CFG(makeNoOp());
         }
         IRBlock code = decl.getCode();
+        CFG methodDecl = new CFG(new CFGMethodDecl(decl));
         CFG graph = destructIRBlock(code);
-        return graph;
+        return methodDecl.concat(graph);
     }
 
     private CFG destructBreakStatement() {
