@@ -44,7 +44,12 @@ public class SymbolTable<T extends SymbolTable<T,D>, D extends Named> {
 		return null;
 	}
 
+	public boolean containsInThisScope(String name) {
+		return childMap.containsKey(name);
+	}
+
 	public boolean isEmpty() {
 		return orderedChildren.size() == 0;
 	}
+
 }

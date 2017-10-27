@@ -36,4 +36,8 @@ public class VariableDescriptor implements Named {
     public String toString() {
         return declaration.toString() + " (rsp: " + stackOffset + ")";
     }
+
+    public String toGlobalAssembly() {
+        return ".comm " + declaration.getName() + ", " + declaration.getSpaceRequired() + ", 8\n";
+    }
 }

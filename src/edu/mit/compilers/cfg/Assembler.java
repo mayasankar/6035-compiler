@@ -28,8 +28,9 @@ public class Assembler {
         for (VariableDescriptor var : globals.getVariableDescriptorList()) {
             globalsOnStack.add(var);
             allocCount += var.getLength();
+            code += var.toGlobalAssembly();
         }
-        code += "enter $"  + new Integer(8*allocCount).toString() + ", $0\n";
+        code += "enter $"  + (new Integer(8*allocCount).toString()) + ", $0\n";
 
         try {
             os.write(code.getBytes());

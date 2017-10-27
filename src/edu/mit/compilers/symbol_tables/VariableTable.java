@@ -8,16 +8,16 @@ import java.util.Set;
 import edu.mit.compilers.ir.decl.*;
 
 public class VariableTable extends SymbolTable<VariableTable, VariableDescriptor> {
-	private int stackPointer;
+	private int stackPointer = 0; // TODO (mayars) do we want to initialize it to 0 or 8?
 
 	public VariableTable() {
 		super();
-		stackPointer = 0; // TODO (mayars) do we want to initialize it to 0 or 8?
+		// stackPointer = 0;
 	}
 
 	public VariableTable(VariableTable parent) {
 		super(parent);
-		stackPointer = parent.stackPointer;
+		// stackPointer = parent.stackPointer;
 	}
 
 	public List<IRMemberDecl> getVariableList() {

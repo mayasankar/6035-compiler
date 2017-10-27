@@ -253,17 +253,8 @@ public class BlockAssembler {
     private String makeCodeIRAssignStatement(IRAssignStatement s) {
         String code = "";
         IRVariableExpression varAssigned = s.getVarAssigned();
+        code += getCodeForIndexExpr(varAssigned);
         String stackLocation = getVariableStackLocation(varAssigned);
-        if (varAssigned.isArray()){
-            code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
-            // check bounds
-            int max_index = universalVariableTable.get(varAssigned.getName()).getLength();
-            code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
-            code += "cmp %r11, %r10\n";
-            code += "jge .out_of_bounds\n";
-            // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
-            stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
-        }
         code += "push %r10\n";
         String operator = s.getOperator();
         IRExpression value = s.getValue();
@@ -353,20 +344,9 @@ public class BlockAssembler {
                 return code;
             case VARIABLE:
                 IRVariableExpression varExpr = (IRVariableExpression)expr;
+                code += getCodeForIndexExpr(varExpr);
                 String stackLoc = getVariableStackLocation(varExpr);
-                if (varExpr.getIndexExpression() != null) {
-                    code += makeCodeIRExpression(varExpr.getIndexExpression()); // index now in %r10
-                    // check bounds
-                    int max_index = universalVariableTable.get(varExpr.getName()).getLength();
-                    code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
-                    code += "cmp %r11, %r10\n";
-                    code += "jge .out_of_bounds\n";
-                     // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
-                    code += "mov " + stackLoc.substring(0, stackLoc.length()-1) + ", %r10, 8), %r10\n";
-                }
-                else {
-                    code += "mov " + stackLoc + ", %r10\n"; // just directly take stack location
-                }
+                code += "mov " + stackLoc + ", %r10\n";
                 return code;
             case LEN:
                 String arg = ((IRLenExpression)expr).getArgument();
@@ -487,11 +467,51 @@ public class BlockAssembler {
         return;
     }
 
-    private String getVariableStackLocation(IRVariableExpression var) {
-        int offset = universalVariableTable.getStackOffset(var.getName());
-        return "-" + new Integer(offset).toString() + "(%rbp)";
+    // returns emptyset for non-array-expression var.
+    // returns code for which r10 ends up with array index if var is an array expr.
+    private String getCodeForIndexExpr(IRVariableExpression var) {
+        String code = "";
+        if (var.isArray()) {
+            code += makeCodeIRExpression(var.getIndexExpression());
+            // bounds checking
+            code += "push %r11\n"; // TODO mayars is this push/pop necessary?
+            int max_index = universalVariableTable.get(var.getName()).getLength();
+            if (max_index <= 0) {
+                throw new RuntimeException("array cannot have nonpositive index at codegen step");
+            }
+            code += "mov $" + (new Integer(max_index).toString()) + ", %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "jge .out_of_bounds\n";
+            // being able to index into global variables is hard
+            if (!universalVariableTable.containsInThisScope(var.getName())) {
+                // TODO mayars make sure this is correct
+                code += "move $" + var.getName() + ", %r11\n";
+                code += "add %r11, %r10\n";
+            }
+            code += "pop %r11";
+        }
+        return code;
     }
 
+    // returns something like -8(rbp) or varname or -8(rbp, r10, 8), etc.
+    private String getVariableStackLocation(IRVariableExpression var) {
+        if (universalVariableTable.containsInThisScope(var.getName())) {
+            int offset = universalVariableTable.getStackOffset(var.getName());
+            if (var.isArray()) {
+                return "-" + (new Integer(offset).toString()) + "(%rbp, %r10, 8)";
+            } else {
+                return "-" + (new Integer(offset).toString()) + "(%rbp)";
+            }
+        } else {
+            if (var.isArray()) {
+                return "0(%r10)";
+            } else {
+                return var.getName();
+            }
+        }
+    }
+
+    // NOTE: generally don't use this method --mayars
     private String getVariableStackLocation(String varName) {
         int offset = universalVariableTable.getStackOffset(varName);
         return "-" + new Integer(offset).toString() + "(%rbp)";
