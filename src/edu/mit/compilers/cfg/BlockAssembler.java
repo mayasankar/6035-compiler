@@ -56,12 +56,6 @@ public class BlockAssembler {
 
         code += makeCodeHelper(block);
 
-        for (String stringLiteral : stringLabels.keySet()) {
-            String label = stringLabels.get(stringLiteral);
-            code += "\n" + label + ":\n";
-            code += ".string " + stringLiteral + "\n";
-        }
-
         if (this.returnType != IRType.Type.VOID) {
             // if it doesn't have anywhere returning, have it jump to the runtime error
             code += "jmp .nonreturning_method\n";
@@ -70,6 +64,13 @@ public class BlockAssembler {
         // if it has void return, or if a return statement tells it to jump here, leave
         code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
+
+        // string literals
+        for (String stringLiteral : stringLabels.keySet()) {
+            String label = stringLabels.get(stringLiteral);
+            code += "\n" + label + ":\n";
+            code += ".string " + stringLiteral + "\n";
+        }
 
         // figure out how many allocations we did
         String allocSpace = new Integer(8*numAllocs).toString();
