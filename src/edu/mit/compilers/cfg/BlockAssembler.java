@@ -25,11 +25,12 @@ public class BlockAssembler {
     int blockCount;
     int stringCount;
     int numAllocs;
+    IRType.Type returnType;
     Map<CFGBlock, String> blockLabels;
     Map<String, String> stringLabels;
     VariableTable universalVariableTable;
 
-    public BlockAssembler(String label, int numParams, VariableTable globalVars) {
+    public BlockAssembler(String label, int numParams, VariableTable globalVars, IRType.Type returnType) {
         this.methodLabel = label;
         this.blockCount = 0;
         this.stringCount = 0;
@@ -37,6 +38,7 @@ public class BlockAssembler {
         this.blockLabels = new HashMap<>();
         this.stringLabels = new HashMap<>();
         this.universalVariableTable = new VariableTable(globalVars);
+        this.returnType = returnType;
     }
 
     public String makeCode(CFGBlock block, VariableTable parameters) {
@@ -60,10 +62,19 @@ public class BlockAssembler {
             code += ".string " + stringLiteral + "\n";
         }
 
-        String allocSpace = new Integer(8*numAllocs).toString();
+        if (this.returnType != IRType.Type.VOID) {
+            // if it doesn't have anywhere returning, have it jump to the runtime error
+            code += "jmp .nonreturning_method\n";
+        }
+
+        // if it has void return, or if a return statement tells it to jump here, leave
         code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
+
+        // figure out how many allocations we did
+        String allocSpace = new Integer(8*numAllocs).toString();
         prefix += "enter $" + allocSpace + ", $0\n";
+
         return prefix + code;
     }
 
@@ -94,10 +105,6 @@ public class BlockAssembler {
             else {
                 code += "jmp " + blockLabels.get(child) + "\n";
             }
-        }
-        else {
-            //null child means we want to jump to the end of method where we return
-            code += "jmp " + methodLabel + "_end\n";
         }
         if (block.isBranch()) {
             //  add code for false child, and jump statement
@@ -225,8 +232,7 @@ public class BlockAssembler {
                     code += makeCodeIRExpression(returnExpr);  // return value now in %r10
                     code += "mov %r10, %rax\n";
                 }
-                code += "leave\n";
-                code += "ret\n";
+                code += "jmp " + methodLabel + "_end\n"; // jump to end of method where we return
                 return code;
             }
             case ASSIGN_EXPR: {

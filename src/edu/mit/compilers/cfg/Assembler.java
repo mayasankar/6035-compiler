@@ -42,9 +42,10 @@ public class Assembler {
             if (md.isImport()) { // skip imports
                 continue;
             }
+            IRType.Type returnType = md.getReturnType();
             VariableTable parameters = md.getParameters();
             int numParams = parameters.getVariableList().size();
-            BlockAssembler ba = new BlockAssembler(methodName, numParams, globalsOnStack);
+            BlockAssembler ba = new BlockAssembler(methodName, numParams, globalsOnStack, returnType);
             code = ba.makeCode(graph, parameters);
             try {
                 os.write(code.getBytes());
@@ -63,7 +64,7 @@ public class Assembler {
         code += "mov $1, %eax\n";
         code += "mov $-2, %ebx\n";
         code += "int $0x80\n";
-        
+
         try {
             os.write(code.getBytes());
         } catch (IOException e) {
