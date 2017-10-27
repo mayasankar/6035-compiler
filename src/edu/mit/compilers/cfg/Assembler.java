@@ -45,19 +45,25 @@ public class Assembler {
             VariableTable parameters = md.getParameters();
             int numParams = parameters.getVariableList().size();
             BlockAssembler ba = new BlockAssembler(methodName, numParams, globalsOnStack);
-            code = ba.makeCode(graph, parameters) + "\nleave\n";
+            code = ba.makeCode(graph, parameters);
             try {
                 os.write(code.getBytes());
             } catch (IOException e) {
                 System.err.println(e);
             }
         }
-        code = "\n.out_of_bounds:\n";
+        code = "\nleave\n";
+
+        code += "\n.out_of_bounds:\n";
+        code += "mov $1, %eax\n";
         code += "mov $-1, %ebx\n";  // TODO how do we actually exit with error code -1???  internet suggests mov 60, eax; mov -1, edi
-        code += "leave\nret\n";
+        code += "int $0x80\n";
+
         code += "\n.nonreturning_method:\n";
+        code += "mov $1, %eax\n";
         code += "mov $-2, %ebx\n";
-        code += "leave\nret\n";
+        code += "int $0x80\n";
+        
         try {
             os.write(code.getBytes());
         } catch (IOException e) {
