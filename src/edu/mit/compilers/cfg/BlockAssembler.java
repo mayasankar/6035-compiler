@@ -400,8 +400,6 @@ public class BlockAssembler {
     }
 
     private String makeCodeIRBinaryOpExpression(IRBinaryOpExpression expr){
-        // TODO this won't work if there are complicated things on each side overwriting registers (like more operations)
-        // so break it down into smaller statements
         String op = expr.getOperator().getText();
         IRExpression leftExpr = expr.getLeftExpr();
         IRExpression rightExpr = expr.getRightExpr();
@@ -478,8 +476,6 @@ public class BlockAssembler {
         }
 
     }
-
-    //TODO UHHHHH WHERE DO WE HANDLE INDEXING INTO ARRAYS?
 
     private void addVariableToStack(VariableDescriptor var) {
         // System.out.println("Added variable: " + var.toString());

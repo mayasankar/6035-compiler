@@ -19,8 +19,6 @@ import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
 
-// todo list
-// IRMethodCallExpression destructor
 
 public class CFGCreator {
     private static final Token EQ_OP = new CommonToken("=");
@@ -173,9 +171,7 @@ public class CFGCreator {
 
 
     private CFG destructIRMethodDecl(IRMethodDecl decl) {
-        // todo do something w/ MethodTable parameters?
         if (decl.isImport()) {
-            // return new CFG(new CFGMethodDecl(decl));
             // TODO do we actually need to do anything with it?
             return new CFG(makeNoOp());
         }
@@ -202,7 +198,6 @@ public class CFGCreator {
     }
 
     private CFG destructIRIfStatement(IRIfStatement statement) {
-        // TODO handle nonexistence of else blocks
         IRExpression cond = statement.getCondition();
         IRBlock thenBlock = statement.getThenBlock();
         IRBlock elseBlock = statement.getElseBlock();
@@ -301,7 +296,7 @@ public class CFGCreator {
     }
 
     private CFG destructIRMethodCallExpression(IRMethodCallExpression expr) {
-        // TODO
+        // TODO do we need this?
         throw new RuntimeException("Unimplemented");
     }
 
@@ -462,7 +457,6 @@ public class CFGCreator {
     }
 
     private CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
-        // todo do we ever need to destruct this?
         return new CFGExpression(trueBranch, falseBranch, expr);
     }
 
