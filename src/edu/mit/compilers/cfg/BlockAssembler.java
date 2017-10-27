@@ -56,8 +56,8 @@ public class BlockAssembler {
 
         for (String stringLiteral : stringLabels.keySet()) {
             String label = stringLabels.get(stringLiteral);
-            code += label + ":\n";
-            code += ".string " + stringLiteral + "\n\n";
+            code += "\n" + label + ":\n";
+            code += ".string " + stringLiteral + "\n";
         }
 
         String allocSpace = new Integer(8*numAllocs).toString();
@@ -250,7 +250,12 @@ public class BlockAssembler {
         String stackLocation = getVariableStackLocation(varAssigned);
         if (varAssigned.isArray()){
             code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
-             // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
+            // check bounds
+            int max_index = universalVariableTable.get(varAssigned.getName()).getLength();
+            code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "jge .out_of_bounds\n";
+            // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
             stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
         }
         code += "push %r10\n";
@@ -338,12 +343,18 @@ public class BlockAssembler {
                 for (int i=arguments.size()-1; i>=6; i--) {
                     code += "pop %r10\n";
                 }
+		code += "mov %rax, %r10\n";
                 return code;
             case VARIABLE:
                 IRVariableExpression varExpr = (IRVariableExpression)expr;
                 String stackLoc = getVariableStackLocation(varExpr);
                 if (varExpr.getIndexExpression() != null) {
-                    code += makeCodeIRExpression(varExpr.getIndexExpression());
+                    code += makeCodeIRExpression(varExpr.getIndexExpression()); // index now in %r10
+                    // check bounds
+                    int max_index = universalVariableTable.get(varExpr.getName()).getLength();
+                    code += "mov $" + new Integer(max_index).toString() + ", %r11\n";
+                    code += "cmp %r11, %r10\n";
+                    code += "jge .out_of_bounds\n";
                      // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
                     code += "mov " + stackLoc.substring(0, stackLoc.length()-1) + ", %r10, 8), %r10\n";
                 }
