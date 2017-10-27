@@ -54,10 +54,6 @@ public class BlockAssembler {
 
         code += makeCodeHelper(block);
 
-        code += "\n.out_of_bounds:\n";
-        code += "mov $-1 %rax\n";  // TODO how do we actually exit with error code -1???  internet suggests mov 60, eax; mov -1, edi
-        code += "leave\nret\n";
-
         for (String stringLiteral : stringLabels.keySet()) {
             String label = stringLabels.get(stringLiteral);
             code += "\n" + label + ":\n";
@@ -191,7 +187,7 @@ public class BlockAssembler {
     	}
     	return code;
     }
-    
+
     private String getParamLoc(int i) {
     	if(i==0) {
     		return "%rdi";
@@ -491,7 +487,7 @@ public class BlockAssembler {
         int offset = universalVariableTable.getStackOffset(var.getName());
         return "-" + new Integer(offset).toString() + "(%rbp)";
     }
-    
+
     private String getVariableStackLocation(String varName) {
         int offset = universalVariableTable.getStackOffset(varName);
         return "-" + new Integer(offset).toString() + "(%rbp)";

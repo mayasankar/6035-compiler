@@ -52,6 +52,17 @@ public class Assembler {
                 System.err.println(e);
             }
         }
+        code = "\n.out_of_bounds:\n";
+        code += "mov $-1 %rax\n";  // TODO how do we actually exit with error code -1???  internet suggests mov 60, eax; mov -1, edi
+        code += "leave\nret\n";
+        code += "\n.nonreturning_method:\n";
+        code += "mov $-2 %rax\n";
+        code += "leave\nret\n";
+        try {
+            os.write(code.getBytes());
+        } catch (IOException e) {
+            System.err.println(e);
+        }
         return;
     }
 }
