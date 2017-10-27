@@ -341,6 +341,7 @@ public class BlockAssembler {
                 for (int i=arguments.size()-1; i>=6; i--) {
                     code += "pop %r10\n";
                 }
+		code += "mov %rax, %r10\n";
                 return code;
             case VARIABLE:
                 IRVariableExpression varExpr = (IRVariableExpression)expr;
