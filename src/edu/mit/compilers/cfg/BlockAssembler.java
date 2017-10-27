@@ -187,7 +187,7 @@ public class BlockAssembler {
     	}
     	return code;
     }
-    
+
     private String getParamLoc(int i) {
     	if(i==0) {
     		return "%rdi";
@@ -249,9 +249,6 @@ public class BlockAssembler {
         IRVariableExpression varAssigned = s.getVarAssigned();
         String stackLocation = getVariableStackLocation(varAssigned);
         if (varAssigned.isArray()){
-            if (varAssigned.getIndexExpression() == null) {
-                throw new RuntimeException("Array variable should have index expression.");
-            }
             code += makeCodeIRExpression(varAssigned.getIndexExpression()); // index now in %r10
              // remove last paren;  -i(%rbp)  -->  -i(%rbp, %r10, 8)
             stackLocation = stackLocation.substring(0, stackLocation.length()-1) + ", %r10, 8)";
@@ -477,7 +474,7 @@ public class BlockAssembler {
         int offset = universalVariableTable.getStackOffset(var.getName());
         return "-" + new Integer(offset).toString() + "(%rbp)";
     }
-    
+
     private String getVariableStackLocation(String varName) {
         int offset = universalVariableTable.getStackOffset(varName);
         return "-" + new Integer(offset).toString() + "(%rbp)";

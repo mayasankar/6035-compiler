@@ -13,7 +13,7 @@ public class IRVariableExpression extends IRExpression {
 
 	private String variableName;
 	private IRExpression arrayIndex = null;
-	private IRType.Type type = null;
+	private IRType.Type type = null; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
 
 
 	public IRVariableExpression(Token id) {
@@ -46,7 +46,7 @@ public class IRVariableExpression extends IRExpression {
 	}
 
 	public boolean isArray() {
-		return type == IRType.Type.INT_ARRAY || type == IRType.Type.BOOL_ARRAY;
+		return arrayIndex != null;
 	}
 
 	@Override

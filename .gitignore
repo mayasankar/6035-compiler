@@ -3,3 +3,6 @@ migrate.sh
 autogen/*
 classes/*
 dist/*
+assembly_1.txt
+assembly_2.txt
+input.dcf
