@@ -56,12 +56,6 @@ public class BlockAssembler {
 
         code += makeCodeHelper(block);
 
-        for (String stringLiteral : stringLabels.keySet()) {
-            String label = stringLabels.get(stringLiteral);
-            code += "\n" + label + ":\n";
-            code += ".string " + stringLiteral + "\n";
-        }
-
         if (this.returnType != IRType.Type.VOID) {
             // if it doesn't have anywhere returning, have it jump to the runtime error
             code += "jmp .nonreturning_method\n";
@@ -70,6 +64,13 @@ public class BlockAssembler {
         // if it has void return, or if a return statement tells it to jump here, leave
         code += "\n"+ methodLabel + "_end:\n";
         code += "leave\n" + "ret\n";
+
+        // string literals
+        for (String stringLiteral : stringLabels.keySet()) {
+            String label = stringLabels.get(stringLiteral);
+            code += "\n" + label + ":\n";
+            code += ".string " + stringLiteral + "\n";
+        }
 
         // figure out how many allocations we did
         String allocSpace = new Integer(8*numAllocs).toString();
@@ -104,6 +105,16 @@ public class BlockAssembler {
             }
             else {
                 code += "jmp " + blockLabels.get(child) + "\n";
+            }
+        }
+        else {
+            if (this.returnType != IRType.Type.VOID) {
+                // if it doesn't have anywhere returning, have it jump to the runtime error
+                code += "jmp .nonreturning_method\n";
+            }
+            else {
+                //null child means we want to jump to the end of method where we return
+                code += "jmp " + methodLabel + "_end\n";
             }
         }
         if (block.isBranch()) {
@@ -380,8 +391,6 @@ public class BlockAssembler {
     }
 
     private String makeCodeIRBinaryOpExpression(IRBinaryOpExpression expr){
-        // TODO this won't work if there are complicated things on each side overwriting registers (like more operations)
-        // so break it down into smaller statements
         String op = expr.getOperator().getText();
         IRExpression leftExpr = expr.getLeftExpr();
         IRExpression rightExpr = expr.getRightExpr();
@@ -458,8 +467,6 @@ public class BlockAssembler {
         }
 
     }
-
-    //TODO UHHHHH WHERE DO WE HANDLE INDEXING INTO ARRAYS?
 
     private void addVariableToStack(VariableDescriptor var) {
         // System.out.println("Added variable: " + var.toString());

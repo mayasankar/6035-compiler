@@ -58,7 +58,7 @@ public class Assembler {
 
         code += "\n.out_of_bounds:\n";
         code += "mov $1, %eax\n";
-        code += "mov $-1, %ebx\n";  // TODO how do we actually exit with error code -1???  internet suggests mov 60, eax; mov -1, edi
+        code += "mov $-1, %ebx\n";
         code += "int $0x80\n";
 
         code += "\n.nonreturning_method:\n";
