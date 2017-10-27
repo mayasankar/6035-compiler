@@ -492,10 +492,12 @@ public class BlockAssembler {
             // being able to index into global variables is hard
             if (!universalVariableTable.containsInThisScope(var.getName())) {
                 // TODO mayars make sure this is correct
-                code += "move $" + var.getName() + ", %r11\n";
+                code += "mov $8, %r11\n";
+                code += "imul %r11, %r10\n"; // TODO do via shifting instead
+                code += "mov $" + var.getName() + ", %r11\n";
                 code += "add %r11, %r10\n";
             }
-            code += "pop %r11";
+            code += "pop %r11\n";
         }
         return code;
     }
