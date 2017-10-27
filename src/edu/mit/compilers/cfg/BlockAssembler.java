@@ -185,7 +185,7 @@ public class BlockAssembler {
     			code += String.format("mov %r10, %s", paramStackLoc);
     		}
     	}
-    	throw new RuntimeException("Unimplemented: " + line.ownValue());
+    	return code;
     }
     
     private String getParamLoc(int i) {
