@@ -172,8 +172,38 @@ public class BlockAssembler {
     }
 
     private String makeCodeCFGMethodDecl(CFGMethodDecl line) {
-        // TODO I'm pretty sure we never use CFGMethodDecls and could probably remove them entirely
-        throw new RuntimeException("Unimplemented: " + line.ownValue());
+        String code = "";
+        List<IRMemberDecl> parameters = line.getMethodDecl().getParameters().getVariableList();
+    	for(int i=0; i < parameters.size(); ++i) {
+    		IRMemberDecl param = parameters.get(i);
+    		String paramStackLoc = getVariableStackLocation(param.getName());
+    		String paramLoc = getParamLoc(i);
+    		if(i<=6) {
+    			code += String.format("mov %s, %s", paramLoc, paramStackLoc);
+    		} else {
+    			code += String.format("mov %s, %r10", paramLoc);
+    			code += String.format("mov %r10, %s", paramStackLoc);
+    		}
+    	}
+    	throw new RuntimeException("Unimplemented: " + line.ownValue());
+    }
+    
+    private String getParamLoc(int i) {
+    	if(i==1) {
+    		return "%rdi";
+    	} else if (i==2) {
+    		return "%rsi";
+    	} else if (i==3) {
+    		return "%rdx";
+    	} else if (i==4) {
+    		return "%rcx";
+    	} else if (i==5) {
+    		return "%r8";
+    	} else if (i==6) {
+    		return "%r9";
+    	} else {
+    		return (i-5)*8 + "(%rbp)";
+    	}
     }
 
     private String makeCodeCFGStatement(CFGStatement line) {
@@ -433,6 +463,11 @@ public class BlockAssembler {
 
     private String getVariableStackLocation(IRVariableExpression var) {
         int offset = universalVariableTable.getStackOffset(var.getName());
+        return "-" + new Integer(offset).toString() + "(%rbp)";
+    }
+    
+    private String getVariableStackLocation(String varName) {
+        int offset = universalVariableTable.getStackOffset(varName);
         return "-" + new Integer(offset).toString() + "(%rbp)";
     }
 }

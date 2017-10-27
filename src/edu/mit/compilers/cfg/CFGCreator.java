@@ -125,10 +125,11 @@ public class CFGCreator {
             return destructIRForStatement((IRForStatement) statement);
           } case WHILE_BLOCK: {
             return destructIRWhileStatement((IRWhileStatement) statement);
-          } case METHOD_CALL: case RETURN_EXPR: {
-            // TODO idk how we're handling methods and returns? I think just as lines
+          } case METHOD_CALL: {
             return new CFG(new CFGStatement(statement));
-	  } case ASSIGN_EXPR: {
+          } case RETURN_EXPR: {
+            return destructIRReturnStatement((IRReturnStatement) statement);
+          } case ASSIGN_EXPR: {
             return destructIRAssignStatement((IRAssignStatement) statement);
           } case BREAK: {
               return destructBreakStatement();
@@ -140,6 +141,16 @@ public class CFGCreator {
         }
     }
 
+    private CFG destructIRReturnStatement(IRReturnStatement statement) {
+        IRExpression returnExpr = statement.getReturnExpr();
+        String name = "temp_return_" + statement.hashCode();
+        CFG returnCFG = destructIRExpression(returnExpr, name);
+        IRVariableExpression returnVar = new IRVariableExpression(name);
+        CFG returnStat = new CFG(new CFGStatement(new IRReturnStatement(returnVar)));
+        return returnCFG.concat(returnStat);
+    }
+
+
     private CFG destructIRMethodDecl(IRMethodDecl decl) {
         // todo do something w/ MethodTable parameters?
         if (decl.isImport()) {
@@ -148,8 +159,9 @@ public class CFGCreator {
             return new CFG(makeNoOp());
         }
         IRBlock code = decl.getCode();
+        CFG methodDecl = new CFG(new CFGMethodDecl(decl));
         CFG graph = destructIRBlock(code);
-        return graph;
+        return methodDecl.concat(graph);
     }
 
     private CFG destructBreakStatement() {
