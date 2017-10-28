@@ -1,0 +1,17 @@
+import printf;
+int a, b, c, d, e;
+int get_int ( int x ) {
+  return x;
+}
+int foo ( ) {
+  printf( "%d\n", c );
+  return 1;
+}
+void main ( ) {
+  a = get_int ( 2 );
+  b = get_int ( 3 );
+  c = 2 * a;
+  d = foo() + b;
+  e = c + 3;
+  printf ( "%d\n", e );
+}

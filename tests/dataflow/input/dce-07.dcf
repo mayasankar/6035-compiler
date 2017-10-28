@@ -1,0 +1,14 @@
+import printf;
+int a, b, c, d;
+int get_int ( int x ) {
+  return x;
+}
+void main ( ) {
+  bool x;
+  a = get_int ( 2 );
+  b = get_int ( 3 );
+  c = 2 * a;
+  d = 3 * b
+  c = d + 4;
+  printf ( "%d\n", c );
+}

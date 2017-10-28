@@ -1,0 +1,25 @@
+import printf;
+int get_int ( int x ) {
+  return x;
+}
+bool get_bool ( bool x ) {
+  return x;
+}
+void main ( ) {
+  int a, c, d, e;
+  bool x;
+  a = get_int ( 2 );
+  x = get_bool ( true );
+  c = 0;
+  d = 0;
+  if ( x ) {
+    a += 1;
+    d = a;
+  } else {
+    d = a
+  }
+  c = d;
+  printf ( "%d\n", a );
+  printf ( "%d\n", d );
+  printf ( "%d\n", c );
+}
