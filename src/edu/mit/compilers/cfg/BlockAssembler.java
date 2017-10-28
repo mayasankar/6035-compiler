@@ -380,7 +380,22 @@ public class BlockAssembler {
                 }
                 return code;
             case TERNARY:
-                throw new RuntimeException("Ternary operations should have been deconstructed by CFGCreator.");
+                IRTernaryOpExpression tern = (IRTernaryOpExpression) expr;
+                IRExpression condition = tern.getCondition();
+                code += makeCodeIRExpression(condition); //bool for tern now in %r10
+                code += "mov %r10, %r11\n";
+                IRExpression trueExpr = tern.getTrueExpression();
+                code += makeCodeIRExpression(trueExpr);
+                code += "imul %r11, %r10\n";
+                code += "mov %r10, %r9\n"; // if condition, put expr into r9, otherwise 0
+                code += "mov $1, %r10\n";
+                code += "sub %r11, %r10\n";
+                code += "mov %r10, %r11\n"; // put not condition into r11
+                IRExpression falseExpr = tern.getFalseExpression();
+                code += makeCodeIRExpression(falseExpr);
+                code += "imul %r11, %r10\n";
+                code += "add %r9, %r10\n";
+                return code;
             case BINARY:
                 return makeCodeIRBinaryOpExpression((IRBinaryOpExpression)expr);
             default:
