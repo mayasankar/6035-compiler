@@ -6,7 +6,7 @@ bool get_bool ( bool y ){
   return y;
 }
 void main ( ) {
-  int a, b, c, d;
+  int a, b, c, d, e;
   bool x;
   a = get_int ( 2 );
   b = get_int ( 3 );

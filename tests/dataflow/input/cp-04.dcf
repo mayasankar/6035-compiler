@@ -16,7 +16,7 @@ void main ( ) {
     a += 1;
     d = a;
   } else {
-    d = a
+    d = a;
   }
   c = d;
   printf ( "%d\n", a );
