@@ -342,9 +342,25 @@ public class CFGCreator {
      *
      * @param value an expression with depth >0
      * @param lastVar the name to assign to the last temporary variable created
-     * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
+     * @return a CFG where each line is an assign expression of an expression of depth <=1 to a new temporary variable
      */
     private CFG destructIRExpression(IRExpression value, String lastVar) {
+        if(value.getExpressionType().equals(ExpressionType.BINARY) && (
+                ((IRBinaryOpExpression)value).getOperator().getText().equals("||") ||
+                ((IRBinaryOpExpression)value).getOperator().getText().equals("&&"))) {
+            IRMemberDecl lastVarDecl = new IRLocalDecl(value.getType(), new CommonToken(lastVar));
+            CFG lastVarDeclCFG = destructIRMemberDecl(lastVarDecl);
+
+            CFGLine noOp = makeNoOp();
+            CFGLine trueLine = new CFGAssignStatement(lastVar, EQ_OP, new IRBoolLiteral(true));
+            CFGLine falseLine = new CFGAssignStatement(lastVar, EQ_OP, new IRBoolLiteral(false));
+            
+            trueLine.setNext(noOp);
+            falseLine.setNext(noOp);
+            
+            CFGLine startShort = shortcircuit(value, trueLine, falseLine);
+            return lastVarDeclCFG.concat(new CFG(startShort, noOp));
+        }        
         CFG answer = new CFG(makeNoOp());
     	int numTempVars = 0;
     	List<IRExpression> tempedChildren = new ArrayList<>();
@@ -365,9 +381,9 @@ public class CFGCreator {
     	CFGLine lastStatement = new CFGAssignStatement(lastVar, EQ_OP, modifiedValue);
     	answer.concat(lastVarDeclCFG).concat(new CFG(lastStatement));
     	return answer;
-	}
+    }
 
-	private IRExpression putInTempVars(IRExpression value, List<IRExpression> children) {
+    private IRExpression putInTempVars(IRExpression value, List<IRExpression> children) {
 	    switch(value.getExpressionType()) {
 	    case BINARY: {
 	        IRBinaryOpExpression convertedValue = (IRBinaryOpExpression) value;
