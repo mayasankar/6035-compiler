@@ -1,0 +1,35 @@
+import printf;
+
+int a[10];
+bool b;
+
+int func(int a, int b, bool c) {
+    if (a != b) {
+	return c? a: b;
+    } else {
+        return c? -123: (true? 0: 1);
+    }
+}
+
+void main() {
+    int c;
+    bool d;
+    int i;
+    d = true && false;
+    c = 0;
+    while(d? false: (c<10)) {
+        a[c] = c+c;
+	c += d? 2: (d? 2: 1);
+    }
+
+    for(i=0; i < 10; i++) {
+        printf("Should be %s: %s", i, a[i]);
+    }
+
+    b = true && (a[9] != a[8]) && !!!d;
+    if(b) {
+	printf("Correct");
+    } else {
+	printf("Incorrect");
+    }
+}

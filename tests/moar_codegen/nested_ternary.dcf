@@ -1,0 +1,9 @@
+import printf;
+
+int terntern() {
+    return false? 20: (true? 19: 18);
+}
+
+void main() {
+    printf("Should be 19: %d\n", terntern());
+}
