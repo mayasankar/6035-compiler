@@ -276,7 +276,7 @@ public class CFGCreator {
         CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(),"temp_tern_false_" + expr.hashCode()).getStart();
 
         CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
-        
+
         CFGLine noOp = makeNoOp();
         trueBranch.setNext(noOp);
         falseBranch.setNext(noOp);
@@ -353,7 +353,7 @@ public class CFGCreator {
             CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(), lastVar).getStart();
 
             CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
-            
+
             CFGLine noOp = makeNoOp();
             trueBranch.setNext(noOp);
             falseBranch.setNext(noOp);
@@ -431,7 +431,8 @@ public class CFGCreator {
         }
         else {
             // firstEnd had a break/continue statement so we don't evaluate rest of block
-            return new CFG(firstGraph.getStart(), firstEnd);
+            CFGLine endLine = makeNoOp();
+            return new CFG(firstGraph.getStart(), endLine);
         }
     }
 
