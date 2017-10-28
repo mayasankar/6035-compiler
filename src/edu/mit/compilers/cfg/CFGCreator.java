@@ -345,20 +345,6 @@ public class CFGCreator {
      * @return a CFG where each line is an assign expression of an expression of depth 1 to a new temporary variable
      */
     private CFG destructIRExpression(IRExpression value, String lastVar) {
-        if(value.getExpressionType() == ExpressionType.TERNARY) {
-            IRTernaryOpExpression expr = (IRTernaryOpExpression) value;
-            IRExpression condition = expr.getCondition();
-
-            CFGLine trueBranch = destructIRExpression(expr.getTrueExpression(), lastVar).getStart();
-            CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(), lastVar).getStart();
-
-            CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
-            
-            CFGLine noOp = makeNoOp();
-            trueBranch.setNext(noOp);
-            falseBranch.setNext(noOp);
-            return new CFG(condLine, noOp);
-        }
         CFG answer = new CFG(makeNoOp());
     	int numTempVars = 0;
     	List<IRExpression> tempedChildren = new ArrayList<>();
