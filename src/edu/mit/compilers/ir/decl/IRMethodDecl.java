@@ -7,6 +7,7 @@ import antlr.Token;
 
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.symbol_tables.Named;
@@ -65,4 +66,9 @@ public class IRMethodDecl extends IRNode implements Named {
     answer += code.toString(1);
     return answer;
   }
+  
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

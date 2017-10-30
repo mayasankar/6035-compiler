@@ -3,6 +3,7 @@ package edu.mit.compilers.ir.decl;
 import antlr.Token;
 
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 
 public class IRLocalDecl extends IRMemberDecl {
 
@@ -21,4 +22,9 @@ public class IRLocalDecl extends IRMemberDecl {
 		return this.getType() + " " + this.getName();
 	}
 
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+	
 }

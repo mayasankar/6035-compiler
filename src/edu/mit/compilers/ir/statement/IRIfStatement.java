@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.ir.statement.IRStatement.IRStatementVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
@@ -50,6 +52,16 @@ public class IRIfStatement extends IRStatement {
 	@Override
 	public List<? extends IRNode> getChildren() {
 		return Arrays.asList(ifCondition, thenBlock, elseBlock);
+	}
+	
+	@Override
+	public <R> R accept(IRStatementVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
 	}
 
 }

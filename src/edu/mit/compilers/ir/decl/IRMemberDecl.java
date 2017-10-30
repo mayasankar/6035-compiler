@@ -7,6 +7,7 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.symbol_tables.Named;
 
 public abstract class IRMemberDecl extends IRNode implements Named {
@@ -45,5 +46,7 @@ public abstract class IRMemberDecl extends IRNode implements Named {
 	public int getSpaceRequired() { return 8 * (isArray() ? length : 1); }
 
 	public String getName() { return id.getText(); }
+	
+
 
 }

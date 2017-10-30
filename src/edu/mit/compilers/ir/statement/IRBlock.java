@@ -8,8 +8,10 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.statement.IRStatement;
+import edu.mit.compilers.ir.statement.IRStatement.IRStatementVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.symbol_tables.VariableTable;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
@@ -58,6 +60,11 @@ public class IRBlock extends IRNode {
 			answer += "\n" + statement.toString(indent);
 		}
 		return answer;
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
 	}
 
 }

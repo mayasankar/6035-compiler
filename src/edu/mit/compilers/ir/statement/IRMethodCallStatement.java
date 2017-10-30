@@ -5,7 +5,9 @@ import java.util.List;
 
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRMethodCallExpression;
+import edu.mit.compilers.ir.statement.IRStatement.IRStatementVisitor;
 import edu.mit.compilers.ir.IRNode;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRMethodCallStatement extends IRStatement {
@@ -30,4 +32,14 @@ public class IRMethodCallStatement extends IRStatement {
     public List<? extends IRNode> getChildren() {
         return Arrays.asList(methodCall);
     }
+    
+	@Override
+	public <R> R accept(IRStatementVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

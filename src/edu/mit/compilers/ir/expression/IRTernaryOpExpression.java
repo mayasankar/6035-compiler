@@ -5,6 +5,8 @@ import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
+import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRTernaryOpExpression extends IRExpression {
@@ -45,6 +47,16 @@ public class IRTernaryOpExpression extends IRExpression {
 	@Override
 	public int getDepth() {
 		return Math.max(Math.max(trueExpression.getDepth(), falseExpression.getDepth()), condition.getDepth()) + 1;
+	}
+	
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
 	}
 
 }

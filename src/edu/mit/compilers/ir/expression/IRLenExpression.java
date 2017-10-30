@@ -7,6 +7,8 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
+import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
 
 public class IRLenExpression extends IRExpression {
   private Token id; // what you are taking the length of
@@ -35,4 +37,14 @@ public class IRLenExpression extends IRExpression {
         // TODO Auto-generated method stub
         return Arrays.asList();
     }
+    
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

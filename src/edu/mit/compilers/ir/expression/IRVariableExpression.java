@@ -7,6 +7,8 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
+import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRVariableExpression extends IRExpression {
@@ -66,6 +68,16 @@ public class IRVariableExpression extends IRExpression {
 	@Override
 	public int getDepth() {
 		return 0;
+	}
+	
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
 	}
 
 }

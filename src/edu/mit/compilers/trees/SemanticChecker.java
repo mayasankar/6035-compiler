@@ -346,7 +346,7 @@ public class SemanticChecker {
             notifyError("Ternary operator should return same type in true or false cases.", expr);
         }
     }
-
+    
     private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
         // part of 15, part of 17
         IRExpression arg = expr.getArgument();

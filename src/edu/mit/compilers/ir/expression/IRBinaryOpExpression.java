@@ -60,4 +60,14 @@ public class IRBinaryOpExpression extends IRExpression{
 		return Math.max(leftExpr.getDepth(), rightExpr.getDepth()) + 1;
 	}
 
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
 }

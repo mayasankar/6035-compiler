@@ -36,4 +36,9 @@ public class IRProgram extends IRNode {
 		children.addAll(methodTable.getMethodList());
 		return children;
 	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

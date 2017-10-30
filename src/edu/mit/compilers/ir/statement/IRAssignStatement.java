@@ -42,4 +42,14 @@ public class IRAssignStatement extends IRStatement {
 		return varAssigned + " " + operator.getText() + (value == null ? "" : " " + value);
 	}
 
+	@Override
+	public <R> R accept(IRStatementVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
 }

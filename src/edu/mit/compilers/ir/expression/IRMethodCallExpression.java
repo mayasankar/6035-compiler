@@ -7,8 +7,10 @@ import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
+import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
 
 public class IRMethodCallExpression extends IRExpression {
 
@@ -57,6 +59,16 @@ public class IRMethodCallExpression extends IRExpression {
 			maxArgDepth = Math.max(maxArgDepth, arg.getDepth());
 		}
 		return maxArgDepth + 1;
+	}
+	
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
+
+	@Override
+	public <R> R accept(IRNodeVisitor<R> visitor) {
+		return visitor.on(this);
 	}
 
 }

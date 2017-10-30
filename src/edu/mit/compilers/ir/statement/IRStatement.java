@@ -1,24 +1,31 @@
 package edu.mit.compilers.ir.statement;
 
-import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.trees.ConcreteTree;
-import edu.mit.compilers.symbol_tables.VariableTable;
-
-import edu.mit.compilers.trees.ASTCreator;
 
 public abstract class IRStatement extends IRNode {
-  public enum StatementType {
-    UNSPECIFIED,
-    ASSIGN_EXPR,
-    METHOD_CALL,
-    IF_BLOCK,
-    FOR_BLOCK,
-    WHILE_BLOCK,
-    RETURN_EXPR,
-    BREAK,
-    CONTINUE
-  }
+    public enum StatementType {
+	    UNSPECIFIED,
+    	ASSIGN_EXPR,
+    	METHOD_CALL,
+    	IF_BLOCK,
+    	FOR_BLOCK,
+    	WHILE_BLOCK,
+    	RETURN_EXPR,
+    	BREAK,
+    	CONTINUE
+    }
+  
+	public interface IRStatementVisitor<R>{
+		public R on(IRAssignStatement ir);
+		public R on(IRForStatement ir);
+		public R on(IRIfStatement ir);
+		public R on(IRLoopStatement ir);
+		public R on(IRMethodCallStatement ir);
+		public R on(IRReturnStatement ir);
+		public R on(IRWhileStatement ir);
+	}
+	
+	public abstract <R> R accept(IRStatementVisitor<R> visitor);
 
   protected StatementType statementType = StatementType.UNSPECIFIED;
 

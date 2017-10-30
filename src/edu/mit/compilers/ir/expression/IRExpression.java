@@ -1,14 +1,9 @@
 package edu.mit.compilers.ir.expression;
 
-import antlr.Token;
-import java.math.BigInteger;
 import java.util.List;
 
-import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.trees.ConcreteTree;
-import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.ir.expression.literal.*;
 
 public abstract class IRExpression extends IRNode {
@@ -26,6 +21,18 @@ public abstract class IRExpression extends IRNode {
 		METHOD_CALL,
 		VARIABLE,
 	}
+	
+	public interface IRExpressionVisitor<R>{
+		public R on(IRUnaryOpExpression ir);
+		public R on(IRBinaryOpExpression ir);
+		public R on(IRTernaryOpExpression ir);
+		public R on(IRLenExpression ir);
+		public R on(IRVariableExpression ir);
+		public R on(IRMethodCallExpression ir);
+		public <T> R on(IRLiteral<T> ir);
+	}
+	
+	public abstract <R> R accept(IRExpressionVisitor<R> visitor);
 
 	protected ExpressionType expressionType = ExpressionType.UNSPECIFIED;
 
