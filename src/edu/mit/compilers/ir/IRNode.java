@@ -1,5 +1,6 @@
 package edu.mit.compilers.ir;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import antlr.Token;
@@ -31,7 +32,9 @@ public abstract class IRNode {
 		public R on(IRLenExpression ir);
 		public R on(IRVariableExpression ir);
 		public R on(IRMethodCallExpression ir);
-		public <T> R on(IRLiteral<T> ir);
+		public R onBool(IRLiteral<Boolean> ir);
+        public R onString(IRLiteral<String> ir);
+		public R onInt(IRLiteral<BigInteger> ir);
 		
 		public R on(IRAssignStatement ir);
 		public R on(IRBlock ir);

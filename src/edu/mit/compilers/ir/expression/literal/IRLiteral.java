@@ -38,9 +38,4 @@ public abstract class IRLiteral<T> extends IRExpression {
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);
 	}
-
-	@Override
-	public <R> R accept(IRNodeVisitor<R> visitor) {
-		return visitor.on(this);
-	}
 }

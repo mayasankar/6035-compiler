@@ -1,5 +1,6 @@
 package edu.mit.compilers.trees;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import antlr.Token;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRProgram;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRType.Type;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.decl.IRLocalDecl;
 import edu.mit.compilers.ir.decl.IRMemberDecl;
@@ -29,7 +31,9 @@ import edu.mit.compilers.ir.statement.IRIfStatement;
 import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
+import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
+import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
@@ -237,104 +241,268 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	@Override
 	public Boolean on(IRVariableExpression var) {
         // 10, 11
-        VariableTable table = env.getVariableTable();
-        VariableDescriptor desc = table.get(var.getName());
+        VariableDescriptor desc = env.getVariableTable().get(var.getName());
         IRExpression idxExpr = var.getIndexExpression();
 
         if (desc == null) {
             notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
-            return;
-        }
-
-        IRMemberDecl decl = desc.getDecl();
-        // TODO (mayars) -- why do we have this here?
-        checkIRMemberDecl(decl);
+            return hasError;
+        }       
 
         if (idxExpr != null) {
-            checkIRExpression(idxExpr);
-            IRType.Type declType = decl.getType();
+            idxExpr.accept(this);
+            IRType.Type declType = desc.getType();
             if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
                 notifyError("Cannot index into non-array variable '" + var.getName() + "'.", var);
             }
+          
+            IRType.Type exprType = idxExpr.getType();
+            if (exprType != IRType.Type.INT) {
+                notifyError("Array index must be an integer.", idxExpr);
+            }
         }
-        if (idxExpr == null) {
-            var.setType(decl.getType()); // NOTE: this means we're not actually completing the IRVariableExpressions until we do semantic checking when we change things
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRMethodCallExpression expr) {
+        // 5, 6
+        VariableTable table = env.getVariableTable();
+        VariableDescriptor desc = table.get(expr.getName());
+        if (desc != null) {
+            notifyError(expr.getName() + " is most recently declared as a method, not a function", expr);
+            return hasError;
+        }
+
+        MethodTable lookupTable = env.getMethodTable();
+        IRMethodDecl md = lookupTable.get(expr.getName());
+        if (md == null) {
+            notifyError("Calls undefined method '" + expr.getName() + "'.", expr);
+            return hasError;
+        } else if (! expr.comesAfter(md)) {
+            notifyError("Calls method " + expr.getName() + " before method is declared.", expr);
+            return hasError;
+        }
+
+        // NOTE: the following line means we're not actually completing the
+        // IRMethodCallExpressions until we do semantic checking when we change things
+        /*expr.setType(md.getReturnType());
+
+        if (isInExpression && md.getReturnType() == IRType.Type.VOID) {
+            notifyError("Expression uses method with return value of void.", expr);
+        }*/
+
+        List<IRExpression> arguments = expr.getArguments();
+        // == CODE TO CHECK PARAMETER LISTS ARE THE SAME
+        if (!md.isImport()) { // don't check imports match parameter lengths
+            List<IRMemberDecl> parameters = md.getParameters().getVariableList();
+            if (parameters.size() != arguments.size()) {
+                notifyError("Method " + md.getName() + " called with " + arguments.size() +
+                " parameters; needs " + parameters.size() + ".", expr);
+            }
+            for (int i = 0; i < parameters.size() && i < arguments.size(); i++) {
+                arguments.get(i).accept(this);
+                IRType.Type parType = parameters.get(i).getType();
+                IRType.Type argType = arguments.get(i).getType();
+                if (parType != argType) {
+                    notifyError("Method " + md.getName() + " requires parameter " + parameters.get(i).getName() +
+                    " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
+                }
+            }
+        } else {
+            for (IRExpression arg : arguments) {
+                arg.accept(this); // useful to initialize types for that expression
+            }
+        }
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRAssignStatement statement) { // TYPES plsplsplspls
+	 // 18, 19
+        IRVariableExpression varAssigned = statement.getVarAssigned();
+        varAssigned.accept(this);
+        String op = statement.getOperator();
+        IRExpression value = statement.getValue();
+        if (!op.equals("++") && !op.equals("--")){
+            value.accept(this);
+            // if (value.getType() == null) { // happens when value is an undeclared variable
+            //     System.out.println("Debugging: null value.getType(). value=" + value);
+            // }
+        }
+
+        String varName = varAssigned.getName();
+        IRExpression arrayIndex = varAssigned.getIndexExpression();
+        if (arrayIndex != null){
+            arrayIndex.accept(this);
+        }
+        VariableTable lookupTable = env.getVariableTable();
+        VariableDescriptor assigneeDesc = lookupTable.get(varName);
+        if (assigneeDesc == null) {
+            notifyError("Cannot assign to undeclared variable '" + varName + "'.", varAssigned);
+            return hasError;
+        }
+        IRMemberDecl assignee = assigneeDesc.getDecl();
+        if (op.equals("=")) {
+            if (arrayIndex == null) {
+                // we should have an int or bool, not an array
+                if (assignee.getType() != value.getType()) {
+                    notifyError("Cannot assign a value of type " + value.getType() +
+                    " to a variable of type " + assignee.getType() + ".", value);
+                }
+                if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
+                    notifyError("Cannot assign to variable '" + varName + "' of type " + assignee.getType().toString() +
+                    ".", varAssigned);
+                }
+            }
+            else {
+                // we should have an array; checkIRVariableExpression handles checking that the thing being indexed to is an array
+                // TODO arkadiy wants to refactor type to have ARRAY as its own type
+                if (!(assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) && // the thing we're trying to assign to is in fact an array
+                   !((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT) // it's not the case that we're putting an int in an int_array
+                   || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) { // it's also not the case that we're putting a bool in a bool_array
+                       notifyError("Cannot assign a value of type " + value.getType().toString() +
+                       " to a location in an " + assignee.getType() + ".", value);
+                   }
+            }
+        }
+        else if (op.equals("+=") || op.equals("-=") || op.equals("++") || op.equals("--")) {
+            //System.out.println("DEBUG: this branch! op=" + op);
+            if ((op.equals("+=") || op.equals("-=")) && value.getType() != IRType.Type.INT) {
+                notifyError("Cannot increment by a value of type " + value.getType() + ".", value);
+            }
+            if (arrayIndex == null) {
+                // we should have an int or bool, not an array
+                if (assignee.getType() != IRType.Type.INT) {
+                    notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
+                }
+            }
+            else {
+                // we should have an array
+                if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
+                    notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
+                }
+                if (assignee.getType() != IRType.Type.INT_ARRAY) {
+                    notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
+                }
+            }
         }
         else {
-            if (decl.getType() == IRType.Type.INT_ARRAY) {
-                var.setType(IRType.Type.INT);
+            throw new RuntimeException("checkIRAssignStatement() semantic checking error: statement operator '" + op + "' did not match any of accepted types.");
+        }
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRBlock block) {
+	    env.push(block.getFields());
+	    for (IRMemberDecl decl: block.getFieldDecls()) {
+            decl.accept(this);
+        }
+	    checkVariableTable(block.getFields());
+	    // TODO arkadiy wants to fix the fact that there isn't a direct getVariableList method from IRBlock
+	    for (IRStatement s : block.getStatements()){
+	        s.accept(this);
+	    }
+	    env.popVariableTable();
+	    
+	    return hasError;
+	}
+
+	@Override
+	public Boolean on(IRForStatement statement) {
+        // 21
+        env.push(statement);
+        statement.getStepFunction().accept(this);
+        statement.getInitializer().accept(this);
+        IRExpression cond = statement.getCondition();
+        cond.accept(this);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("For loop condition expression must have type bool.", cond);
+        }
+        statement.getBlock().accept(this);
+        env.popLoopStatement();
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRIfStatement statement) {
+        // part of 13
+        IRBlock thenBlock = statement.getThenBlock();
+        thenBlock.accept(this);
+        IRBlock elseBlock = statement.getElseBlock();
+        if(elseBlock != null) {
+            elseBlock.accept(this);
+        }
+        IRExpression cond = statement.getCondition();
+        cond.accept(this);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("If statement condition expression must have type bool.", cond);
+        }
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRLoopStatement statement) {
+        IRStatement loop = env.getLoopStatement();
+        if (loop == null) {
+          notifyError(
+            statement.getStatementType().name().toLowerCase() +
+            "statement not within a while or for loop",
+            statement
+          );
+        } else {
+          statement.setLoop(loop);
+        }
+        
+        return hasError;
+	}
+
+	@Override
+	public Boolean on(IRMethodCallStatement statement) {
+		statement.getMethodCall().accept(this);
+	    return hasError;
+	}
+
+	@Override
+	public Boolean on(IRReturnStatement statement) {
+        // 8, 9
+        IRType.Type desiredReturnType = env.getReturnType();
+        if (! statement.isVoid()) {
+            statement.getReturnExpr().accept(this);
+        }
+        IRType.Type actualReturnType = statement.getReturnType();
+        if (desiredReturnType != actualReturnType){
+            if (desiredReturnType == IRType.Type.VOID){
+                notifyError("Attempted to return value from a void function.", statement);
             }
-            else if (decl.getType() == IRType.Type.BOOL_ARRAY) {
-                var.setType(IRType.Type.BOOL);
+            else {
+                notifyError("Attempted to return value of type " + actualReturnType.toString() +
+                " from function of type " + desiredReturnType.toString() + ".", statement);
             }
         }
+        
+        return hasError;
+	}
 
-        if (idxExpr != null) {
-          IRType.Type exprType = idxExpr.getType();
-          if (exprType != IRType.Type.INT) {
-            notifyError("Array index must be an integer.", idxExpr);
-          }
+	@Override
+	public Boolean on(IRWhileStatement statement) {
+        // part of 13
+        env.push(statement);
+        statement.getBlock().accept(this);
+        IRExpression cond = statement.getCondition();
+        cond.accept(this);
+        if (cond.getType() != IRType.Type.BOOL){
+            notifyError("While statement condition expression must have type bool.", cond);
         }
-	}
-
-	@Override
-	public Boolean on(IRMethodCallExpression ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <T> Boolean on(IRLiteral<T> ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRAssignStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRBlock ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRForStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRIfStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRLoopStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRMethodCallStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRReturnStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean on(IRWhileStatement ir) {
-		// TODO Auto-generated method stub
-		return null;
+        env.popLoopStatement();
+        
+        return hasError;
 	}
 
 	@Override
@@ -375,5 +543,26 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         
         return hasError;
 	}
+
+    @Override
+    public Boolean onBool(IRLiteral<Boolean> ir) {
+        return hasError;
+    }
+
+    @Override
+    public Boolean onString(IRLiteral<String> ir) {
+        return hasError;
+    }
+
+    @Override
+    public Boolean onInt(IRLiteral<BigInteger> il) {
+        if (il.getValue().compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
+            notifyError("Attempted to assign integer too large for 64-bit int.", il);
+        } else if (il.getValue().compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0) {
+            notifyError("Attempted to assign integer less than minimum for 64-bit int.", il);
+        }
+        
+        return hasError;
+    }
 
 }

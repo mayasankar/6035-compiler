@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
+import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression;
 
 public class IRIntLiteral extends IRLiteral<BigInteger> {
@@ -28,4 +29,9 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 	public String toString() {
 		return "" + value + "";
 	}
+	
+	@Override
+    public <R> R accept(IRNodeVisitor<R> visitor) {
+        return visitor.onInt(this);
+    }
 }

@@ -387,14 +387,14 @@ public class BlockAssembler {
                 IRExpression trueExpr = tern.getTrueExpression();
                 code += makeCodeIRExpression(trueExpr);
                 code += "imul %r11, %r10\n";
-                code += "mov %r10, %r9\n"; // if condition, put expr into r9, otherwise 0
+                code += "mov %r10, %rax\n"; // if condition, put expr into r9, otherwise 0
                 code += "mov $1, %r10\n";
                 code += "sub %r11, %r10\n";
                 code += "mov %r10, %r11\n"; // put not condition into r11
                 IRExpression falseExpr = tern.getFalseExpression();
                 code += makeCodeIRExpression(falseExpr);
                 code += "imul %r11, %r10\n";
-                code += "add %r9, %r10\n";
+                code += "add %rax, %r10\n";
                 return code;
             case BINARY:
                 return makeCodeIRBinaryOpExpression((IRBinaryOpExpression)expr);
