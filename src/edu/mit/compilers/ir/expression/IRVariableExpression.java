@@ -15,7 +15,7 @@ public class IRVariableExpression extends IRExpression {
 
 	private String variableName;
 	private IRExpression arrayIndex = null;
-	private IRType.Type type = null; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
+	private IRType.Type type = IRType.Type.UNSPECIFIED; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
 
 
 	public IRVariableExpression(Token id) {
@@ -69,7 +69,7 @@ public class IRVariableExpression extends IRExpression {
 	public int getDepth() {
 		return 0;
 	}
-	
+
 	@Override
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);

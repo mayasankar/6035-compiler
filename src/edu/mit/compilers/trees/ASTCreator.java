@@ -110,7 +110,8 @@ public class ASTCreator {
         IRMethodCallExpression answer = new IRMethodCallExpression(methodName, arguments);
         answer.setTables(fields, methods);
         answer.setLineNumbers(tree);
-        answer.setType(methods.get(methodName).getReturnType());
+        IRMethodDecl md = methods.get(methodName);
+        answer.setType(md == null ? IRType.Type.UNSPECIFIED : md.getReturnType());
         return answer;
     }
 
@@ -416,17 +417,20 @@ public class ASTCreator {
 		String name = child.getToken().getText();
 		child = child.getRightSibling();
 		IRVariableExpression toReturn;
-		IRType.Type varType;
+        VariableDescriptor desc = fields.get(name);
+        IRType.Type varType = (desc == null) ? IRType.Type.UNSPECIFIED : desc.getType();
 		if (child == null) {
 			toReturn = new IRVariableExpression(name);
-			varType = fields.get(name).getType();
 		} else {
 			child = child.getRightSibling();
 			toReturn = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));
-			varType = fields.get(name).getType().equals(IRType.Type.INT_ARRAY)? IRType.Type.INT: IRType.Type.BOOL;
+			if (varType == IRType.Type.BOOL_ARRAY) {
+                varType = IRType.Type.BOOL;
+            } else if (varType == IRType.Type.INT_ARRAY) {
+                varType = IRType.Type.INT;
+            }
 		}
-		
-		
+
 		toReturn.setType(varType);
 		toReturn.setLineNumbers(tree);
 		toReturn.setTables(fields, methods);

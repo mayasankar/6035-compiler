@@ -346,7 +346,7 @@ public class SemanticChecker {
             notifyError("Ternary operator should return same type in true or false cases.", expr);
         }
     }
-    
+
     private void checkIRUnaryOpExpression(IRUnaryOpExpression expr) {
         // part of 15, part of 17
         IRExpression arg = expr.getArgument();
@@ -453,7 +453,7 @@ public class SemanticChecker {
                 if (!(assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) && // the thing we're trying to assign to is in fact an array
                    !((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT) // it's not the case that we're putting an int in an int_array
                    || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) { // it's also not the case that we're putting a bool in a bool_array
-                       notifyError("Cannot assign a value of type " + value.getType().toString() +
+                       notifyError("Cannot assign a value of type " + value.getType() +
                        " to a location in an " + assignee.getType() + ".", value);
                    }
             }
