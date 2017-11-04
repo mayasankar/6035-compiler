@@ -1,0 +1,11 @@
+import printf;
+// This should produce a runtime error
+int a[10];
+void main ( ) {
+  int i, j;
+  j = 11;
+  for ( i = 0; i < j; i += 1 ) {
+    a[i] = i;
+    printf ( "%d\n", i );
+  }
+}

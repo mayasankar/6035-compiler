@@ -1,0 +1,10 @@
+import printf;
+int x;
+void foo ( ) {
+  x = 42;
+}
+void main ( ) {
+  x = 0;
+  foo ( );
+  printf ( "should be 42: %d\n", x );
+}

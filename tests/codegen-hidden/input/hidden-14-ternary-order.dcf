@@ -1,0 +1,27 @@
+import printf;
+
+int globlA;
+
+bool boolA(int i){
+  globlA += i;
+  return false;
+}
+
+int intA(int i){
+  globlA += i;
+  return 1;
+}
+
+void main() {
+  int b, d, e;
+  bool a, c;
+  a = false;
+  c = true;
+  b = a ? intA(5) : globlA;
+  printf("First alternative shouldnt be evaluated: %d\n", b);
+  d = a ? 3 : c ? 4 : 5;
+  printf("Should be parsed right to left for ternaries: %d\n", d);
+  e = (a ? c : boolA(3)) ? globlA : intA(5);
+  printf("Unless there are parens: %d\n", e);
+  printf("Final globlA value: %d\n", globlA);
+}

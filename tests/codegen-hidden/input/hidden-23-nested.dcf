@@ -1,0 +1,30 @@
+import printf;
+int a, b, c;
+
+void func1 ( ) {
+  int A[10];
+  int i,sum;
+  a += 1;
+  for ( i = 0; i < 10; i += 1 ) {
+    if (A[i] != 0) {
+      printf("Fail");
+    }
+    A[i] = a + i;
+  }
+
+  for ( i = 0; i < 10; i += 1 ) {
+    sum += A[i];
+  }
+  
+  c = sum;
+}
+
+
+void main ( ) {
+  func1 ( );  
+  printf ( "result should be 55: %d\n", c );
+  func1 ( );  
+  printf ( "result should be 65: %d\n", c );
+  func1 ( );  
+  printf ( "result should be 75: %d\n", c );
+}

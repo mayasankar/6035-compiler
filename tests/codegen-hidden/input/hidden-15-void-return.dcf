@@ -1,0 +1,20 @@
+import printf;
+
+void showOps(int x, int y ){
+  int sum, diff, prod;
+  sum = x + y;
+  diff = y - x;
+  prod = x*y;
+  if (sum > prod){
+	return;
+  }
+  sum += 5*x;
+  if (sum > prod){
+ 	printf("This difference should only print once: %d\n", diff);
+  }
+}
+
+void main(){
+  showOps(4,1);
+  showOps(5,2);
+}

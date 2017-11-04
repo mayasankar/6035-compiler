@@ -1,0 +1,10 @@
+import printf;
+void main ( ) {
+  int i, k;
+  int j;
+  i = 72;
+  for ( j = 1; j < 10 ; j += 1) {
+    k = i + j;
+    printf ( "%d %d\n", i / j, k % j );
+  }
+}

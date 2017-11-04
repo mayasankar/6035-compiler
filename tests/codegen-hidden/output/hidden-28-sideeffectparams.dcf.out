@@ -1,0 +1,4 @@
+side effect: a is 1
+side effect: a is 2
+side effect: a is 3
+three arguments. one: 1, two: 2, three: 3

@@ -1,0 +1,13 @@
+import printf;
+void main ( ) {
+  int e1, e2, e3, e4;
+  e1 = 57;
+  e2 = 42;
+  e3 = ( e1 * e2 ) + ( e1 + e2 ) - ( ( ( ( ( ( e1 * e2 ) * e1 ) - e1 + e2 ) * e1 * ( e2 - e1 ) ) + e1 * e2 ) - e1 ) - e1 - e2;
+  if ( e3 != 116658822 ) {
+    printf ( "Failure.\n" );
+  }
+  else {
+    printf ( "Success!\n" );
+  }
+}

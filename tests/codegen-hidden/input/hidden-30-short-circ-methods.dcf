@@ -1,0 +1,35 @@
+import printf;
+
+bool a;
+
+bool justA(){
+  return a;
+}
+
+bool trueA(){
+  a = true;
+  return a;
+}
+
+bool falseA(){
+  a = false;
+  return a;
+}
+
+void main(){
+  if (justA() && trueA()){
+	printf("Short circuiting did not work\n");
+  } else {
+	printf("Successful short circuit\n");
+  }
+  if (justA() || falseA()){
+	printf("Short circuiting did not work\n");
+  } else {
+	printf("Successful short circuit\n");
+  }
+  if (justA() ? falseA() : trueA()){
+    printf("Successful short circuit\n");
+  } else {
+  	printf("Short circuiting did not work\n");
+  }
+}

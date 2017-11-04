@@ -1,0 +1,11 @@
+import printf;
+// This should produce a runtime error
+int a[10];
+void test (int i) {
+  a[i] = 1;
+  printf ( "%d\n", a[i] );
+}
+void main ( ) {
+  test (-1);
+  printf ( "Should never reach here.\n" );
+}

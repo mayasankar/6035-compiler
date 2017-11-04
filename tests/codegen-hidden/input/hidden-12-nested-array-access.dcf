@@ -1,0 +1,14 @@
+import printf;
+int x[10];
+int y[20];
+void main ( ) {
+  int i;
+  for ( i = 0; i < 10; i += 1 ) {
+    x[i] = 2 * i;
+    y[2 * i] = 20 - 2 * i;
+    y[2 * i + 1] = x[i];
+  }
+  printf ( "x[4]: %d\n", x[4] );
+  printf ( "y[8]: %d\n", y[8] );
+  printf ( "y[x[4]]: %d\n", y[x[4]] );
+}

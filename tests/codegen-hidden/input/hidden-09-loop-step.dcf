@@ -1,0 +1,14 @@
+import printf;
+
+void main() {
+  int i;
+  int j;
+  i = 0;
+  j = 0;
+  for (i = 0; i < 10; i += 3) {
+     j = j + 1;
+  }
+  if (j != 4) {
+    printf("j should be equal to 4 and is %d\n", j);
+  }
+}

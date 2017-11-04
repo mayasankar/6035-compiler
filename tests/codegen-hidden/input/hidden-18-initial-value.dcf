@@ -1,0 +1,24 @@
+import printf;
+
+int x;
+int xx[3];
+bool a;
+bool aa[3];
+void main(){
+  bool b;
+  bool bb[3];
+  int c;
+  int cc[3];
+  if (!a){
+    printf("This should print x = %d\n",x);
+  }
+  if (!aa[2]){
+    printf("This should print xx[2] = %d\n",xx[2]);
+  }
+  if (!b){
+    printf("This should print c = %d\n",c);
+  }
+  if (!bb[1]){
+    printf("This should print cc[1] = %d\n",cc[1]);
+  }
+}
