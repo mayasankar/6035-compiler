@@ -110,7 +110,10 @@ public class ASTCreator {
         IRMethodCallExpression answer = new IRMethodCallExpression(methodName, arguments);
         answer.setTables(fields, methods);
         answer.setLineNumbers(tree);
-        answer.setType(methods.get(methodName).getReturnType());
+        IRMethodDecl decl = methods.get(methodName);
+        if(decl != null) {
+            answer.setType(decl.getReturnType());
+        }
         return answer;
     }
 

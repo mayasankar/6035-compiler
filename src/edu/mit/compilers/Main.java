@@ -15,7 +15,7 @@ import edu.mit.compilers.tools.CLI.Action;
 import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
-import edu.mit.compilers.trees.SemanticChecker;
+import edu.mit.compilers.trees.SemanticCheckerVisitor;
 import edu.mit.compilers.cfg.*;
 
 class Main {
@@ -45,8 +45,8 @@ class Main {
             System.out.println(ir);;
         }
 
-        SemanticChecker checker = new SemanticChecker();
-        if (checker.checkProgram(ir)) {
+        SemanticCheckerVisitor checker = new SemanticCheckerVisitor();
+        if (ir.accept(checker)) {
             System.exit(1);
         }
 

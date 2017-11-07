@@ -99,10 +99,10 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         }
     }
 
-	@Override
-	public Boolean on(IRMethodDecl method) {
-		String name = method.getName();
-        IRType.Type returnType = method.getReturnType();
+    @Override
+    public Boolean on(IRMethodDecl method) {
+String name = method.getName();
+        
         VariableTable parameters = method.getParameters();
 		if(globalNamesSet.contains(name)) {
 			notifyError("Attempted to declare method " + name +
@@ -110,7 +110,12 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 		} else {
 			globalNamesSet.add(name);
 		}
-        if (Arrays.asList(IRType.Type.BOOL, IRType.Type.INT, IRType.Type.VOID).contains(returnType)) {
+		if(method.isImport()) {
+			return hasError;
+		}
+		
+		IRType.Type returnType = method.getReturnType();
+		if (Arrays.asList(IRType.Type.BOOL, IRType.Type.INT, IRType.Type.VOID).contains(returnType)) {
             notifyError("Return type for method " + name + " is not int, bool, or void.", method);
         }
 
@@ -134,8 +139,8 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             param.accept(this);
         }
  
-		return hasError;
-	}
+		return hasError;	
+    }
 
 	@Override
 	public Boolean on(IRUnaryOpExpression expr) { // TYPES
