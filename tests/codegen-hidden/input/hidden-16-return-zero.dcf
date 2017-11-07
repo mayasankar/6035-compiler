@@ -1,0 +1,11 @@
+import printf;
+
+int sub (int x, int y){
+  return y - x;
+}
+
+void main () {
+  int z;
+  z = sub(5,5);
+  printf("Should return 0: %d\n",z);
+}

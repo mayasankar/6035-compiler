@@ -1,0 +1,17 @@
+import printf;
+int a;
+
+int sidefx ( ) {
+     a = a + 1;
+     printf("side effect: a is %d\n", a);
+     return a;
+}
+
+void threeargs ( int one, int two, int three ) {
+     printf("three arguments. one: %d, two: %d, three: %d\n", one, two, three);
+}
+
+void main ( ) {
+     a = 0;
+     threeargs(sidefx(), sidefx(), sidefx());
+}

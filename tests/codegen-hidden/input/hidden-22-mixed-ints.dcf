@@ -1,0 +1,13 @@
+import printf;
+
+void main () {
+  int x, y, z, a;
+  x = 'a';
+  printf("x should be 97. x = %d\n", x);
+  y = 3;
+  z = 0xAf;
+  a = x + y;
+  printf("Sum should be 100. a = %d\n",a);
+  a += z;
+  printf("Sum should be 275. a = %d\n",a);
+}

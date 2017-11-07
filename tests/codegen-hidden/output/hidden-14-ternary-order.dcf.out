@@ -1,0 +1,4 @@
+First alternative shouldnt be evaluated: 0
+Should be parsed right to left for ternaries: 4
+Unless there are parens: 1
+Final globlA value: 8

@@ -1,0 +1,25 @@
+import printf;
+void main ( ) {
+  int x;
+  int j,k;
+  for ( j = 0; j < 15; j += 1 ) {
+    if ( j == 2 ) {
+      continue;
+    }
+    if ( j == 4 ) {
+      break;
+    }
+    for ( k = 0; k < 19; k += 1 ) {
+      if ( k == 1 ) {
+        continue;
+      }
+      if ( k == 9 ) {
+        break;
+      }
+      printf ( "j:%d k:%d\n", j, k );
+    }
+  }
+  // If left commented, exposed bug where loop breaks didn't actually exit
+  // the loop due to no following block to jump to.
+  // x = x + 1;
+}

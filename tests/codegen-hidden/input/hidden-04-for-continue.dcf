@@ -1,0 +1,12 @@
+import printf;
+
+void main() {
+  int i;
+  for (i = 0; i < 10; i += 1) {
+    if (i % 3 == 0){
+        continue;
+    }
+    printf("%lld\n", i);
+  }
+
+}

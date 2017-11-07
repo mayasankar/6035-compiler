@@ -1,0 +1,14 @@
+import printf;
+void main ( ) {
+  int i;
+  i = 0;
+  while ( i < 10 ) {
+    if ( i == 7 ) {
+      i = i + 1;
+      continue;
+    }
+    printf ( "%d ", i );
+    i = i + 1;
+  }
+  printf ( "\n" );
+}

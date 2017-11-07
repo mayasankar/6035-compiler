@@ -10,7 +10,7 @@ void main ( ) {
   a = get_int ( 2 );
   c = 0;
   d = 0;
-  c = a
+  c = a;
   foo();
   d = c;
   printf ( "%d\n", a );

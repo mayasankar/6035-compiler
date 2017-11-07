@@ -1,0 +1,27 @@
+import printf;
+
+int first() {
+    printf("I print first\n");
+    return 1;
+}
+
+int second() {
+    printf("I print second\n");
+    return 2;
+}
+
+int third() {
+    printf("I print third\n");
+    return 3;
+}
+
+int fourth() {
+    printf("I print fourth\n");
+    return 4;
+}
+
+void main() {
+    int x;
+    x = first() + (second() * third() - fourth());
+    printf("I print last with x = %d\n", x);
+}

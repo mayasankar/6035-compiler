@@ -1,0 +1,26 @@
+import printf;
+int m2 ( int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, bool b1, bool b2, bool b3, bool b4, int i10 ) {
+  if ( i1!=1 || i2!=2 || i3!=3 || i4!=4 || i5!=5 || i6!=6 || i7!=7 || i8!=8 || i9!=9 || i10!=10 ) {
+    printf ( "FAIL: arguments passed in wrong order in m2!\n" );
+  }
+  return 1;
+}
+void main ( ) {
+  int i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, res;
+  i1=1;
+  i2=2;
+  i3=3;
+  i4=4;
+  i5=5;
+  i6=6;
+  i7=7;
+  i8=8;
+  i9=9;
+  i10=10;
+  res = m2 ( i1, i2, i3, i4, i5, i6, i7, i8, i9, true, true, true, false, i10 );
+  if ( i1!=1 || i2!=2 || i3!=3 || i4!=4 || i5!=5 || i6!=6 || i7!=7 || i8!=8 || i9!=9 || i10!=10 ) {
+    printf ( "FAIL: args by val have been modified in proc!!!\n" );
+  }
+  printf ( "OK if no FAIL messages so far\n" );
+  printf ( "The arguments were %d %d %d %d %d %d %d %d %d %d\n", i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 );
+}
