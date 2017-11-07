@@ -1,23 +1,16 @@
 package edu.mit.compilers.cfg;
 
-import java.io.OutputStream;
-import java.io.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import antlr.Token;
-import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.expression.literal.*;
-import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
-import edu.mit.compilers.cfg.*;
-
 
 public class BlockAssembler {
 
@@ -25,12 +18,12 @@ public class BlockAssembler {
     int blockCount;
     int stringCount;
     int numAllocs;
-    IRType.Type returnType;
+    TypeDescriptor returnType;
     Map<CFGBlock, String> blockLabels;
     Map<String, String> stringLabels;
     VariableTable universalVariableTable;
 
-    public BlockAssembler(String label, int numParams, VariableTable globalVars, IRType.Type returnType) {
+    public BlockAssembler(String label, int numParams, VariableTable globalVars, TypeDescriptor returnType) {
         this.methodLabel = label;
         this.blockCount = 0;
         this.stringCount = 0;
@@ -56,7 +49,7 @@ public class BlockAssembler {
 
         code += makeCodeHelper(block);
 
-        if (this.returnType != IRType.Type.VOID) {
+        if (this.returnType != TypeDescriptor.VOID) {
             // if it doesn't have anywhere returning, have it jump to the runtime error
             code += "jmp .nonreturning_method\n";
         }
@@ -108,7 +101,7 @@ public class BlockAssembler {
             }
         }
         else {
-            if (this.returnType != IRType.Type.VOID) {
+            if (this.returnType != TypeDescriptor.VOID) {
                 // if it doesn't have anywhere returning, have it jump to the runtime error
                 code += "jmp .nonreturning_method\n";
             }

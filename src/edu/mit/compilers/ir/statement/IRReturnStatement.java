@@ -4,11 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression;
-import edu.mit.compilers.ir.statement.IRStatement.IRStatementVisitor;
-import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRReturnStatement extends IRStatement {
   private IRExpression expr; // null if void return statement
@@ -28,8 +25,8 @@ public class IRReturnStatement extends IRStatement {
 
   public boolean isVoid() { return expr == null; }
 
-  public IRType.Type getReturnType() {
-      return expr == null ? IRType.Type.VOID : expr.getType();
+  public TypeDescriptor getReturnType() {
+      return expr == null ? TypeDescriptor.VOID : expr.getType();
   }
 
   @Override

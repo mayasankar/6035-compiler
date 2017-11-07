@@ -5,12 +5,7 @@ import java.util.List;
 
 import antlr.Token;
 
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
-import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
-import edu.mit.compilers.ir.operator.IRUnaryOperator;
-import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRUnaryOpExpression extends IRExpression {
 
@@ -29,14 +24,14 @@ public class IRUnaryOpExpression extends IRExpression {
 	public IRExpression getArgument() { return argument; }
 
 	@Override
-	public IRType.Type getType() {
+	public TypeDescriptor getType() {
 		// TODO dear god refactor this
 		String op = operator.getText();
 		if (op.equals("!")) {
-			return IRType.Type.BOOL;
+			return TypeDescriptor.BOOL;
 		}
 		else if (op.equals("-")) {
-			return IRType.Type.INT;
+			return TypeDescriptor.INT;
 		}
 		else {
 			throw new RuntimeException("Undefined operator " + op + ".");

@@ -9,6 +9,7 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRLenExpression extends IRExpression {
   private Token id; // what you are taking the length of
@@ -23,8 +24,8 @@ public class IRLenExpression extends IRExpression {
   }
 
   @Override
-  public IRType.Type getType() {
-    return IRType.Type.INT;
+  public TypeDescriptor getType() {
+    return TypeDescriptor.INT;
   }
   
 	@Override

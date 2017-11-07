@@ -14,7 +14,6 @@ import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
-import edu.mit.compilers.cfg.*;
 
 
 
@@ -43,7 +42,7 @@ public class Assembler {
             if (md.isImport()) { // skip imports
                 continue;
             }
-            IRType.Type returnType = md.getReturnType();
+            TypeDescriptor returnType = md.getReturnType();
             VariableTable parameters = md.getParameters();
             int numParams = parameters.getVariableList().size();
             BlockAssembler ba = new BlockAssembler(methodName, numParams, globalsOnStack, returnType);

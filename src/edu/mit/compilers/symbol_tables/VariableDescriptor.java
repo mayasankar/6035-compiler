@@ -8,7 +8,7 @@ public class VariableDescriptor implements Named {
     IRMemberDecl declaration;
 
     // String name;
-    // IRType.Type type;
+    // TypeDescriptor type;
     // int spaceRequired;
     int stackOffset;
 
@@ -16,7 +16,7 @@ public class VariableDescriptor implements Named {
         declaration = decl;
     }
 
-    public IRType.Type getType() { return declaration.getType(); }
+    public TypeDescriptor getType() { return declaration.getType(); }
 
     // TODO should be removed
     public IRMemberDecl getDecl() { return declaration; }

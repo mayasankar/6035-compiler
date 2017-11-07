@@ -5,17 +5,13 @@ import java.util.List;
 
 import antlr.Token;
 
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
-import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
-import edu.mit.compilers.trees.ConcreteTree;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRVariableExpression extends IRExpression {
 
 	private String variableName;
 	private IRExpression arrayIndex = null;
-	private IRType.Type type = IRType.Type.UNSPECIFIED; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
+	private TypeDescriptor type = TypeDescriptor.UNSPECIFIED; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
 
 
 	public IRVariableExpression(Token id) {
@@ -39,11 +35,11 @@ public class IRVariableExpression extends IRExpression {
 	public IRExpression getIndexExpression() { return arrayIndex; }
 
 	@Override
-	public IRType.Type getType() {
+	public TypeDescriptor getType() {
 		return type;
 	}
 
-	public void setType(IRType.Type t) {
+	public void setType(TypeDescriptor t) {
 		type = t;
 	}
 

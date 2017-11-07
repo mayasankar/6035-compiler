@@ -1,12 +1,7 @@
 package edu.mit.compilers.ir.expression.literal;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRStringLiteral extends IRLiteral<String> {
 
@@ -16,8 +11,8 @@ public class IRStringLiteral extends IRLiteral<String> {
 	}
 
 	@Override
-	public IRType.Type getType() {
-		return IRType.Type.STRING;
+	public TypeDescriptor getType() {
+		return TypeDescriptor.STRING;
 	}
 
 	@Override

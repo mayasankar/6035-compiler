@@ -18,6 +18,7 @@ import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.MethodTable;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.symbol_tables.VariableTable;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
@@ -80,9 +81,9 @@ public class ASTCreator {
 				if (grandchild.getFirstChild() != grandchild.getLastChild()) {
 					Token length = grandchild.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt)));
+					fields.add(new VariableDescriptor(new IRFieldDecl(TypeDescriptor.getType(typeToken, lengthAsInt), id, lengthAsInt)));
 				} else {
-					fields.add(new VariableDescriptor(new IRFieldDecl(IRType.getType(typeToken), id)));
+					fields.add(new VariableDescriptor(new IRFieldDecl(TypeDescriptor.getType(typeToken), id)));
 				}
 				grandchild = grandchild.getRightSibling();
 			}
@@ -111,7 +112,7 @@ public class ASTCreator {
         answer.setTables(fields, methods);
         answer.setLineNumbers(tree);
         IRMethodDecl md = methods.get(methodName);
-        answer.setType(md == null ? IRType.Type.UNSPECIFIED : md.getReturnType());
+        answer.setType(md == null ? TypeDescriptor.UNSPECIFIED : md.getReturnType());
         return answer;
     }
 
@@ -187,7 +188,7 @@ public class ASTCreator {
                     toReturn = parseMethodExpression(firstChild, fields, methods);
                 }
                 else if(firstChild.getName().equals("location")) {
-                    toReturn = parseLocation(firstChild, fields, methods);
+                    toReturn = makeIRVariableExpression(firstChild, fields, methods);
                 }
                 else if(firstChild.getName().equals("literal")) {
                     ConcreteTree literalValue = firstChild.getFirstChild();
@@ -243,10 +244,6 @@ public class ASTCreator {
         return toReturn;
     }
 
-    public static IRVariableExpression parseLocation(ConcreteTree tree, VariableTable fields, MethodTable methods) {
-	return makeIRVariableExpression(tree, fields, methods);
-    }
-
     public static IRStatement parseStatement(ConcreteTree tree, VariableTable scope, MethodTable methods) {
         ConcreteTree child = tree.getFirstChild();
         IRStatement toReturn = null;
@@ -271,7 +268,7 @@ public class ASTCreator {
       	switch(nodeName) {
       	case "assign_expr": {
       	    ConcreteTree locationTree = child.getFirstChild();
-      		IRVariableExpression location = parseLocation(locationTree, scope, methods);
+      		IRVariableExpression location = makeIRVariableExpression(locationTree, scope, methods);
       		ConcreteTree operatorTree = locationTree.getRightSibling();
       		Token operator = operatorTree.getToken();
       		ConcreteTree expressionTree = operatorTree.getRightSibling();
@@ -340,9 +337,9 @@ public class ASTCreator {
 				if (fieldName.getFirstChild() != fieldName.getLastChild()) {
 					Token length = fieldName.getFirstChild().getRightSibling().getRightSibling().getToken();
 					int lengthAsInt = Integer.parseInt(length.getText());
-					field = new IRFieldDecl(IRType.getType(typeToken, lengthAsInt), id, lengthAsInt);
+					field = new IRFieldDecl(TypeDescriptor.getType(typeToken, lengthAsInt), id, lengthAsInt);
 				} else {
-					field = new IRFieldDecl(IRType.getType(typeToken), id);
+					field = new IRFieldDecl(TypeDescriptor.getType(typeToken), id);
 				}
                 fieldDecls.add(field);
                 fields.add(new VariableDescriptor(field));
@@ -402,17 +399,15 @@ public class ASTCreator {
 		child = child.getRightSibling();
 		IRVariableExpression toReturn;
         VariableDescriptor desc = fields.get(name);
-        IRType.Type varType = (desc == null) ? IRType.Type.UNSPECIFIED : desc.getType();
+        TypeDescriptor varType = (desc == null) ? TypeDescriptor.UNSPECIFIED : desc.getType();
                 if (child == null) {
 			toReturn = new IRVariableExpression(name);
 		} else {
 			child = child.getRightSibling();
 			toReturn = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));
-			if (varType == IRType.Type.BOOL_ARRAY) {
-                varType = IRType.Type.BOOL;
-            } else if (varType == IRType.Type.INT_ARRAY) {
-                varType = IRType.Type.INT;
-            }
+			if(varType.isArray()) {
+				varType = varType.getArrayElementType();
+			}
 		}
 
 		toReturn.setType(varType);
@@ -423,24 +418,14 @@ public class ASTCreator {
 
 	private static IRMethodDecl makeIRMethodDecl(ConcreteTree tree, VariableTable parentScope, MethodTable methods) {
 	    VariableTable parameters = new VariableTable(parentScope);
-	    IRType.Type returnType = null;
 	    ConcreteTree child = tree.getFirstChild();
-	    switch (child.getToken().getType()) {
-        case DecafParserTokenTypes.TK_int: {
-            returnType = IRType.Type.INT; break;
-        }
-        case DecafParserTokenTypes.TK_bool: {
-            returnType = IRType.Type.BOOL; break;
-        }
-        case DecafParserTokenTypes.TK_void: {
-            returnType = IRType.Type.VOID; break;
-        }
-	    }
+	    TypeDescriptor returnType = TypeDescriptor.getType(child.getToken());
+	    
 	    child = child.getRightSibling();
 	    Token id = child.getToken();
 	    child = child.getRightSibling();
 	    while(child.isNode()) {
-	        IRType.Type parameterType = IRType.getType(child.getToken());
+	        TypeDescriptor parameterType = TypeDescriptor.getType(child.getToken());
 	        child = child.getRightSibling();
 	        Token parameterId = child.getToken();
 	        parameters.add(new VariableDescriptor(new IRParameterDecl(parameterType, parameterId)));

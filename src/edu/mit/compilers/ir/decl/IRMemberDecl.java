@@ -9,11 +9,12 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.symbol_tables.Named;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public abstract class IRMemberDecl extends IRNode implements Named {
 
 	protected Token id;
-	protected IRType.Type irType;
+	protected TypeDescriptor irType;
 	protected int length;
 
 	@Override
@@ -21,24 +22,24 @@ public abstract class IRMemberDecl extends IRNode implements Named {
 		return Arrays.asList();
 	}
 
-	public IRMemberDecl(IRType.Type irType, Token id) {
+	public IRMemberDecl(TypeDescriptor irType, Token id) {
 		setLineNumbers(id);
 		this.id = id;
 		this.irType = irType;
 		this.length = 0;
 	}
 
-	public IRMemberDecl(IRType.Type irType, Token id, int length) {
+	public IRMemberDecl(TypeDescriptor irType, Token id, int length) {
 		setLineNumbers(id);
 		this.id = id;
 		this.irType = irType;
 		this.length = length;
 	}
 
-	public IRType.Type getType() { return irType; }
+	public TypeDescriptor getType() { return irType; }
 
 	public boolean isArray() { // could also be implemented by return length > 0
-		return irType == IRType.Type.INT_ARRAY || irType == IRType.Type.BOOL_ARRAY;
+		return irType.isArray();
 	}
 
 	public int getLength() { return length; }

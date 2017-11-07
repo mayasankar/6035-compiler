@@ -8,6 +8,7 @@ import antlr.Token;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.operator.IRBinaryOperator;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRBinaryOpExpression extends IRExpression{
@@ -30,15 +31,15 @@ public class IRBinaryOpExpression extends IRExpression{
 	public Token getOperator() { return operator; }
 
 	@Override
-	public IRType.Type getType() {
+	public TypeDescriptor getType() {
 		// TODO dear god refactor this
 		String op = operator.getText();
 		if (op.equals("==") || op.equals("!=") || op.equals("&&") || op.equals("||") || op.equals("<")
             || op.equals("<=") || op.equals(">") || op.equals(">=")) {
-			return IRType.Type.BOOL;
+			return TypeDescriptor.BOOL;
 		}
 		else if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") ) {
-			return IRType.Type.INT;
+			return TypeDescriptor.INT;
 		}
 		else {
 			throw new RuntimeException("Undefined operator " + op + ".");

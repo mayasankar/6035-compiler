@@ -7,6 +7,7 @@ import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.trees.ConcreteTree;
 
 public class IRTernaryOpExpression extends IRExpression {
@@ -30,7 +31,7 @@ public class IRTernaryOpExpression extends IRExpression {
 	public IRExpression getFalseExpression() { return falseExpression; }
 
 	@Override
-	public IRType.Type getType() {
+	public TypeDescriptor getType() {
 		return trueExpression.getType();
 	}
 

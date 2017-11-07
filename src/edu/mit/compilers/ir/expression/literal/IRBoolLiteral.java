@@ -1,11 +1,7 @@
 package edu.mit.compilers.ir.expression.literal;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRBoolLiteral extends IRLiteral<Boolean> {
 
@@ -15,8 +11,8 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
 	}
 
 	@Override
-	public IRType.Type getType() {
-		return IRType.Type.BOOL;
+	public TypeDescriptor getType() {
+		return TypeDescriptor.BOOL;
 	}
 
     @Override

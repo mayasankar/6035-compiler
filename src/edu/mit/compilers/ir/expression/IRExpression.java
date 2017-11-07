@@ -5,9 +5,10 @@ import java.util.List;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
 import edu.mit.compilers.ir.expression.literal.*;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public abstract class IRExpression extends IRNode {
-	public abstract IRType.Type getType();
+	public abstract TypeDescriptor getType();
 
 	public static enum ExpressionType {
 		UNSPECIFIED,

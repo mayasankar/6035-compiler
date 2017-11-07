@@ -21,7 +21,7 @@ import edu.mit.compilers.trees.EnvStack;
 
 public class SemanticChecker {
     //Should there be an errorStream and outputStream associated with this class?
-
+/*
     private EnvStack env = new EnvStack();
     private boolean hasError = false;
 
@@ -592,5 +592,5 @@ public class SemanticChecker {
         statement.setLoop(loop);
       }
     }
-
+*/
 }

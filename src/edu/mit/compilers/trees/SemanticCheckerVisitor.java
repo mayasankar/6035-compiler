@@ -10,7 +10,6 @@ import antlr.Token;
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRProgram;
 import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRType.Type;
 import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.decl.IRLocalDecl;
 import edu.mit.compilers.ir.decl.IRMemberDecl;
@@ -34,6 +33,7 @@ import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.MethodTable;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 import edu.mit.compilers.symbol_tables.VariableTable;
 
@@ -53,7 +53,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	public Boolean on(IRProgram tree) {
         env.push(tree.getMethodTable());
         env.push(tree.getVariableTable());
-        env.push(IRType.Type.VOID);
+        env.push(TypeDescriptor.VOID);
         checkVariableTable(tree.getVariableTable());
         checkHasMain(tree);
 	for(IRMethodDecl methods: tree.getMethodTable().getMethodList()) {
@@ -94,7 +94,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             notifyError("Cannot import main.", program);
             return;
         }
-        if (mainMethod.getReturnType() != IRType.Type.VOID){
+        if (mainMethod.getReturnType() != TypeDescriptor.VOID){
             notifyError("Main method return type is not void.", mainMethod);
         }
         if (! mainMethod.getParameters().isEmpty()){
@@ -117,8 +117,8 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	}
 		
         VariableTable parameters = method.getParameters();
-	IRType.Type returnType = method.getReturnType();
-        if (!Arrays.asList(IRType.Type.BOOL, IRType.Type.INT, IRType.Type.VOID).contains(returnType)) {
+	TypeDescriptor returnType = method.getReturnType();
+        if (!Arrays.asList(TypeDescriptor.BOOL, TypeDescriptor.INT, TypeDescriptor.VOID).contains(returnType)) {
             notifyError("Return type for method " + name + " is not int, bool, or void.", method);
         }
 
@@ -131,7 +131,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 
         checkVariableTable(parameters);
         for (IRMemberDecl param : parameters.getVariableList()) {
-            if (param.getType() != IRType.Type.BOOL && param.getType() != IRType.Type.INT) {
+            if (param.getType() != TypeDescriptor.BOOL && param.getType() != TypeDescriptor.INT) {
                 notifyError("Parameter " + param.getName() + " for method " + method.getName() +
                 " is not of type int or bool.", param);
             }
@@ -152,12 +152,12 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         Token opToken = expr.getOperator();
         String op = opToken.getText();
         if (op.equals("-")) {
-            if (arg.getType() != IRType.Type.INT) {
+            if (arg.getType() != TypeDescriptor.INT) {
                 notifyError("Argument for unary minus must be of type int.", arg);
             }
         }
         if (op.equals("!")) {
-            if (arg.getType() != IRType.Type.BOOL) {
+            if (arg.getType() != TypeDescriptor.BOOL) {
                 notifyError("Argument for ! operator must be of type bool.", arg);
             }
         }
@@ -177,18 +177,18 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         String op = expr.getOperator().getText();
         if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") || op.equals("<")
             || op.equals("<=") || op.equals(">") || op.equals(">=")) {
-            if (left.getType() != IRType.Type.INT) {
+            if (left.getType() != TypeDescriptor.INT) {
                 notifyError("First argument to operator " + op + " must be of type INT.", left);
             }
-            if (right.getType() != IRType.Type.INT) {
+            if (right.getType() != TypeDescriptor.INT) {
                 notifyError("Second argument to operator " + op + " must be of type INT.", right);
             }
         }
         else if (op.equals("&&") || op.equals("||")) {
-            if (left.getType() != IRType.Type.BOOL) {
+            if (left.getType() != TypeDescriptor.BOOL) {
                 notifyError("First argument to operator " + op + " must be of type BOOL.", left);
             }
-            if (right.getType() != IRType.Type.BOOL) {
+            if (right.getType() != TypeDescriptor.BOOL) {
                 notifyError("Second argument to operator " + op + " must be of type BOOL.", right);
             }
         }
@@ -197,7 +197,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
                 notifyError("Cannot compare types " + left.getType() + " and " +
                 right.getType() + " with operator " + op + ".", right);
             }
-            if (left.getType() != IRType.Type.INT && left.getType() != IRType.Type.BOOL) {
+            if (left.getType() != TypeDescriptor.INT && left.getType() != TypeDescriptor.BOOL) {
                 notifyError("Can only compare objects of type INT or BOOL with operator " + op + ".", left);
             }
         }
@@ -219,7 +219,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         trueExpr.accept(this);
         falseExpr.accept(this);
 
-        if (cond.getType() != IRType.Type.BOOL){
+        if (cond.getType() != TypeDescriptor.BOOL){
             notifyError("Ternary operator condition expression must have type bool.", cond);
         }
         if (trueExpr.getType() != falseExpr.getType()) {
@@ -238,7 +238,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         if (argument == null) {
             notifyError("Cannot apply len() to undeclared variable '" + argumentName + "'.", expr);
         }
-        else if (argument.getType() != IRType.Type.INT_ARRAY && argument.getType() != IRType.Type.BOOL_ARRAY) {
+        else if (!argument.getType().isArray()) {
             notifyError("Cannot apply len() to non-array-type variable '" + argumentName + "'.", expr);
         }
 
@@ -258,13 +258,13 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 
         if (idxExpr != null) {
             idxExpr.accept(this);
-            IRType.Type declType = desc.getType();
-            if (declType != IRType.Type.INT_ARRAY && declType != IRType.Type.BOOL_ARRAY) {
+            TypeDescriptor declType = desc.getType();
+            if (!declType.isArray()) {
                 notifyError("Cannot index into non-array variable '" + var.getName() + "'.", var);
             }
 
-            IRType.Type exprType = idxExpr.getType();
-            if (exprType != IRType.Type.INT) {
+            TypeDescriptor exprType = idxExpr.getType();
+            if (exprType != TypeDescriptor.INT) {
                 notifyError("Array index must be an integer.", idxExpr);
             }
         }
@@ -296,7 +296,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         // IRMethodCallExpressions until we do semantic checking when we change things
         /*expr.setType(md.getReturnType());
 
-        if (isInExpression && md.getReturnType() == IRType.Type.VOID) {
+        if (isInExpression && md.getReturnType() == TypeDescriptor.VOID) {
             notifyError("Expression uses method with return value of void.", expr);
         }*/
 
@@ -310,8 +310,8 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             }
             for (int i = 0; i < parameters.size() && i < arguments.size(); i++) {
                 arguments.get(i).accept(this);
-                IRType.Type parType = parameters.get(i).getType();
-                IRType.Type argType = arguments.get(i).getType();
+                TypeDescriptor parType = parameters.get(i).getType();
+                TypeDescriptor argType = arguments.get(i).getType();
                 if (parType != argType) {
                     notifyError("Method " + md.getName() + " requires parameter " + parameters.get(i).getName() +
                     " to have type " + parType.toString() + ", but got type " + argType.toString(), expr);
@@ -359,7 +359,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
                     notifyError("Cannot assign a value of type " + value.getType() +
                     " to a variable of type " + assignee.getType() + ".", value);
                 }
-                if (assignee.getType() != IRType.Type.INT && assignee.getType() != IRType.Type.BOOL) {
+                if (assignee.getType() != TypeDescriptor.INT && assignee.getType() != TypeDescriptor.BOOL) {
                     notifyError("Cannot assign to variable '" + varName + "' of type " + assignee.getType() +
                     ".", varAssigned);
                 }
@@ -367,9 +367,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             else {
                 // we should have an array; checkIRVariableExpression handles checking that the thing being indexed to is an array
                 // TODO arkadiy wants to refactor type to have ARRAY as its own type
-                if (!(assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) && // the thing we're trying to assign to is in fact an array
-                   !((assignee.getType() == IRType.Type.INT_ARRAY && value.getType() == IRType.Type.INT) // it's not the case that we're putting an int in an int_array
-                   || (assignee.getType() == IRType.Type.BOOL_ARRAY && value.getType() == IRType.Type.BOOL))) { // it's also not the case that we're putting a bool in a bool_array
+                if (assignee.getType().isArray() && ! assignee.getType().getArrayElementType().equals(value.getType())) {
                        notifyError("Cannot assign a value of type " + value.getType().toString() +
                        " to a location in an " + assignee.getType() + ".", value);
                    }
@@ -377,21 +375,21 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         }
         else if (op.equals("+=") || op.equals("-=") || op.equals("++") || op.equals("--")) {
             //System.out.println("DEBUG: this branch! op=" + op);
-            if ((op.equals("+=") || op.equals("-=")) && value.getType() != IRType.Type.INT) {
+            if ((op.equals("+=") || op.equals("-=")) && value.getType() != TypeDescriptor.INT) {
                 notifyError("Cannot increment by a value of type " + value.getType() + ".", value);
             }
             if (arrayIndex == null) {
                 // we should have an int or bool, not an array
-                if (assignee.getType() != IRType.Type.INT) {
+                if (assignee.getType() != TypeDescriptor.INT) {
                     notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
                 }
             }
             else {
                 // we should have an array
-                if (assignee.getType() != IRType.Type.INT_ARRAY && assignee.getType() != IRType.Type.BOOL_ARRAY) {
+                if (!assignee.getType().isArray()) {
                     notifyError("Cannot index into non-array-type variable '" + varName + "'.", varAssigned);
                 }
-                if (assignee.getType() != IRType.Type.INT_ARRAY) {
+                if (!assignee.getType().equals(TypeDescriptor.array(TypeDescriptor.INT))) {
                     notifyError("Cannot increment a variable of type " + assignee.getType().toString() + ".", assignee);
                 }
             }
@@ -427,7 +425,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         statement.getInitializer().accept(this);
         IRExpression cond = statement.getCondition();
         cond.accept(this);
-        if (cond.getType() != IRType.Type.BOOL){
+        if (cond.getType() != TypeDescriptor.BOOL){
             notifyError("For loop condition expression must have type bool.", cond);
         }
         statement.getBlock().accept(this);
@@ -447,7 +445,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         }
         IRExpression cond = statement.getCondition();
         cond.accept(this);
-        if (cond.getType() != IRType.Type.BOOL){
+        if (cond.getType() != TypeDescriptor.BOOL){
             notifyError("If statement condition expression must have type bool.", cond);
         }
 
@@ -479,13 +477,13 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	@Override
 	public Boolean on(IRReturnStatement statement) {
         // 8, 9
-        IRType.Type desiredReturnType = env.getReturnType();
+        TypeDescriptor desiredReturnType = env.getReturnType();
         if (! statement.isVoid()) {
             statement.getReturnExpr().accept(this);
         }
-        IRType.Type actualReturnType = statement.getReturnType();
+        TypeDescriptor actualReturnType = statement.getReturnType();
         if (desiredReturnType != actualReturnType){
-            if (desiredReturnType == IRType.Type.VOID){
+            if (desiredReturnType == TypeDescriptor.VOID){
                 notifyError("Attempted to return value from a void function.", statement);
             }
             else {
@@ -504,7 +502,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         statement.getBlock().accept(this);
         IRExpression cond = statement.getCondition();
         cond.accept(this);
-        if (cond.getType() != IRType.Type.BOOL){
+        if (cond.getType() != TypeDescriptor.BOOL){
             notifyError("While statement condition expression must have type bool.", cond);
         }
         env.popLoopStatement();

@@ -1,20 +1,13 @@
 package edu.mit.compilers.ir.expression;
 
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
-import edu.mit.compilers.trees.ConcreteTree;
-import edu.mit.compilers.ir.decl.IRMethodDecl;
-import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRMethodCallExpression extends IRExpression {
 
-	private IRType.Type type = null;
+	private TypeDescriptor type = TypeDescriptor.UNSPECIFIED;
 	private final List<IRExpression> arguments;
 	private String functionName;
 
@@ -26,14 +19,14 @@ public class IRMethodCallExpression extends IRExpression {
 	}
 
 	@Override
-	public IRType.Type getType() {
+	public TypeDescriptor getType() {
 		return type;
 	}
 
 	public List<IRExpression> getArguments() { return this.arguments; }
 	public String getName() { return this.functionName; }
 
-	public void setType(IRType.Type t){
+	public void setType(TypeDescriptor t){
 		type = t;
 	}
 

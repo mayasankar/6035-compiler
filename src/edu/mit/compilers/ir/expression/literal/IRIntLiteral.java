@@ -1,13 +1,9 @@
 package edu.mit.compilers.ir.expression.literal;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.math.BigInteger;
 
-import edu.mit.compilers.ir.IRNode;
-import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRIntLiteral extends IRLiteral<BigInteger> {
 
@@ -21,8 +17,8 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 	}
 
 	@Override
-	public IRType.Type getType() {
-		return IRType.Type.INT;
+	public TypeDescriptor getType() {
+		return TypeDescriptor.INT;
 	}
 
 	@Override
