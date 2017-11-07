@@ -42,6 +42,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	private EnvStack env = new EnvStack();
 	private Set<String> globalNamesSet = new HashSet<>();
 	private boolean hasError = false;
+	private boolean checkingGlobals = false;
 
     private void notifyError(String error, IRNode problematicNode){
         hasError = true;
@@ -55,12 +56,14 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         env.push(IRType.Type.VOID);
         checkVariableTable(tree.getVariableTable());
         checkHasMain(tree);
-        for(IRMethodDecl methods: tree.getMethodTable().getMethodList()) {
+	for(IRMethodDecl methods: tree.getMethodTable().getMethodList()) {
         	methods.accept(this);
         }
+        checkingGlobals = true;
         for(IRMemberDecl variable: tree.getVariableTable().getVariableList()) {
         	variable.accept(this);
         }
+	checkingGlobals = false;
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
@@ -101,21 +104,21 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 
     @Override
     public Boolean on(IRMethodDecl method) {
-String name = method.getName();
+        String name = method.getName();
         
-        VariableTable parameters = method.getParameters();
-		if(globalNamesSet.contains(name)) {
-			notifyError("Attempted to declare method " + name +
+	if(globalNamesSet.contains(name)) {
+	    notifyError("Attempted to declare method " + name +
 	                 " but a method of that name already exists in the same scope.", method);
-		} else {
-			globalNamesSet.add(name);
-		}
-		if(method.isImport()) {
-			return hasError;
-		}
+	} else {
+	    globalNamesSet.add(name);
+	}
+	if(method.isImport()) {
+	    return hasError;
+	}
 		
-		IRType.Type returnType = method.getReturnType();
-		if (Arrays.asList(IRType.Type.BOOL, IRType.Type.INT, IRType.Type.VOID).contains(returnType)) {
+        VariableTable parameters = method.getParameters();
+	IRType.Type returnType = method.getReturnType();
+        if (!Arrays.asList(IRType.Type.BOOL, IRType.Type.INT, IRType.Type.VOID).contains(returnType)) {
             notifyError("Return type for method " + name + " is not int, bool, or void.", method);
         }
 
@@ -512,10 +515,12 @@ String name = method.getName();
 	@Override
 	public Boolean on(IRFieldDecl ir) {
 		String name = ir.getName();
-		if(globalNamesSet.contains(name)) {
-			notifyError("Attempted to declare variable and function of the same name.", ir);
-		} else {
-			globalNamesSet.add(name);
+		if(checkingGlobals) {
+			if(globalNamesSet.contains(name)) {
+				notifyError("Attempted to declare variable and function of the same name.", ir);
+			} else {
+				globalNamesSet.add(name);
+			}
 		}
 		return this.onMemberDecl(ir);
 	}

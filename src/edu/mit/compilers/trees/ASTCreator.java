@@ -244,23 +244,7 @@ public class ASTCreator {
     }
 
     public static IRVariableExpression parseLocation(ConcreteTree tree, VariableTable fields, MethodTable methods) {
-		if (tree == null) {
-			throw new RuntimeException("Location node is empty");
-		}
-		ConcreteTree child = tree.getFirstChild();
-		String name = child.getToken().getText();
-		child = child.getRightSibling();
-        IRVariableExpression returnExpression;
-		if (child == null) {
-			returnExpression = new IRVariableExpression(name);
-		} else {
-			child = child.getRightSibling();
-			returnExpression = new IRVariableExpression(name, parseExpressionTree(child, fields, methods));
-		}
-        returnExpression.setLineNumbers(tree);
-		returnExpression.setTables(fields, methods);
-
-        return returnExpression;
+	return makeIRVariableExpression(tree, fields, methods);
     }
 
     public static IRStatement parseStatement(ConcreteTree tree, VariableTable scope, MethodTable methods) {
@@ -419,7 +403,7 @@ public class ASTCreator {
 		IRVariableExpression toReturn;
         VariableDescriptor desc = fields.get(name);
         IRType.Type varType = (desc == null) ? IRType.Type.UNSPECIFIED : desc.getType();
-		if (child == null) {
+                if (child == null) {
 			toReturn = new IRVariableExpression(name);
 		} else {
 			child = child.getRightSibling();
@@ -449,7 +433,7 @@ public class ASTCreator {
             returnType = IRType.Type.BOOL; break;
         }
         case DecafParserTokenTypes.TK_void: {
-        	returnType = IRType.Type.VOID; break;
+            returnType = IRType.Type.VOID; break;
         }
 	    }
 	    child = child.getRightSibling();
