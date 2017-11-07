@@ -14,7 +14,6 @@ import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.expression.IRExpression.ExpressionType;
 import edu.mit.compilers.ir.expression.literal.*;
-import edu.mit.compilers.ir.operator.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;

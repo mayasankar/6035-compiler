@@ -7,7 +7,6 @@ import antlr.Token;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRType;
-import edu.mit.compilers.ir.operator.IRBinaryOperator;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.trees.ConcreteTree;
 
@@ -15,7 +14,6 @@ public class IRBinaryOpExpression extends IRExpression{
 	private IRExpression leftExpr;
 	private IRExpression rightExpr;
 
-	//private IRBinaryOperator operator;
 	private Token operator;
 
 	public IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
