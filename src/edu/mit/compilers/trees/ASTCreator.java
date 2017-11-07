@@ -91,7 +91,7 @@ public class ASTCreator {
 		}
 
 		while (child != null && child.getName().equals("method_decl")) {
-			methods.add(makeIRMethodDecl(child, fields, methods));
+			makeIRMethodDecl(child, fields, methods);
 			child = child.getRightSibling();
 		}
 
@@ -431,11 +431,13 @@ public class ASTCreator {
 	        parameters.add(new VariableDescriptor(new IRParameterDecl(parameterType, parameterId)));
 	        child = child.getRightSibling();
 	    }
-	    IRBlock code = parseBlock(child, parameters, methods);
-	    IRMethodDecl decl = new IRMethodDecl(returnType, id, parameters, code);
-
+	    IRMethodDecl decl = new IRMethodDecl(returnType, id, parameters, null);
 	    decl.setLineNumbers(tree);
 	    decl.setTables(parentScope, methods);
+	    methods.add(decl);
+	    
+	    IRBlock code = parseBlock(child, parameters, methods);
+	    decl.setCode(code);
 
 	    return decl;
 	  }

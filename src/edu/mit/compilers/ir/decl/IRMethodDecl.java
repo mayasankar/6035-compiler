@@ -46,6 +46,12 @@ public class IRMethodDecl extends IRNode implements Named {
       }
       return code;
   }
+  public void setCode(IRBlock code) {
+      if (isImport()) {
+          throw new RuntimeException("Calling getCode on import declaration.");
+      }
+      this.code = code;
+  }
   public VariableTable getParameters() {
       if (isImport()) {
           throw new RuntimeException("Calling getParameters on import declaration.");
