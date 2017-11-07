@@ -1,0 +1,30 @@
+import printf;
+
+int i;
+
+int geti() {
+    return i;
+}
+
+void seti(int j) {
+    i = j;
+    return;
+}
+
+void main() {
+    int i, j;
+    i = 10;
+
+    seti(17);
+    printf("Scope 0: i is: %d\n", geti()); // should be 17
+    printf("Scope 1: i is: %d\n", i); // should be 10
+
+    for (j = 0; j < 5; j += 1) {
+        int i;
+        i = j;
+	printf("Scope 2: i is: %d\n", i); // should be 0 to 4 inclusive
+    }
+
+    printf("Scope 1: i is: %d\n", i); // should be 10
+    printf("Scope 0: i is: %d\n", geti()); // should be 17
+}
