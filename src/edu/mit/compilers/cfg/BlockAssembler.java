@@ -171,12 +171,19 @@ public class BlockAssembler {
 
     private String makeCodeCFGDecl(CFGDecl line) {
         // allocate a space on stack for the declared variable, update the total number of allocations
-        numAllocs += 1;
+        int length = (line.getLength() == 0) ? 1 : line.getLength();
+        numAllocs += length;
         IRMemberDecl vDecl = line.getDecl();
         VariableDescriptor v = new VariableDescriptor(vDecl);
         int offset = addVariableToStack(v);
-        String stackLocation = "-" + (new Integer(offset).toString()) + "(%rbp)";
-        return "mov $0, %r10\nmov %r10, " + stackLocation + "\n";
+        String code = "";
+        for (int i=0; i<length; i++){
+            String stackLocation = "-" + (new Integer(offset).toString()) + "(%rbp)";
+            code += "mov $0, %r10\n";
+            code += "mov %r10, " + stackLocation + "\n";
+            offset += 8;
+        }
+        return code;
     }
 
     private String makeCodeCFGExpression(CFGExpression line) {
