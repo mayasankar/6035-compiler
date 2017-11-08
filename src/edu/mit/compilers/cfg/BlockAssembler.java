@@ -174,8 +174,9 @@ public class BlockAssembler {
         numAllocs += 1;
         IRMemberDecl vDecl = line.getDecl();
         VariableDescriptor v = new VariableDescriptor(vDecl);
-        addVariableToStack(v);
-        return "";
+        int offset = addVariableToStack(v);
+        String stackLocation = "-" + (new Integer(offset).toString()) + "(%rbp)";
+        return "mov $0, " + stackLocation + "\n";
     }
 
     private String makeCodeCFGExpression(CFGExpression line) {
@@ -476,10 +477,9 @@ public class BlockAssembler {
 
     }
 
-    private void addVariableToStack(VariableDescriptor var) {
+    private int addVariableToStack(VariableDescriptor var) {
         // System.out.println("Added variable: " + var.toString());
-        universalVariableTable.add(var);
-        return;
+        return universalVariableTable.add(var);
     }
 
     // returns emptyset for non-array-expression var.
