@@ -176,7 +176,7 @@ public class BlockAssembler {
         VariableDescriptor v = new VariableDescriptor(vDecl);
         int offset = addVariableToStack(v);
         String stackLocation = "-" + (new Integer(offset).toString()) + "(%rbp)";
-        return "mov $0, " + stackLocation + "\n";
+        return "mov $0, %r10\nmov %r10, " + stackLocation + "\n";
     }
 
     private String makeCodeCFGExpression(CFGExpression line) {
