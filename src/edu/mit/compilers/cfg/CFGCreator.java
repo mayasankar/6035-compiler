@@ -161,6 +161,9 @@ public class CFGCreator {
 	}
 
 	private CFG destructIRReturnStatement(IRReturnStatement statement) {
+        if (statement.isVoid()) {
+            return new CFG(new CFGStatement(statement));
+        }
         IRExpression returnExpr = statement.getReturnExpr();
         String name = "temp_return_" + statement.hashCode();
         CFG returnCFG = destructIRExpression(returnExpr, name);
