@@ -497,6 +497,8 @@ public class BlockAssembler {
             code += "mov $" + (new Integer(max_index).toString()) + ", %r11\n";
             code += "cmp %r11, %r10\n";
             code += "jge .out_of_bounds\n";
+            code += "cmp $0, %r10\n";
+            code += "jl .out_of_bounds\n";
             // being able to index into global variables is hard
             if (!universalVariableTable.containsInThisScope(var.getName())) {
                 // TODO mayars make sure this is correct
