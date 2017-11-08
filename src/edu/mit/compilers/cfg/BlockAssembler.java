@@ -181,7 +181,7 @@ public class BlockAssembler {
             String stackLocation = "-" + (new Integer(offset).toString()) + "(%rbp)";
             code += "mov $0, %r10\n";
             code += "mov %r10, " + stackLocation + "\n";
-            offset += 8;
+            offset -= 8;  // go through and initialize them all to 0 in reverse order
         }
         return code;
     }
