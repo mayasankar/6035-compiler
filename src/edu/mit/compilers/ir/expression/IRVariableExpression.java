@@ -34,6 +34,10 @@ public class IRVariableExpression extends IRExpression {
 	public String getName() { return variableName; }
 	public IRExpression getIndexExpression() { return arrayIndex; }
 
+	public void resetName(String newName) {
+		variableName = newName;
+	}
+
 	@Override
 	public TypeDescriptor getType() {
 		return type;

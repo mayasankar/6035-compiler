@@ -2,6 +2,7 @@ package edu.mit.compilers.trees;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,26 +45,65 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	private boolean hasError = false;
 	private boolean checkingGlobals = false;
 
+	private int declarationCounter = 0; // used to give each var a unique name
+	private List<VariableDeclarationProcessor> varDeclsToRename = new ArrayList<>();
+	private List<VariableExpressionProcessor> varExprsToRename = new ArrayList<>();
+
+	private class VariableDeclarationProcessor {
+		private String newName;
+		private IRMemberDecl decl;
+
+		VariableDeclarationProcessor(String n, IRMemberDecl d) {
+			newName = n;
+			decl = d;
+		}
+
+		public void process() { decl.resetName(newName); }
+	}
+
+	private class VariableExpressionProcessor {
+		private IRMemberDecl correspondingDecl;
+		private IRVariableExpression var;
+
+		VariableExpressionProcessor(IRMemberDecl c, IRVariableExpression v) {
+			correspondingDecl = c;
+			var = v;
+		}
+
+		public void process() { var.resetName(correspondingDecl.getName()); }
+	}
+
     private void notifyError(String error, IRNode problematicNode){
         hasError = true;
         System.err.println("ERROR " + problematicNode.location() + ": " + error);
     }
+
+	/**
+	 * Gives each variable a unique name
+	 */
+	public void renameVariables() {
+		// NOTE: order matters; declarations have to be renamed before expressions
+		for (VariableDeclarationProcessor dp : varDeclsToRename) { dp.process(); }
+		for (VariableExpressionProcessor ep : varExprsToRename) { ep.process(); }
+		varDeclsToRename.clear();
+		varExprsToRename.clear();
+	}
 
 	@Override
 	public Boolean on(IRProgram tree) {
         env.push(tree.getMethodTable());
         env.push(tree.getVariableTable());
         env.push(TypeDescriptor.VOID);
-        checkVariableTable(tree.getVariableTable());
+        checkVariableTable(tree.getVariableTable(), "global");
         checkHasMain(tree);
-	for(IRMethodDecl methods: tree.getMethodTable().getMethodList()) {
+		for(IRMethodDecl methods: tree.getMethodTable().getMethodList()) {
         	methods.accept(this);
         }
         checkingGlobals = true;
         for(IRMemberDecl variable: tree.getVariableTable().getVariableList()) {
         	variable.accept(this);
         }
-	checkingGlobals = false;
+		checkingGlobals = false;
         env.popMethodTable();
         env.popVariableTable();
         env.popReturnType();
@@ -71,16 +111,18 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         return hasError;
 	}
 
-    private void checkVariableTable(VariableTable table){
-         List<IRMemberDecl> variables = table.getVariableList();
-         HashSet<String> variablesSet = new HashSet<>();
-         for (IRMemberDecl var : variables){
-             if (variablesSet.contains(var.getName())){
-                 notifyError("Attempted to declare variable " + var.getName() +
-                 " but a variable of that name already exists in the same scope.", var);
-             }
-             variablesSet.add(var.getName());
-         }
+    private void checkVariableTable(VariableTable table, String prefix) {
+        List<IRMemberDecl> variables = table.getVariableList();
+        HashSet<String> variablesSet = new HashSet<>();
+		for (IRMemberDecl var : variables){
+			String newName = prefix + "_" + ++declarationCounter + "_" + var.getName();
+			varDeclsToRename.add(new VariableDeclarationProcessor(newName, var));
+            if (variablesSet.contains(var.getName())){
+                notifyError("Attempted to declare variable " + var.getName() +
+                " but a variable of that name already exists in the same scope.", var);
+            }
+            variablesSet.add(var.getName());
+        }
     }
 
     private void checkHasMain(IRProgram program){
@@ -104,20 +146,20 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 
     @Override
     public Boolean on(IRMethodDecl method) {
-        String name = method.getName();
-        
-	if(globalNamesSet.contains(name)) {
-	    notifyError("Attempted to declare method " + name +
-	                 " but a method of that name already exists in the same scope.", method);
-	} else {
-	    globalNamesSet.add(name);
-	}
-	if(method.isImport()) {
-	    return hasError;
-	}
-		
+		String name = method.getName();
+
+		if(globalNamesSet.contains(name)) {
+		    notifyError("Attempted to declare method " + name +
+		                 " but a method of that name already exists in the same scope.", method);
+		} else {
+		    globalNamesSet.add(name);
+		}
+		if(method.isImport()) {
+		    return hasError;
+		}
+
         VariableTable parameters = method.getParameters();
-	TypeDescriptor returnType = method.getReturnType();
+		TypeDescriptor returnType = method.getReturnType();
         if (!Arrays.asList(TypeDescriptor.BOOL, TypeDescriptor.INT, TypeDescriptor.VOID).contains(returnType)) {
             notifyError("Return type for method " + name + " is not int, bool, or void.", method);
         }
@@ -129,7 +171,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         env.popVariableTable();
         env.popReturnType();
 
-        checkVariableTable(parameters);
+        checkVariableTable(parameters, "param");
         for (IRMemberDecl param : parameters.getVariableList()) {
             if (param.getType() != TypeDescriptor.BOOL && param.getType() != TypeDescriptor.INT) {
                 notifyError("Parameter " + param.getName() + " for method " + method.getName() +
@@ -255,6 +297,8 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             notifyError("Reference to undeclared variable '" + var.getName() + "'.", var);
             return hasError;
         }
+
+		varExprsToRename.add(new VariableExpressionProcessor(desc.getDecl(), var));
 
         if (idxExpr != null) {
             idxExpr.accept(this);
@@ -407,7 +451,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	    for (IRMemberDecl decl: block.getFieldDecls()) {
             decl.accept(this);
         }
-	    checkVariableTable(block.getFields());
+	    checkVariableTable(block.getFields(), "local");
 	    // TODO arkadiy wants to fix the fact that there isn't a direct getVariableList method from IRBlock
 	    for (IRStatement s : block.getStatements()){
 	        s.accept(this);
