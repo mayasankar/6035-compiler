@@ -17,6 +17,8 @@ public class CFGDecl extends CFGLine {
 
     public IRMemberDecl getDecl() { return decl; }
 
+    public int getLength() { return decl.getLength(); }
+
     @Override
     public boolean isNoOp() { return false; }
 
