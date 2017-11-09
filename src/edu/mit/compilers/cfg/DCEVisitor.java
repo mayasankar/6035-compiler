@@ -27,8 +27,11 @@ public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
         // USE + (original + parents - ASSIGN)
         Set<String> original = line.getSetDCE();
         Set<String> setDCE = new HashSet<>(original);
-        setDCE.addAll(line.getTrueBranch().getSetDCE());  // since we're iterating backward the "parents" are the children
-        setDCE.addAll(line.getFalseBranch().getSetDCE());
+        if (! line.isEnd()){
+            // since we're iterating backward the "parents" are the children
+            setDCE.addAll(line.getTrueBranch().getSetDCE());
+            setDCE.addAll(line.getFalseBranch().getSetDCE());
+        }
         setDCE.removeAll(assign);
         setDCE.addAll(use);
         line.setSetDCE(setDCE);

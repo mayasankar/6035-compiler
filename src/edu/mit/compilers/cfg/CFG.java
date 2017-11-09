@@ -62,6 +62,7 @@ public class CFG {
         toUpdate.add(this.end);
         while (! toUpdate.isEmpty()) {
             CFGLine line = toUpdate.iterator().next();
+            toUpdate.remove(line);
             Boolean changed = line.accept(visitor);
             if (changed) {
                 toUpdate.addAll(line.getParents());
