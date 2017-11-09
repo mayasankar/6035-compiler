@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.BitSet;
 import java.math.BigInteger;
 
@@ -23,7 +24,7 @@ public abstract class CFGLine {
     protected CFGLine falseBranch;
     protected List<CFGLine> parents;
     protected CFGBlock correspondingBlock;
-    protected BitSet bitvectorDCE;
+    protected Set<String> setDCE;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -32,7 +33,7 @@ public abstract class CFGLine {
         falseBranch.addParentLine(this);
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.bitvectorDCE = new BitSet();
+        this.setDCE = new HashSet<>();
     }
 
     protected CFGLine(CFGLine next) {
@@ -41,7 +42,7 @@ public abstract class CFGLine {
         next.addParentLine(this);
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.bitvectorDCE = new BitSet();
+        this.setDCE = new HashSet<>();
     }
 
     protected CFGLine() {
@@ -49,19 +50,19 @@ public abstract class CFGLine {
         this.falseBranch = null;
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.bitvectorDCE = new BitSet();
+        this.setDCE = new HashSet<>();
     }
 
-    public abstract <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector);
+    public abstract <R> R accept(CFGBitSetVisitor<R> visitor, Set<String> parentSet);
 
     public interface CFGBitSetVisitor<R> {
-		public R on(CFGBlock line, BitSet parentBitVector);
-		public R on(CFGStatement line, BitSet parentBitVector);
-		public R on(CFGExpression line, BitSet parentBitVector);
-		public R on(CFGDecl line, BitSet parentBitVector);
-		public R on(CFGMethodDecl line, BitSet parentBitVector);
-		public R on(CFGNoOp line, BitSet parentBitVector);
-		public R on(CFGAssignStatement line, BitSet parentBitVector);
+		public R on(CFGBlock line, Set<String> parentSet);
+		public R on(CFGStatement line, Set<String> parentSet);
+		public R on(CFGExpression line, Set<String> parentSet);
+		public R on(CFGDecl line, Set<String> parentSet);
+		public R on(CFGMethodDecl line, Set<String> parentSet);
+		public R on(CFGNoOp line, Set<String> parentSet);
+		public R on(CFGAssignStatement line, Set<String> parentSet);
 	}
 
     public CFGBlock getCorrespondingBlock() {
@@ -76,12 +77,12 @@ public abstract class CFGLine {
         return parents;
     }
 
-    public BitSet getBitvectorDCE() {
-        return bitvectorDCE;
+    public Set getSetDCE() {
+        return setDCE;
     }
 
-    public void setBitvectorDCE(BitSet newBitvector) {
-        bitvectorDCE = newBitvector;
+    public void setSetDCE(Set newSet) {
+        setDCE = newSet;
     }
 
     public CFGLine getTrueBranch() {

@@ -1,6 +1,6 @@
 package edu.mit.compilers.cfg;
 import edu.mit.compilers.cfg.CFGLine;
-import java.util.BitSet;
+import java.util.Set;
 
 public class CFGNoOp extends CFGLine {
 
@@ -17,7 +17,7 @@ public class CFGNoOp extends CFGLine {
     }
 
     @Override
-    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
-		return visitor.on(this, parentBitVector);
+    public <R> R accept(CFGBitSetVisitor<R> visitor, Set<String> parentSet){
+		return visitor.on(this, parentSet);
 	}
 }

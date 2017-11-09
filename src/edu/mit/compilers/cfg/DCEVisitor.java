@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
-import java.util.BitSet;
+import java.util.Set;
 import java.math.BigInteger;
 
 import antlr.Token;
@@ -16,53 +16,61 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 
+// boolean returns true if we changed something, false if not
 public class DCEVisitor implements CFGLine.CFGBitSetVisitor<Boolean> {
-    // boolean returns true if we changed something, false if not
+
+    private USEVisitor USE = new USEVisitor();
+    private ASSIGNVisitor ASSIGN = new ASSIGNVisitor();
+
+
+    private Boolean onHelper(CFGLine line, Set<String> parentSet, Set<String> use, Set<String> assign) {
+        // USE + (original + parent - ASSIGN)
+        Set<String> original = line.getSetDCE();
+        Set<String> setDCE = new HashSet<>(original);
+        setDCE.addAll(parentSet);
+        setDCE.removeAll(assign);
+        setDCE.addAll(use);
+        line.setSetDCE(setDCE);
+        return !setDCE.equals(original);
+    }
 
 	@Override
-    public Boolean on(CFGBlock line, BitSet parentBitVector){
+    public Boolean on(CFGBlock line, Set<String> parentSet){
         // TODO should this do anything other than nothing? I think we never call it on this
         return false;
     }
 
     @Override
-    public Boolean on(CFGStatement line, BitSet parentBitVector){
-        // USE + (U parent - DEF)
-        BitSet original = line.getBitvectorDCE();
-        BitSet bitvector = original.get(0, original.size());
-        bitvector.or(parentBitVector);
+    public Boolean on(CFGStatement line, Set<String> parentSet){
         IRStatement statement = line.getStatement();
-        // TODO get USE and DEF out of the statement
-        line.setBitvectorDCE(bitvector);
-        return !bitvector.equals(original);
+        Set<String> use = statement.accept(USE);
+        Set<String> assign = statement.accept(ASSIGN);
+        return onHelper(line, parentSet, use, assign);
     }
 
     @Override
-    public Boolean on(CFGExpression line, BitSet parentBitVector){
+    public Boolean on(CFGExpression line, Set<String> parentSet){
         throw new RuntimeException("Unimplemented.");
     }
 
     @Override
-    public Boolean on(CFGDecl line, BitSet parentBitVector){
+    public Boolean on(CFGDecl line, Set<String> parentSet){
         throw new RuntimeException("Unimplemented.");
     }
 
     @Override
-    public Boolean on(CFGMethodDecl line, BitSet parentBitVector){
+    public Boolean on(CFGMethodDecl line, Set<String> parentSet){
         throw new RuntimeException("Unimplemented.");
     }
 
     @Override
-    public Boolean on(CFGNoOp line, BitSet parentBitVector){
-        BitSet original = line.getBitvectorDCE();
-        BitSet bitvector = original.get(0, original.size()); // make a copy
-        bitvector.or(parentBitVector);
-        line.setBitvectorDCE(bitvector);
-        return !bitvector.equals(original);
+    public Boolean on(CFGNoOp line, Set<String> parentSet){
+        Set empty = new HashSet<>();
+        return onHelper(line, parentSet, empty, empty);
     }
 
     @Override
-    public Boolean on(CFGAssignStatement line, BitSet parentBitVector){
+    public Boolean on(CFGAssignStatement line, Set<String> parentSet){
         throw new RuntimeException("Unimplemented.");
     }
 }
