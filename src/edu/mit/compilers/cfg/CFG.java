@@ -1,9 +1,11 @@
 package edu.mit.compilers.cfg;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.Set;
 import java.math.BigInteger;
 
 import antlr.Token;
@@ -46,11 +48,25 @@ public class CFG {
     public String toString() {
         return start.toString();
     }
-    
+
     public CFG concat(CFG newEnd) {
         this.end.setNext(newEnd.getStart());
         end = newEnd.getEnd();
-        
+
         return this;
+    }
+
+    public void setValuesDCE() {
+        CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
+        Set<CFGLine> toUpdate = new HashSet<>();
+        toUpdate.add(this.end);
+        while (! toUpdate.isEmpty()) {
+            CFGLine line = toUpdate.iterator().next();
+            Boolean changed = line.accept(visitor);
+            if (changed) {
+                toUpdate.addAll(line.getParents());
+            }
+        }
+        return;
     }
 }

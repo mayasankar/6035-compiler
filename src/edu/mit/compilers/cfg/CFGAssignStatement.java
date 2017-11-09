@@ -26,7 +26,7 @@ public class CFGAssignStatement extends CFGStatement {
 	}
 
 	@Override
-    public <R> R accept(CFGBitSetVisitor<R> visitor, Set<String> parentSet){
-		return visitor.on(this, parentSet);
+    public <R> R accept(CFGVisitor<R> visitor){
+		return visitor.on(this);
 	}
 }

@@ -53,16 +53,16 @@ public abstract class CFGLine {
         this.setDCE = new HashSet<>();
     }
 
-    public abstract <R> R accept(CFGBitSetVisitor<R> visitor, Set<String> parentSet);
+    public abstract <R> R accept(CFGVisitor<R> visitor);
 
-    public interface CFGBitSetVisitor<R> {
-		public R on(CFGBlock line, Set<String> parentSet);
-		public R on(CFGStatement line, Set<String> parentSet);
-		public R on(CFGExpression line, Set<String> parentSet);
-		public R on(CFGDecl line, Set<String> parentSet);
-		public R on(CFGMethodDecl line, Set<String> parentSet);
-		public R on(CFGNoOp line, Set<String> parentSet);
-		public R on(CFGAssignStatement line, Set<String> parentSet);
+    public interface CFGVisitor<R> {
+		public R on(CFGBlock line);
+		public R on(CFGStatement line);
+		public R on(CFGExpression line);
+		public R on(CFGDecl line);
+		public R on(CFGMethodDecl line);
+		public R on(CFGNoOp line);
+		public R on(CFGAssignStatement line);
 	}
 
     public CFGBlock getCorrespondingBlock() {
