@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -20,16 +21,16 @@ import edu.mit.compilers.trees.EnvStack;
 public abstract class CFGLine {
     protected CFGLine trueBranch;
     protected CFGLine falseBranch;
-    protected int numParentLines;
+    protected List<CFGLine> parents;
     protected CFGBlock correspondingBlock;
     protected BitSet bitvectorDCE;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
-        trueBranch.addParentLine();
+        trueBranch.addParentLine(this);
         this.falseBranch = falseBranch;
-        falseBranch.addParentLine();
-        this.numParentLines = 0;
+        falseBranch.addParentLine(this);
+        this.parents = new ArrayList<>();
         this.correspondingBlock = null;
         this.bitvectorDCE = new BitSet();
     }
@@ -37,7 +38,8 @@ public abstract class CFGLine {
     protected CFGLine(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
-        this.numParentLines = 0;
+        next.addParentLine(this);
+        this.parents = new ArrayList<>();
         this.correspondingBlock = null;
         this.bitvectorDCE = new BitSet();
     }
@@ -45,7 +47,7 @@ public abstract class CFGLine {
     protected CFGLine() {
         this.trueBranch = null;
         this.falseBranch = null;
-        this.numParentLines = 0;
+        this.parents = new ArrayList<>();
         this.correspondingBlock = null;
         this.bitvectorDCE = new BitSet();
     }
@@ -70,7 +72,11 @@ public abstract class CFGLine {
         correspondingBlock = block;
     }
 
-    public BitSet getDCE(){
+    public List<CFGLine> getParents() {
+        return parents;
+    }
+
+    public BitSet getDCE() {
         return bitvectorDCE;
     }
 
@@ -87,17 +93,17 @@ public abstract class CFGLine {
     }
 
     public boolean isMerge() {
-        return numParentLines > 1;
+        return parents.size() > 1;
     }
 
     public void setNext(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
-        next.addParentLine();
+        next.addParentLine(this);
     }
 
-    public void addParentLine() {
-        this.numParentLines += 1;
+    public void addParentLine(CFGLine parent) {
+        this.parents.add(parent);
     }
 
     public boolean isEnd() {
