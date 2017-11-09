@@ -37,7 +37,8 @@ public class DCEVisitor implements CFGLine.CFGBitSetVisitor<Boolean> {
 	@Override
     public Boolean on(CFGBlock line, Set<String> parentSet){
         // TODO should this do anything other than nothing? I think we never call it on this
-        return false;
+        //return false;
+        throw new RuntimeException("DCEVisitor should never be called on a CFGBlock.");
     }
 
     @Override
@@ -50,17 +51,26 @@ public class DCEVisitor implements CFGLine.CFGBitSetVisitor<Boolean> {
 
     @Override
     public Boolean on(CFGExpression line, Set<String> parentSet){
-        throw new RuntimeException("Unimplemented.");
+        IRExpression expr = line.getExpression();
+        Set<String> use = expr.accept(USE);
+        Set<String> assign = expr.accept(ASSIGN);
+        return onHelper(line, parentSet, use, assign);
     }
 
     @Override
     public Boolean on(CFGDecl line, Set<String> parentSet){
-        throw new RuntimeException("Unimplemented.");
+        IRMemberDecl decl = line.getDecl();
+        Set<String> use = decl.accept(USE);
+        Set<String> assign = decl.accept(ASSIGN);
+        return onHelper(line, parentSet, use, assign);
     }
 
     @Override
     public Boolean on(CFGMethodDecl line, Set<String> parentSet){
-        throw new RuntimeException("Unimplemented.");
+        IRMethodDecl decl = line.getMethodDecl();
+        Set<String> use = decl.accept(USE);
+        Set<String> assign = decl.accept(ASSIGN);
+        return onHelper(line, parentSet, use, assign);
     }
 
     @Override
@@ -71,6 +81,9 @@ public class DCEVisitor implements CFGLine.CFGBitSetVisitor<Boolean> {
 
     @Override
     public Boolean on(CFGAssignStatement line, Set<String> parentSet){
-        throw new RuntimeException("Unimplemented.");
+        IRStatement statement = line.getStatement();
+        Set<String> use = statement.accept(USE);
+        Set<String> assign = statement.accept(ASSIGN);
+        return onHelper(line, parentSet, use, assign);
     }
 }

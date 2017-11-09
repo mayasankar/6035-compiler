@@ -22,7 +22,7 @@ public class USEVisitor implements IRNode.IRNodeVisitor<Set<String>> {
 
     @Override
     public Set<String> on(IRProgram ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRProgram.");
     }
 
     @Override
