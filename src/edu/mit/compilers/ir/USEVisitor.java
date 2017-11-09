@@ -27,89 +27,115 @@ public class USEVisitor implements IRNode.IRNodeVisitor<Set<String>> {
 
     @Override
     public Set<String> on(IRFieldDecl ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRLocalDecl ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRParameterDecl ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRMethodDecl ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
 
     @Override
     public Set<String> on(IRUnaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        IRExpression arg = ir.getArgument();
+        return arg.accept(this);
     }
     @Override
     public Set<String> on(IRBinaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.addAll(ir.getLeftExpr().accept(this));
+        ret.addAll(ir.getRightExpr().accept(this));
+        return ret;
     }
     @Override
     public Set<String> on(IRTernaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.addAll(ir.getTrueExpression().accept(this));
+        ret.addAll(ir.getFalseExpression().accept(this));
+        ret.addAll(ir.getCondition().accept(this));
+        return ret;
     }
     @Override
     public Set<String> on(IRLenExpression ir){
-        throw new RuntimeException("Unimplemented");
+        String lenArgument = ir.getArgument();
+        Set<String> ret = new HashSet<>();
+        ret.add(lenArgument);
+        return ret;
     }
     @Override
     public Set<String> on(IRVariableExpression ir){
-        throw new RuntimeException("Unimplemented");
+        String varName = ir.getName();
+        Set<String> ret = new HashSet<>();
+        ret.add(varName);
+        if (ir.isArray()) {
+            ret.addAll(ir.getIndexExpression().accept(this));
+        }
+        return ret;
     }
     @Override
     public Set<String> on(IRMethodCallExpression ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        for (IRExpression arg: ir.getArguments()) {
+            ret.addAll(arg.accept(this));
+        }
+        return ret;
     }
     @Override
     public Set<String> onBool(IRLiteral<Boolean> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> onString(IRLiteral<String> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> onInt(IRLiteral<BigInteger> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
 
     @Override
     public Set<String> on(IRAssignStatement ir){
-        throw new RuntimeException("Unimplemented");
+        IRExpression value = ir.getValue();
+        return value.accept(this);
     }
     @Override
     public Set<String> on(IRBlock ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRBlock.");
     }
     @Override
     public Set<String> on(IRForStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRForStatement.");
     }
     @Override
     public Set<String> on(IRIfStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRIfStatement.");
     }
     @Override
     public Set<String> on(IRLoopStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRLoopStatement.");
     }
     @Override
     public Set<String> on(IRMethodCallStatement ir){
-        throw new RuntimeException("Unimplemented");
+        // TODO I think these might actually be double-handled by expression generation before the call
+        return ir.getMethodCall().accept(this);
     }
     @Override
     public Set<String> on(IRReturnStatement ir){
-        throw new RuntimeException("Unimplemented");
+        if (ir.isVoid()) {
+            return new HashSet<String>();
+        }
+        return ir.getReturnExpr().accept(this);
     }
     @Override
     public Set<String> on(IRWhileStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRWhileStatement.");
     }
 
 }
