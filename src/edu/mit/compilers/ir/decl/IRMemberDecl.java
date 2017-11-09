@@ -13,7 +13,7 @@ import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public abstract class IRMemberDecl extends IRNode implements Named {
 
-	protected Token id;
+	protected String name;
 	protected TypeDescriptor irType;
 	protected int length;
 
@@ -24,14 +24,14 @@ public abstract class IRMemberDecl extends IRNode implements Named {
 
 	public IRMemberDecl(TypeDescriptor irType, Token id) {
 		setLineNumbers(id);
-		this.id = id;
+		this.name = id.getText();
 		this.irType = irType;
 		this.length = 0;
 	}
 
 	public IRMemberDecl(TypeDescriptor irType, Token id, int length) {
 		setLineNumbers(id);
-		this.id = id;
+		this.name = id.getText();
 		this.irType = irType;
 		this.length = length;
 	}
@@ -46,8 +46,9 @@ public abstract class IRMemberDecl extends IRNode implements Named {
 
 	public int getSpaceRequired() { return 8 * (isArray() ? length : 1); }
 
-	public String getName() { return id.getText(); }
-	
+	public String getName() { return name; }
+	public void resetName(String newName) { name = newName; }
+
 
 
 }

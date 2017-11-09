@@ -26,14 +26,14 @@ class Main {
           System.in : new java.io.FileInputStream(CLI.infile);
       PrintStream outputStream = CLI.outfile == null ? System.out
           : new java.io.PrintStream(new java.io.FileOutputStream(CLI.outfile));
-      
+
       if (CLI.target == Action.SCAN) {
           scan(inputStream, outputStream);
       } else if (CLI.target == Action.PARSE) {
           parse(inputStream, outputStream);
       } else if (CLI.target == Action.INTER || CLI.target == Action.ASSEMBLY ||
-                 CLI.target == Action.DEFAULT) { // TODO do something if CLI.debug
-       
+                 CLI.target == Action.DEFAULT) {
+
         DecafParser parser = parse(inputStream, outputStream);
         ConcreteTree tree = parser.getParseTree();
         if (CLI.debug) {
@@ -42,12 +42,17 @@ class Main {
         }
         IRProgram ir = ASTCreator.getIRNew(tree);
         if (CLI.debug) {
-            System.out.println(ir);;
+            System.out.println(ir);
         }
 
         SemanticCheckerVisitor checker = new SemanticCheckerVisitor();
         if (ir.accept(checker)) {
             System.exit(1);
+        }
+        checker.renameVariables();
+        if (CLI.debug) {
+            System.out.println("Renamed variables in IR");
+            System.out.println(ir);
         }
 
         if (CLI.target == Action.ASSEMBLY){
@@ -102,7 +107,7 @@ class Main {
             }
         }
     }
-        
+
     private static DecafParser parse(InputStream inputStream, PrintStream outputStream) throws RecognitionException, TokenStreamException {
         DecafScanner scanner = new DecafScanner(new DataInputStream(inputStream));
         DecafParser parser = new DecafParser(scanner);
@@ -111,7 +116,7 @@ class Main {
         if (parser.getError()) {
             System.exit(1);
         }
-        
+
         return parser;
     }
 }
