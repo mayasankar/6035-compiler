@@ -76,8 +76,12 @@ public abstract class CFGLine {
         return parents;
     }
 
-    public BitSet getDCE() {
+    public BitSet getBitvectorDCE() {
         return bitvectorDCE;
+    }
+
+    public void setBitvectorDCE(BitSet newBitvector) {
+        bitvectorDCE = newBitvector;
     }
 
     public CFGLine getTrueBranch() {
