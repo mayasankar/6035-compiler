@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.BitSet;
 import java.math.BigInteger;
 
 import antlr.Token;
@@ -21,6 +22,7 @@ public abstract class CFGLine {
     protected CFGLine falseBranch;
     protected int numParentLines;
     protected CFGBlock correspondingBlock;
+    protected BitSet bitvectorDCE;
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -29,6 +31,7 @@ public abstract class CFGLine {
         falseBranch.addParentLine();
         this.numParentLines = 0;
         this.correspondingBlock = null;
+        this.bitvectorDCE = new BitSet();
     }
 
     protected CFGLine(CFGLine next) {
@@ -36,6 +39,7 @@ public abstract class CFGLine {
         this.falseBranch = next;
         this.numParentLines = 0;
         this.correspondingBlock = null;
+        this.bitvectorDCE = new BitSet();
     }
 
     protected CFGLine() {
@@ -43,7 +47,20 @@ public abstract class CFGLine {
         this.falseBranch = null;
         this.numParentLines = 0;
         this.correspondingBlock = null;
+        this.bitvectorDCE = new BitSet();
     }
+
+    public abstract <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector);
+
+    public interface CFGBitSetVisitor<R> {
+		public R on(CFGBlock line, BitSet parentBitVector);
+		public R on(CFGStatement line, BitSet parentBitVector);
+		public R on(CFGExpression line, BitSet parentBitVector);
+		public R on(CFGDecl line, BitSet parentBitVector);
+		public R on(CFGMethodDecl line, BitSet parentBitVector);
+		public R on(CFGNoOp line, BitSet parentBitVector);
+		public R on(CFGAssignStatement line, BitSet parentBitVector);
+	}
 
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;
@@ -51,6 +68,10 @@ public abstract class CFGLine {
 
     public void setCorrespondingBlock(CFGBlock block) {
         correspondingBlock = block;
+    }
+
+    public BitSet getDCE(){
+        return bitvectorDCE;
     }
 
     public CFGLine getTrueBranch() {

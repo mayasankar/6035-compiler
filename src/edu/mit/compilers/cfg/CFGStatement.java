@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 import edu.mit.compilers.cfg.CFGLine;
 import edu.mit.compilers.ir.statement.IRStatement;
+import java.util.BitSet;
 
 public class CFGStatement extends CFGLine {
     IRStatement statement;
@@ -24,4 +25,9 @@ public class CFGStatement extends CFGLine {
     public String ownValue() {
         return statement.toString();
     }
+
+    @Override
+    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
+		return visitor.on(this, parentBitVector);
+	}
 }

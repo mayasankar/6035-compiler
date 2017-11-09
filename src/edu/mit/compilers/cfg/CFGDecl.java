@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 import edu.mit.compilers.cfg.CFGLine;
 import edu.mit.compilers.ir.decl.IRMemberDecl;
+import java.util.BitSet;
 
 public class CFGDecl extends CFGLine {
     IRMemberDecl decl;
@@ -26,4 +27,9 @@ public class CFGDecl extends CFGLine {
     public String ownValue() {
         return decl.toString();
     }
+
+    @Override
+    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
+		return visitor.on(this, parentBitVector);
+	}
 }

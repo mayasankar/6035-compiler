@@ -2,6 +2,7 @@ package edu.mit.compilers.cfg;
 import java.util.ArrayList;
 import java.util.List;
 import edu.mit.compilers.cfg.CFGLine;
+import java.util.BitSet;
 
 public class CFGBlock extends CFGLine {
     private List<CFGLine> lines;
@@ -29,5 +30,10 @@ public class CFGBlock extends CFGLine {
     }
 
     public void addLine(CFGLine l) { lines.add(l); }
+
+    @Override
+    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
+		return visitor.on(this, parentBitVector);
+	}
 
 }

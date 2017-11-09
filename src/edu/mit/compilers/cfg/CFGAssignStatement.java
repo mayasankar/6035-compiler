@@ -4,6 +4,7 @@ import antlr.Token;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
+import java.util.BitSet;
 
 public class CFGAssignStatement extends CFGStatement {
 	private String variableName; // NOTE -- do not use, it doesn't know if it is the name of the variable or the array you're indexing
@@ -22,5 +23,10 @@ public class CFGAssignStatement extends CFGStatement {
 		this.variableName = variableName;
 		this.op = op;
 		this.value = value;
+	}
+
+	@Override
+    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
+		return visitor.on(this, parentBitVector);
 	}
 }

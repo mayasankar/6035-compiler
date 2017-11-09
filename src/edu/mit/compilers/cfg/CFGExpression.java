@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 import edu.mit.compilers.cfg.CFGLine;
 import edu.mit.compilers.ir.expression.IRExpression;
+import java.util.BitSet;
 
 public class CFGExpression extends CFGLine {
     IRExpression expression;
@@ -24,4 +25,9 @@ public class CFGExpression extends CFGLine {
     public String ownValue() {
         return expression.toString();
     }
+
+    @Override
+    public <R> R accept(CFGBitSetVisitor<R> visitor, BitSet parentBitVector){
+		return visitor.on(this, parentBitVector);
+	}
 }
