@@ -22,94 +22,102 @@ public class ASSIGNVisitor implements IRNode.IRNodeVisitor<Set<String>> {
 
     @Override
     public Set<String> on(IRProgram ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRProgram.");
     }
 
     @Override
     public Set<String> on(IRFieldDecl ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.add(ir.getName());
+        return ret;
     }
     @Override
     public Set<String> on(IRLocalDecl ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.add(ir.getName());
+        return ret;
     }
     @Override
     public Set<String> on(IRParameterDecl ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.add(ir.getName());
+        return ret;
     }
     @Override
     public Set<String> on(IRMethodDecl ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
 
     @Override
     public Set<String> on(IRUnaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRBinaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRTernaryOpExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRLenExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRVariableExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRMethodCallExpression ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> onBool(IRLiteral<Boolean> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> onString(IRLiteral<String> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> onInt(IRLiteral<BigInteger> ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
 
     @Override
     public Set<String> on(IRAssignStatement ir){
-        throw new RuntimeException("Unimplemented");
+        Set<String> ret = new HashSet<>();
+        ret.add(ir.getVarAssigned().getName());
+        return ret;
     }
     @Override
     public Set<String> on(IRBlock ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRBlock.");
     }
     @Override
     public Set<String> on(IRForStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRForStatement.");
     }
     @Override
     public Set<String> on(IRIfStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRIfStatement.");
     }
     @Override
     public Set<String> on(IRLoopStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRLoopStatement.");
     }
     @Override
     public Set<String> on(IRMethodCallStatement ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRReturnStatement ir){
-        throw new RuntimeException("Unimplemented");
+        return new HashSet<String>();
     }
     @Override
     public Set<String> on(IRWhileStatement ir){
-        throw new RuntimeException("Unimplemented");
+        throw new RuntimeException("Should never call USEVisitor on IRWhileStatement.");
     }
 
 }
