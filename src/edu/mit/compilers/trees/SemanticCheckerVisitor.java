@@ -63,9 +63,9 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 
 	private class VariableExpressionProcessor {
 		private IRMemberDecl correspondingDecl;
-		private IRVariableExpression var;
+		private IRExpression.Renameable var;
 
-		VariableExpressionProcessor(IRMemberDecl c, IRVariableExpression v) {
+		VariableExpressionProcessor(IRMemberDecl c, IRExpression.Renameable v) {
 			correspondingDecl = c;
 			var = v;
 		}
@@ -282,6 +282,8 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         }
         else if (!argument.getType().isArray()) {
             notifyError("Cannot apply len() to non-array-type variable '" + argumentName + "'.", expr);
+        } else {
+            varExprsToRename.add(new VariableExpressionProcessor(argument.getDecl(), expr));
         }
 
         return hasError;

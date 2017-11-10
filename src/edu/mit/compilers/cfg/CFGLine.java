@@ -70,19 +70,23 @@ public abstract class CFGLine {
     }
 
     public void setCorrespondingBlock(CFGBlock block) {
-        correspondingBlock = block;
+        this.correspondingBlock = block;
     }
 
     public List<CFGLine> getParents() {
         return parents;
     }
 
+    public void removeParent(CFGLine parent) {
+        this.parents.remove(parent);
+    }
+
     public Set getSetDCE() {
-        return setDCE;
+        return this.setDCE;
     }
 
     public void setSetDCE(Set newSet) {
-        setDCE = newSet;
+        this.setDCE = newSet;
     }
 
     public CFGLine getTrueBranch() {
@@ -109,6 +113,20 @@ public abstract class CFGLine {
 
     public void addParentLine(CFGLine parent) {
         this.parents.add(parent);
+    }
+
+    // NOTE: we assume the oldChild is getting removed and thus we don't have to go fix its parents list
+    public void replaceChildren(CFGLine oldChild, CFGLine newChild){
+        if (this.trueBranch.equals(oldChild)) {
+            this.trueBranch = newChild;
+            newChild.addParentLine(this);
+        }
+        if (this.falseBranch.equals(oldChild)) {
+            this.falseBranch = newChild;
+            if (this.isBranch()){
+                newChild.addParentLine(this);
+            }
+        }
     }
 
     public boolean isEnd() {

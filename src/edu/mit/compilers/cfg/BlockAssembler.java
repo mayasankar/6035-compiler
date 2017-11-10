@@ -57,6 +57,9 @@ public class BlockAssembler {
 
         // if it has void return, or if a return statement tells it to jump here, leave
         code += "\n"+ methodLabel + "_end:\n";
+        if (methodLabel.equals("main")) { // makes sure exit code is 0
+            code += "mov $0, %rax\n";
+        }
         code += "leave\n" + "ret\n";
 
         // string literals

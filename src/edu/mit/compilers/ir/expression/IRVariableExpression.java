@@ -7,7 +7,7 @@ import antlr.Token;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
-public class IRVariableExpression extends IRExpression {
+public class IRVariableExpression extends IRExpression implements IRExpression.Renameable {
 
 	private String variableName;
 	private IRExpression arrayIndex = null;
@@ -34,9 +34,8 @@ public class IRVariableExpression extends IRExpression {
 	public String getName() { return variableName; }
 	public IRExpression getIndexExpression() { return arrayIndex; }
 
-	public void resetName(String newName) {
-		variableName = newName;
-	}
+    @Override
+	public void resetName(String newName) { variableName = newName; }
 
 	@Override
 	public TypeDescriptor getType() {
