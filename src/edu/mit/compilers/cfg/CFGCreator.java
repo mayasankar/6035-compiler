@@ -45,7 +45,7 @@ public class CFGCreator {
         return destructedMethods;
     }
 
-    private CFGBlock condenseIntoBlocks(CFG cfg) {
+    CFGBlock condenseIntoBlocks(CFG cfg) {
         // make a new block
         // while we have lines that don't merge or branch, add them to block
         // then, for each child that isn't already part of a block, recursively run this
@@ -272,25 +272,28 @@ public class CFGCreator {
         return new CFG(initLine, endNoOp);
     }
 
-    private CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr) {
+    public CFG destructIRTernaryOpExpression(IRTernaryOpExpression expr, String lastVar) {
         IRExpression condition = expr.getCondition();
 
-        CFGLine trueBranch = destructIRExpression(expr.getTrueExpression(),"temp_tern_true_" + expr.hashCode()).getStart();
-        CFGLine falseBranch = destructIRExpression(expr.getFalseExpression(),"temp_tern_false_" + expr.hashCode()).getStart();
+        CFG trueBranch = destructIRExpression(expr.getTrueExpression(),lastVar+"_false");
+        CFG falseBranch = destructIRExpression(expr.getFalseExpression(),lastVar+"_true");
+        
+        CFGLine assignFalse = new CFGAssignStatement(lastVar, EQ_OP, new IRVariableExpression(lastVar + "_false"));
+        CFGLine assignTrue = new CFGAssignStatement(lastVar, EQ_OP, new IRVariableExpression(lastVar + "_true"));
 
-        CFGLine condLine = shortcircuit(condition, trueBranch, falseBranch);
+        CFGLine condLine = shortcircuit(condition, trueBranch.getStart(), falseBranch.getStart());
 
         CFGLine noOp = makeNoOp();
-        trueBranch.setNext(noOp);
-        falseBranch.setNext(noOp);
+        trueBranch.getEnd().setNext(assignTrue);
+        falseBranch.getEnd().setNext(assignFalse);
+        assignTrue.setNext(noOp);
+        assignFalse.setNext(noOp);
         return new CFG(condLine, noOp);
     }
 
-    private CFG destructIRExpression(IRExpression expr) {
+
+    CFG destructIRExpression(IRExpression expr) {
         switch(expr.getExpressionType()) {
-          case TERNARY: {
-            return destructIRTernaryOpExpression((IRTernaryOpExpression) expr);
-          }
           case METHOD_CALL: {
             return destructIRMethodCallExpression((IRMethodCallExpression) expr);
           }
@@ -347,8 +350,11 @@ public class CFGCreator {
      * @param lastVar the name to assign to the last temporary variable created
      * @return a CFG where each line is an assign expression of an expression of depth <=1 to a new temporary variable
      */
-    private CFG destructIRExpression(IRExpression value, String lastVar) {
-        if(value.getExpressionType().equals(ExpressionType.BINARY) && (
+    CFG destructIRExpression(IRExpression value, String lastVar) {
+    	if(value.getExpressionType().equals(ExpressionType.TERNARY)) {
+    		return destructIRTernaryOpExpression((IRTernaryOpExpression) value, lastVar);
+    	}
+    	if(value.getExpressionType().equals(ExpressionType.BINARY) && (
                 ((IRBinaryOpExpression)value).getOperator().getText().equals("||") ||
                 ((IRBinaryOpExpression)value).getOperator().getText().equals("&&"))) {
             IRMemberDecl lastVarDecl = new IRLocalDecl(value.getType(), new CommonToken(lastVar));
