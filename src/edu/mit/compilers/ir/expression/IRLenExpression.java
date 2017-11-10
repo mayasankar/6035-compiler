@@ -11,23 +11,26 @@ import edu.mit.compilers.ir.IRNode.IRNodeVisitor;
 import edu.mit.compilers.ir.expression.IRExpression.IRExpressionVisitor;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
-public class IRLenExpression extends IRExpression {
-  private Token id; // what you are taking the length of
+public class IRLenExpression extends IRExpression implements IRExpression.Renameable {
+    private String variableName; // what you are taking the length of
 
-  public IRLenExpression(Token id) {
-    expressionType = IRExpression.ExpressionType.LEN;
-    this.id = id;
-  }
+    public IRLenExpression(Token id) {
+        expressionType = IRExpression.ExpressionType.LEN;
+        variableName = id.getText();
+    }
 
-  public String getArgument() {
-      return id.getText();
-  }
+    public String getArgument() { return variableName; }
+    @Override
+    public void resetName(String newName) { variableName = newName; }
 
-  @Override
-  public TypeDescriptor getType() {
-    return TypeDescriptor.INT;
-  }
-  
+    @Override
+    public String toString() { return "len(" + variableName + ")"; }
+
+    @Override
+    public TypeDescriptor getType() {
+        return TypeDescriptor.INT;
+    }
+
 	@Override
 	public int getDepth() {
 		return 1;
@@ -38,7 +41,7 @@ public class IRLenExpression extends IRExpression {
         // TODO Auto-generated method stub
         return Arrays.asList();
     }
-    
+
 	@Override
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);

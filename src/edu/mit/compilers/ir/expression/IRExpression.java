@@ -22,7 +22,11 @@ public abstract class IRExpression extends IRNode {
 		METHOD_CALL,
 		VARIABLE,
 	}
-	
+
+    public interface Renameable {
+        public void resetName(String newName);
+    }
+
 	public interface IRExpressionVisitor<R>{
 		public R on(IRUnaryOpExpression ir);
 		public R on(IRBinaryOpExpression ir);
@@ -32,15 +36,15 @@ public abstract class IRExpression extends IRNode {
 		public R on(IRMethodCallExpression ir);
 		public <T> R on(IRLiteral<T> ir);
 	}
-	
+
 	public abstract <R> R accept(IRExpressionVisitor<R> visitor);
 
 	protected ExpressionType expressionType = ExpressionType.UNSPECIFIED;
 
 	public ExpressionType getExpressionType() { return expressionType; }
-	
+
 	public abstract int getDepth();
-	
+
 	@Override
 	public abstract List<IRExpression> getChildren();
 }
