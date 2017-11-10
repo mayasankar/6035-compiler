@@ -8,6 +8,10 @@ public class CFGNoOp extends CFGLine {
         super();
     }
 
+    public CFGNoOp(CFGLine trueBranch, CFGLine falseBranch) {
+        super(trueBranch, falseBranch);
+    }
+
     @Override
     public boolean isNoOp() { return true; }
 
