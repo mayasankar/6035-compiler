@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,10 @@ public abstract class CFGLine {
     protected CFGLine falseBranch;
     protected List<CFGLine> parents;
     protected CFGBlock correspondingBlock;
-    protected Set<String> setDCE;
+
+    // for DCE
+    protected Set<String> setDCE = new HashSet<>(); // in[thisline]; TODO rename to livenessIN
+    protected Set<String> livenessOUT = new HashSet<>();
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -33,7 +37,6 @@ public abstract class CFGLine {
         falseBranch.addParentLine(this);
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.setDCE = new HashSet<>();
     }
 
     protected CFGLine(CFGLine next) {
@@ -42,7 +45,6 @@ public abstract class CFGLine {
         next.addParentLine(this);
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.setDCE = new HashSet<>();
     }
 
     protected CFGLine() {
@@ -50,7 +52,6 @@ public abstract class CFGLine {
         this.falseBranch = null;
         this.parents = new ArrayList<>();
         this.correspondingBlock = null;
-        this.setDCE = new HashSet<>();
     }
 
     public abstract <R> R accept(CFGVisitor<R> visitor);
@@ -77,17 +78,27 @@ public abstract class CFGLine {
         return parents;
     }
 
+    public List<CFGLine> getChildren() {
+        if (isEnd()) {
+            return Arrays.asList();
+        } else if (isBranch()) {
+            return Arrays.asList(trueBranch, falseBranch);
+        } else {
+            return Arrays.asList(trueBranch);
+        }
+    }
+
     public void removeParent(CFGLine parent) {
         this.parents.remove(parent);
     }
 
-    public Set getSetDCE() {
-        return this.setDCE;
-    }
+    public Set<String> getLivenessIn() { return this.setDCE; }
+    public void setLivenessIn(Set<String> newSet) { this.setDCE = newSet; }
+    public Set<String> getLivenessOut() { return this.livenessOUT; }
+    public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
 
-    public void setSetDCE(Set newSet) {
-        this.setDCE = newSet;
-    }
+    public Set getSetDCE() { return this.setDCE; }
+    public void setSetDCE(Set newSet) { this.setDCE = newSet; }
 
     public CFGLine getTrueBranch() {
         return trueBranch;

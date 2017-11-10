@@ -56,7 +56,12 @@ public class CFG {
         return this;
     }
 
-    public void deadCodeElimination() {
+    public Set<CFGLine> getAllLines() {
+        // TODO implement
+        return new HashSet<>();
+    }
+
+    private void doLivenessAnalysisOLD() {
         CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
         Set<CFGLine> toUpdate = new HashSet<>();
         Set<CFGLine> alreadyUpdated = new HashSet<>();
@@ -66,23 +71,32 @@ public class CFG {
             toUpdate.remove(line);
             alreadyUpdated.add(line);
 
-            // System.out.println("START setDCE:\n");
-            // Set<String> dce = line.getSetDCE();
-            // for (String elem : dce) {
-            //     System.out.println("\t" + elem);
-            // }
+            System.out.println("\nSTART setDCE:");
+            Set<String> dce = line.getSetDCE();
+            for (String elem : dce) {
+                System.out.println("\t" + elem);
+            }
             Boolean changed = line.accept(visitor);
-            // dce = line.getSetDCE();
-            // System.out.println("END setDCE:\n");
-            // for (String elem : dce) {
-            //     System.out.println("\t" + elem);
-            // }
+            dce = line.getSetDCE();
+            System.out.println("\nEND setDCE:");
+            for (String elem : dce) {
+                System.out.println("\t" + elem);
+            }
             if (changed) {
                 alreadyUpdated.removeAll(line.getParents());
             }
             toUpdate.addAll(line.getParents());
             toUpdate.removeAll(alreadyUpdated);
         }
+    }
+
+    private void doLivenessAnalysis() {
+        DCEVisitor visitor = new DCEVisitor();
+        visitor.doLivenessAnalysis(this);
+    }
+
+    public void deadCodeElimination() {
+        doLivenessAnalysis();
 
         // iterate through and eliminate dead code
         Set<CFGLine> toPossiblyRemove = new HashSet<>();

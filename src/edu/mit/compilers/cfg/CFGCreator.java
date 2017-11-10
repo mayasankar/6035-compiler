@@ -37,7 +37,7 @@ public class CFGCreator {
         Map<String, CFGBlock> destructedMethods = new HashMap<>();
         for (IRMethodDecl method : tree.getMethodTable().getMethodList()) {
             CFG methodCFG = destructIRMethodDecl(method);
-            //methodCFG.deadCodeElimination();
+            methodCFG.deadCodeElimination();
             CFGBlock blockedCFG = condenseIntoBlocks(methodCFG);
             String name = method.getName();
             destructedMethods.put(name, blockedCFG);
