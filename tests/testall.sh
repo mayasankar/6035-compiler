@@ -17,6 +17,14 @@ case $OS in
     $ROOT/semantics-hidden/test.sh;
     echo "Codegen Tests";
     $ROOT/codegen/test.sh;
+    echo "Codegen Hidden Tests";
+    $ROOT/codegen-hidden/test.sh;
+    echo "Dataflow Tests";
+    $ROOT/dataflow/test.sh;
+    echo "Dataflow-hidden Tests";
+    $ROOT/dataflow-hidden/test.sh;
+    echo "Optimizer Tests";
+    $ROOT/optimizer/test.sh;
     ;;
   CYGWIN*|Windows*)
     cd $ROOT;
@@ -32,8 +40,16 @@ case $OS in
     bash semantics/test.sh;
     echo "Semantic Tests";
     bash semantics-hidden/test.sh;
-    echo "Semantic Tests";
+    echo "Codegen Tests";
     bash codegen/test.sh;
+    echo "Codegen-Hidden Tests";
+    bash codegen-hidden/test.sh;
+    echo "Dataflow Tests";
+    bash dataflow/test.sh;
+    echo "Dataflow-Hidden Tests";
+    bash dataflow-hidden/test.sh;
+    echo "Optimizer Tests";
+    bash optimizer/test.sh;
     ;;
   *)
     echo "Error: Unknown $OS";

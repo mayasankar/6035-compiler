@@ -1,0 +1,76 @@
+import pgm_get_next_pixel;
+import start_caliper;
+import pgm_get_rows;
+import pgm_get_cols;
+import pgm_write_next_pixel;
+import end_caliper;
+import pgm_open_for_write;
+import pgm_open_for_read;
+import pgm_close;
+
+// gaussian blur in x direction
+int image[800000];
+int cols, rows, size;
+void read () {
+  int i;
+  pgm_open_for_read ("segovia.pgm");
+  cols = pgm_get_cols ();
+  rows = pgm_get_rows ();
+  size = cols * rows;
+  for (i = 0; i < size; i += 1) {
+    image[i] = pgm_get_next_pixel ();
+  }
+  pgm_close ();
+}
+void write () {
+  int i;
+  pgm_open_for_write ("segovia_blur.pgm", cols, rows);
+  size = cols * rows;
+  for (i = 0; i < size; i += 1) {
+    pgm_write_next_pixel (image[i]);
+  }
+  pgm_close ();
+}
+void gaussian_blur () {
+  int kernel_sum;
+  int kernel[7];
+  int i,r,c;
+  kernel[0] = 4433;
+  kernel[1] = 54006;
+  kernel[2] = 242036;
+  kernel[3] = 399050;
+  kernel[4] = 242036;
+  kernel[5] = 54006;
+  kernel[6] = 4433;
+  for (i = 0; i < 7; i += 1) {
+    kernel_sum = kernel_sum + kernel[i];
+  }
+  //blur in x-direction
+  for (r = 0; r < rows; r += 1) {
+    int p1, p2, p3;
+    p1 = image[r*768];
+    p2 = image[r*768 + 1];
+    p3 = image[r*768 + 2];
+    for (c = 3; c < cols; c += 1) {
+      int dot;
+      dot = (p1 * kernel[0]);
+      dot += (p2 * kernel[1]);
+      dot += (p3 * kernel[2]);
+      dot += (image[r*768 + c] * kernel[3]);
+      dot += (image[r*768 + c + 1] * kernel[4]);
+      dot += (image[r*768 + c + 2] * kernel[5]);
+      dot += (image[r*768 + c + 3] * kernel[6]);
+      p1 = p2;
+      p2 = p3;
+      p3 = image[r*768 + c];
+      image[r*768 + c] = dot / kernel_sum;
+    }
+  }
+}
+void main () {
+  read ();
+  start_caliper ();
+  gaussian_blur ();
+  end_caliper ();
+  write ();
+}
