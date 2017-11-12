@@ -1,7 +1,9 @@
 package edu.mit.compilers.cfg;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.mit.compilers.ir.IRNode;
@@ -138,26 +140,45 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRMethodCallExpression ir) {
-        // TODO Auto-generated method stub
-        return null;
+        if(ir.getDepth() > 1) {
+            CFG returnCFG = new CFG(new CFGNoOp());
+            List<IRExpression> newArgs = new ArrayList<>();
+            for(IRExpression argument: ir.getArguments()) {
+                if(argument.getDepth() > 0) {
+                    // Method arg must be simplified with a temporary variable
+                    CFG argDestruct = argument.accept(this);
+                    returnCFG = returnCFG.concat(argDestruct);
+                    
+                    IRVariableExpression argumentName = new IRVariableExpression(argument.accept(namer));
+                    newArgs.add(argumentName);
+                } else {
+                    newArgs.add(argument);
+                }
+            }
+                        
+            IRMethodCallExpression simplerExpr = new IRMethodCallExpression(ir.getName(), newArgs);
+            CFGLine varExpr = new CFGAssignStatement2(ir.accept(namer), simplerExpr);
+            
+            return returnCFG.concat(new CFG(varExpr));
+        } else {
+            CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
+            return new CFG(lenLine);
+        }
     }
 
     @Override
     public CFG onBool(IRLiteral<Boolean> ir) {
-        // TODO Auto-generated method stub
-        return null;
+        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
     }
 
     @Override
     public CFG onString(IRLiteral<String> ir) {
-        // TODO Auto-generated method stub
-        return null;
+        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
     }
 
     @Override
     public CFG onInt(IRLiteral<BigInteger> ir) {
-        // TODO Auto-generated method stub
-        return null;
+        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
     }
 
     @Override
