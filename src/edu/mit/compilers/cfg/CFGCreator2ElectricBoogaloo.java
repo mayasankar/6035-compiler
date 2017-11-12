@@ -23,6 +23,7 @@ import edu.mit.compilers.ir.expression.IRTernaryOpExpression;
 import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
+import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
@@ -67,20 +68,32 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRFieldDecl ir) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
     }
 
     @Override
     public CFG on(IRLocalDecl ir) {
-        // TODO Auto-generated method stub
-        return null;
+        return onDecl(ir);
     }
 
     @Override
     public CFG on(IRParameterDecl ir) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
+    }
+    
+    private CFG onDecl(IRMemberDecl decl) {
+        if(decl.isArray()) {
+            CFG returnCFG = new CFG(makeNoOp());
+            for(int i=0; i<decl.getLength(); ++i) {
+                CFGLine setZero = new CFGAssignStatement2(decl.getName(), 
+                        new IRIntLiteral(BigInteger.valueOf(i)), 
+                        new IRIntLiteral(BigInteger.ZERO));
+                returnCFG.concat(new CFG(setZero));
+            }
+            return returnCFG;
+        } else {
+            return new CFG(new CFGAssignStatement2(decl.getName(), new IRIntLiteral(BigInteger.ZERO)));
+        }
     }
 
     @Override
@@ -122,13 +135,31 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             IRExpression left = ir.getLeftExpr();
             if(left.getDepth() > 0) {
                 CFG leftCFG = left.accept(this);
+                returnCFG = returnCFG.concat(leftCFG);
+                
+                IRVariableExpression name = new IRVariableExpression(left.accept(namer));
+                exprArgs.add(name);
             } else {
                 exprArgs.add(ir.getLeftExpr());
             }
+            
+            IRExpression right = ir.getRightExpr();
+            if(right.getDepth() > 0) {
+                CFG rightCFG = right.accept(this);
+                returnCFG = returnCFG.concat(rightCFG);
+                
+                IRVariableExpression name = new IRVariableExpression(right.accept(namer));
+                exprArgs.add(name);
+            } else {
+                exprArgs.add(ir.getRightExpr());
+            }
+            
+            IRBinaryOpExpression simpleExpr = new IRBinaryOpExpression(exprArgs.get(0), ir.getOperator(), exprArgs.get(1));
+            CFGLine exprLine = new CFGAssignStatement2(ir.accept(namer), simpleExpr);
+            return returnCFG.concat(new CFG(exprLine));
         } else {
             return new CFG(new CFGAssignStatement2(tempName, ir));
         }
-        return null;
     }
 
     @Override
