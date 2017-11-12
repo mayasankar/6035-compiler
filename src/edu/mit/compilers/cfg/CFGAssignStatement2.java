@@ -18,8 +18,11 @@ public class CFGAssignStatement2 extends CFGLine {
 		this.expression = expression;
 	}
 
-	public CFGAssignStatement2(String variableName, String indexLocation, Token op, IRExpression expression) {
-        this.varAssigned = new IRVariableExpression(variableName, new IRVariableExpression(indexLocation));
+	public CFGAssignStatement2(String variableName, IRExpression indexLocation, Token op, IRExpression expression) {
+        if (indexLocation.getDepth() > 0) {
+            throw new RuntimeException("CFGAssignStatements must not have >0 indexLocation depth: " + indexLocation.toString());
+        }
+        this.varAssigned = new IRVariableExpression(variableName, indexLocation);
         if (expression.getDepth() > 1) {
             throw new RuntimeException("CFGAssignStatements must not have >1 expression depth: " + expression.toString());
         }
