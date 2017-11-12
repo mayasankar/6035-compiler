@@ -66,6 +66,7 @@ public abstract class CFGLine {
         public R on(CFGMethodCall line);
         public R on(CFGConditional line);
 		public R on(CFGAssignStatement line);
+        public R on(CFGAssignStatement2 line);
 	}
 
     public CFGBlock getCorrespondingBlock() {

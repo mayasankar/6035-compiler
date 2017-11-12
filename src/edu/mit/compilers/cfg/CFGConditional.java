@@ -8,11 +8,17 @@ public class CFGConditional extends CFGLine {
 
     public CFGConditional(CFGLine trueBranch, CFGLine falseBranch, IRExpression expression) {
         super(trueBranch, falseBranch);
+        if (expression.getDepth() > 1) {
+            throw new RuntimeException("CFGConditionals must not have >1 expression depth: " + expression.toString());
+        }
         this.expression = expression;
     }
 
     public CFGConditional(IRExpression expression) {
         super();
+        if (expression.getDepth() > 1) {
+            throw new RuntimeException("CFGConditionals must not have >1 expression depth: " + expression.toString());
+        }
         this.expression = expression;
     }
 

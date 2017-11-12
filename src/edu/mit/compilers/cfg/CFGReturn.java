@@ -8,11 +8,17 @@ public class CFGReturn extends CFGLine {
 
     public CFGReturn(CFGLine trueBranch, CFGLine falseBranch, IRExpression expression) {
         super(trueBranch, falseBranch);
+        if (expression.getDepth() > 1) {
+            throw new RuntimeException("CFGReturns must not have >1 expression depth: " + expression.toString());
+        }
         this.expression = expression;
     }
 
     public CFGReturn(IRExpression expression) {
         super();
+        if (expression.getDepth() > 1) {
+            throw new RuntimeException("CFGReturns must not have >1 expression depth: " + expression.toString());
+        }
         this.expression = expression;
     }
 
