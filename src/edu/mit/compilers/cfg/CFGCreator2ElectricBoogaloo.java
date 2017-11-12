@@ -2,6 +2,7 @@ package edu.mit.compilers.cfg;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import edu.mit.compilers.ir.expression.IRMethodCallExpression;
 import edu.mit.compilers.ir.expression.IRTernaryOpExpression;
 import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
+import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRBlock;
@@ -33,7 +35,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
     private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
-    
+
     /**
      * Destructs a CFG for every method in the given program. All lines in the CFG will be valid CFGLines.
      * @param program the IR to destruct
@@ -41,16 +43,16 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
      */
     public static CFGProgram destructCFGsFromIR(IRProgram program) {
         CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
-        
+
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
-        
+
         return creator.program;
     }
-    
+
     @Override
     public CFG on(IRProgram ir) {
         throw new RuntimeException("Please call makeCFGsFromIR instead!");
@@ -95,16 +97,30 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRBinaryOpExpression ir) {// TODO fix this
-   /*     String exprTempName = ir.accept(namer);
+        String tempName = ir.accept(namer);
+        if(Arrays.asList("&&","||").contains(ir.getOperator().toString())) {
+            CFGLine noOp = new CFGNoOp();
+            CFGLine trueLine = new CFGAssignStatement2(tempName, new IRBoolLiteral(true));
+            CFGLine falseLine = new CFGAssignStatement2(tempName, new IRBoolLiteral(false));
+            trueLine.setNext(noOp);
+            falseLine.setNext(noOp);
+
+            CFGLine startShort = shortcircuit(ir, trueLine, falseLine);
+            return new CFG(startShort, noOp);
+        }
         if(ir.getDepth() > 1) {
-            CFG argumentCFG = ir.getArgument().accept(this);
-            IRVariableExpression tempValue = new IRVariableExpression(ir.getArgument().accept(namer));
-            IRUnaryOpExpression simplerExpr = new IRUnaryOpExpression(ir.getOperator(), tempValue);
-            CFGLine unaryLine = new CFGAssignStatement2(exprTempName, simplerExpr);
-            return argumentCFG.concat(new CFG(unaryLine));
+            CFG returnCFG = new CFG(new CFGNoOp());
+            List<IRExpression> exprArgs = new ArrayList<>();
+            
+            IRExpression left = ir.getLeftExpr();
+            if(left.getDepth() > 0) {
+                CFG leftCFG = left.accept(this);
+            } else {
+                exprArgs.add(ir.getLeftExpr());
+            }
         } else {
-            return new CFG(new CFGAssignStatement2(exprTempName, ir));
-        }*/
+            return new CFG(new CFGAssignStatement2(tempName, ir));
+        }
         return null;
     }
 
@@ -126,11 +142,11 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             //Variable index is complicated
             IRExpression varIndex = ir.getIndexExpression();
             CFG returnCFG = varIndex.accept(this);
-            
+
             IRVariableExpression indexTempExpr = new IRVariableExpression(varIndex.accept(namer));
             IRVariableExpression simplerExpr = new IRVariableExpression(ir.getName(), indexTempExpr);
             CFGLine varExpr = new CFGAssignStatement2(ir.accept(namer), simplerExpr);
-            
+
             return returnCFG.concat(new CFG(varExpr));
         } else {
             CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
@@ -183,14 +199,39 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        if (ir.getValue().getDepth() == 0) {
+    		return new CFG(new CFGirement(ir));
+    	}
+        else {
+    		String lastVar = ir.getValue().accept(namer);
+    		CFG expandedExpr = destructIRExpression(ir.getValue(), lastVar);
+            IRVariableExpression location = ir.getVarAssigned();
+            CFGLine assignLine;
+            if (location.isArray()) {
+                String locationLastVar = "location_helper_" + location.hashCode();
+                CFG expandedIndexExpr = destructIRExpression(location.getIndexExpression(), locationLastVar);
+                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
+                assignLine = new CFGAssignStatement2(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
+                expandedIndexExpr.getEnd().setNext(assignLine);
+            } else {
+        		assignLine = new CFGAssignStatement2(ir.getVariableName(), new IRVariableExpression(lastVar));
+        		expandedExpr.getEnd().setNext(assignLine);
+            }
+    		return new CFG(expandedExpr.getStart(), assignLine);
+    	}
     }
 
     @Override
     public CFG on(IRBlock ir) {
-        // TODO Auto-generated method stub
-        return null;
+        List<IRStatement> statements = ir.getStatements();
+        List<IRFieldDecl> fieldDecls = ir.getFieldDecls();
+        CFG f = new CFG(makeNoOp());
+        for (IRMemberDecl decl : fieldDecls) {
+            f.concat(destructIRMemberDecl(decl));
+        }
+        CFG s = destructStatementList(statements);
+        f.getEnd().setNext(s.getStart());
+        return new CFG(f.getStart(), s.getEnd());
     }
 
     @Override
@@ -228,8 +269,68 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         // TODO Auto-generated method stub
         return null;
     }
-    
-    
+
+    // SHORT CIRCUITING
+
+    private CFGLine shortcircuit(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        switch(expr.getExpressionType()) {
+          case UNARY: {
+            IRUnaryOpExpression unExpr = (IRUnaryOpExpression) expr;
+            if (unExpr.getOperator().getText().equals("!")) {
+                return shortcircuitNotExpression(unExpr, trueBranch, falseBranch);
+            }
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+          case BINARY: {
+            IRBinaryOpExpression biExpr = (IRBinaryOpExpression) expr;
+            String op = biExpr.getOperator().getText();
+            if (op.equals("&&")) {
+                return shortcircuitAndExpression(biExpr, trueBranch, falseBranch);
+            }
+            if (op.equals("||")) {
+                return shortcircuitOrExpression(biExpr, trueBranch, falseBranch);
+            }
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+          default: {
+            return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
+          }
+        }
+    }
+
+    private CFGLine shortcircuitAndExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
+        CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), beginSecond, falseBranch);
+        return beginFirst;
+    }
+
+    private CFGLine shortcircuitOrExpression(IRBinaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginSecond = shortcircuit(expr.getRightExpr(), trueBranch, falseBranch);
+        CFGLine beginFirst = shortcircuit(expr.getLeftExpr(), trueBranch, beginSecond);
+        return beginFirst;
+    }
+
+    private CFGLine shortcircuitBasicExpression(IRExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFG exprCFG = expr.accept(this);
+        CFGLine tempExpr = new CFGConditional(trueBranch, falseBranch, new IRVariableExpression(expr.accept(namer)));
+        exprCFG.getEnd().setNext(tempExpr);
+        return exprCFG.getStart();
+    }
+
+    private CFGLine shortcircuitNotExpression(IRUnaryOpExpression expr, CFGLine trueBranch, CFGLine falseBranch) {
+        CFGLine beginNot = shortcircuit(expr.getArgument(), falseBranch, trueBranch);
+        return beginNot;
+    }
+
+
+
+
+
+
+
+
+
+
     private static class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
 
         @Override
@@ -266,7 +367,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         public <T> String on(IRLiteral<T> ir) {
             return "literal_temp_" + ir.hashCode();
         }
-        
+
     }
 
 }
