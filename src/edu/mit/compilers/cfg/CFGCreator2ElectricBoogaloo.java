@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.List;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRProgram;
@@ -13,6 +14,7 @@ import edu.mit.compilers.ir.decl.IRFieldDecl;
 import edu.mit.compilers.ir.decl.IRLocalDecl;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
 import edu.mit.compilers.ir.decl.IRParameterDecl;
+import edu.mit.compilers.ir.decl.IRMemberDecl;
 import edu.mit.compilers.ir.expression.IRBinaryOpExpression;
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRLenExpression;
@@ -23,6 +25,7 @@ import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
+import edu.mit.compilers.ir.statement.IRStatement;
 import edu.mit.compilers.ir.statement.IRBlock;
 import edu.mit.compilers.ir.statement.IRForStatement;
 import edu.mit.compilers.ir.statement.IRIfStatement;
@@ -51,6 +54,10 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         }
 
         return creator.program;
+    }
+
+    public CFGLine makeNoOp() {
+        return new CFGNoOp();
     }
 
     @Override
@@ -203,13 +210,11 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
     		return new CFG(new CFGirement(ir));
     	}
         else {
-    		String lastVar = ir.getValue().accept(namer);
-    		CFG expandedExpr = destructIRExpression(ir.getValue(), lastVar);
+    		CFG expandedExpr = ir.getValue().accept(this);
             IRVariableExpression location = ir.getVarAssigned();
             CFGLine assignLine;
             if (location.isArray()) {
-                String locationLastVar = "location_helper_" + location.hashCode();
-                CFG expandedIndexExpr = destructIRExpression(location.getIndexExpression(), locationLastVar);
+                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
                 expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
                 assignLine = new CFGAssignStatement2(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
                 expandedIndexExpr.getEnd().setNext(assignLine);
@@ -221,13 +226,27 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
     	}
     }
 
+    // helper; TODO Arkadiy wanted to fix this I think
+    private CFG destructStatementList(List<IRStatement> statements) {
+        CFG ret = new CFG(makeNoOp());
+        for (IRStatement statement : statements) {
+            CFG statementGraph = statement.accept(this);
+            ret.concat(statementGraph);
+            if (statementGraph.getEnd().getTrueBranch() != null) {
+                // firstEnd had a break/continue statement so we don't evaluate rest of block
+                break;
+            }
+        }
+        return ret;
+    }
+
     @Override
     public CFG on(IRBlock ir) {
         List<IRStatement> statements = ir.getStatements();
         List<IRFieldDecl> fieldDecls = ir.getFieldDecls();
         CFG f = new CFG(makeNoOp());
         for (IRMemberDecl decl : fieldDecls) {
-            f.concat(destructIRMemberDecl(decl));
+            f.concat(decl.accept(this));
         }
         CFG s = destructStatementList(statements);
         f.getEnd().setNext(s.getStart());
