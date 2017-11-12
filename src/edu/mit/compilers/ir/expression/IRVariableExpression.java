@@ -66,7 +66,7 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 
 	@Override
 	public int getDepth() {
-		return 0;
+		return arrayIndex == null ? 0 : 1 + arrayIndex.getDepth();
 	}
 
 	@Override

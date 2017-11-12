@@ -46,6 +46,51 @@ public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
         throw new RuntimeException("DCEVisitor should never be called on a CFGBlock.");
     }
 
+
+    @Override
+    public Boolean on(CFGAssignStatement2 line){
+        Set<String> use = line.getExpression().accept(USE);
+        Set<String> assign = line.getVarAssigned().accept(USE);
+        return onHelper(line, use, assign);
+    }
+
+    @Override
+    public Boolean on(CFGConditional line){
+        IRExpression expr = line.getExpression();
+        Set<String> use = expr.accept(USE);
+        Set<String> assign = expr.accept(ASSIGN);
+        return onHelper(line, use, assign);
+    }
+
+    @Override
+    public Boolean on(CFGMethodCall line){
+        IRExpression expr = line.getExpression();
+        Set<String> use = expr.accept(USE);
+        Set<String> assign = expr.accept(ASSIGN);
+        return onHelper(line, use, assign);
+    }
+
+    @Override
+    public Boolean on(CFGReturn line){
+        if (line.isVoid()) {
+            Set empty = new HashSet<>();
+            return onHelper(line, empty, empty);
+        }
+        IRExpression expr = line.getExpression();
+        Set<String> use = expr.accept(USE);
+        Set<String> assign = expr.accept(ASSIGN);
+        return onHelper(line, use, assign);
+    }
+
+    @Override
+    public Boolean on(CFGNoOp line){
+        Set empty = new HashSet<>();
+        return onHelper(line, empty, empty);
+    }
+
+
+    // DELETE BELOW
+
     @Override
     public Boolean on(CFGStatement line){
         IRStatement statement = line.getStatement();
@@ -76,12 +121,6 @@ public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
         Set<String> use = decl.accept(USE);
         Set<String> assign = decl.accept(ASSIGN);
         return onHelper(line, use, assign);
-    }
-
-    @Override
-    public Boolean on(CFGNoOp line){
-        Set empty = new HashSet<>();
-        return onHelper(line, empty, empty);
     }
 
     @Override

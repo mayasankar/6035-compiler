@@ -62,7 +62,11 @@ public abstract class CFGLine {
 		public R on(CFGDecl line);
 		public R on(CFGMethodDecl line);
 		public R on(CFGNoOp line);
+        public R on(CFGReturn line);
+        public R on(CFGMethodCall line);
+        public R on(CFGConditional line);
 		public R on(CFGAssignStatement line);
+        public R on(CFGAssignStatement2 line);
 	}
 
     public CFGBlock getCorrespondingBlock() {
