@@ -419,6 +419,11 @@ public class CFGCreator {
         CFGLine restStart = restGraph.getStart();
         firstEnd.setNext(restStart);
         return new CFG(firstGraph.getStart(), restGraph.getEnd());
+        // CFGLine ret = makeNoOp();
+        // for (IRMemberDecl decl : decls) {
+        //      ret.concat(destructIRMemberDecl(decl));
+        // }
+    }
     }
 
     private CFG destructStatementList(List<IRStatement> statements) {
