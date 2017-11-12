@@ -424,7 +424,6 @@ public class CFGCreator {
         //      ret.concat(destructIRMemberDecl(decl));
         // }
     }
-    }
 
     private CFG destructStatementList(List<IRStatement> statements) {
         if (statements.size() == 0) {
