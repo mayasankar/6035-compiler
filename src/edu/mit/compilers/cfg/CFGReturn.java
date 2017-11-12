@@ -22,6 +22,11 @@ public class CFGReturn extends CFGLine {
         this.expression = expression;
     }
 
+    public CFGReturn() {
+        super();
+        this.expression = null;
+    }
+
     public IRExpression getExpression() {
         if (expression == null) {
             throw new RuntimeException("Trying to access expression of void return statement. Check isVoid() before calling getExpression() to fix.");

@@ -10,6 +10,20 @@ public class CFGAssignStatement2 extends CFGLine {
 	private IRVariableExpression varAssigned; // operation must be = here
     private IRExpression expression;
 
+	public CFGAssignStatement2(IRAssignStatement s) {
+		if (!s.getOperator().equals("=")) {
+			throw new RuntimeException("CFGAssignStatements must not have operators other than '=': " s.getOperator());
+		}
+		this.varAssigned = s.getVarAssigned();
+		if (this.varAssigned.getDepth() > 1) {
+            throw new RuntimeException("CFGAssignStatements must not have >1 varAssigned depth: " + indexLocation.toString());
+        }
+		this.expression = s.getValue();
+		if (this.expression.getDepth() > 1) {
+            throw new RuntimeException("CFGAssignStatements must not have >1 expression depth: " + expression.toString());
+        }
+	}
+
 	public CFGAssignStatement2(String variableName, IRExpression expression) {
         this.varAssigned = new IRVariableExpression(variableName);
         if (expression.getDepth() > 1) {

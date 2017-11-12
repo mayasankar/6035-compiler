@@ -118,7 +118,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         if(ir.getDepth() > 1) {
             CFG returnCFG = new CFG(new CFGNoOp());
             List<IRExpression> exprArgs = new ArrayList<>();
-            
+
             IRExpression left = ir.getLeftExpr();
             if(left.getDepth() > 0) {
                 CFG leftCFG = left.accept(this);
@@ -171,17 +171,17 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
                     // Method arg must be simplified with a temporary variable
                     CFG argDestruct = argument.accept(this);
                     returnCFG = returnCFG.concat(argDestruct);
-                    
+
                     IRVariableExpression argumentName = new IRVariableExpression(argument.accept(namer));
                     newArgs.add(argumentName);
                 } else {
                     newArgs.add(argument);
                 }
             }
-                        
+
             IRMethodCallExpression simplerExpr = new IRMethodCallExpression(ir.getName(), newArgs);
             CFGLine varExpr = new CFGAssignStatement2(ir.accept(namer), simplerExpr);
-            
+
             return returnCFG.concat(new CFG(varExpr));
         } else {
             CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
@@ -255,14 +255,57 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRForStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        CFGLine continueNoOp = makeNoOp(); // when we continue, jump to here, which will go to the incrementor
+        CFGLine endNoOp = makeNoOp();
+        envStack.add(new CFGLoopEnv(continueNoOp, endNoOp));
+
+        IRExpression cond = ir.getCondition();
+        IRAssignStatement initializer = ir.getInitializer();
+        IRAssignStatement stepFunction = ir.getStepFunction();
+        IRBlock block = ir.getBlock();
+
+        CFGAssignStatement2 initLine = new CFGAssignStatement2(initializer);
+        CFGAssignStatement2 stepLine = new CFGAssignStatement2(stepFunction);
+        CFG blockGraph = block.accept(this);
+        CFGLine blockStart = blockGraph.getStart();
+        CFGLine blockEnd = blockGraph.getEnd();
+        CFGLine noOp = makeNoOp();
+        CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
+        blockEnd.setNext(stepLine);
+        stepLine.setNext(condStart);
+        initLine.setNext(condStart);
+        continueNoOp.setNext(stepLine);
+
+        envStack.remove(envStack.size()-1);
+        return new CFG(initLine, endNoOp);
     }
 
     @Override
     public CFG on(IRIfStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        IRExpression cond = ir.getCondition();
+        IRBlock thenBlock = ir.getThenBlock();
+        IRBlock elseBlock = ir.getElseBlock();
+
+        List<CFGLoopEnv> envStackCopy = new ArrayList<>(envStack);
+
+        CFG thenGraph = thenBlock.accept(this);
+        CFGLine thenStart = thenGraph.getStart();
+        CFGLine thenEnd = thenGraph.getEnd();
+        CFGLine noOp = makeNoOp();
+        thenEnd.setNext(noOp);
+        CFGLine condStart;
+        if (elseBlock != null) {
+            envStack = new ArrayList<>(envStackCopy); // restore, removing any changes we did while destructing child
+            CFG elseGraph = elseBlock.accept(this);
+            CFGLine elseStart = elseGraph.getStart();
+            CFGLine elseEnd = elseGraph.getEnd();
+            elseEnd.setNext(noOp);
+            condStart = shortcircuit(cond, thenStart, elseStart);
+        }
+        else {
+            condStart = shortcircuit(cond, thenStart, noOp);
+        }
+        return new CFG(condStart, noOp);
     }
 
     @Override
@@ -273,20 +316,53 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRMethodCallStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        CFG answer = new CFG(makeNoOp());
+    	List<IRExpression> argsWithTemps = new ArrayList<>();
+    	for(IRExpression arg: ir.getMethodCall().getArguments()) {
+    		if(arg.getDepth() > 0) {
+    			CFG expandExpr = arg.accept(this);
+    			IRVariableExpression temp = new IRVariableExpression(tempVarName);
+    			argsWithTemps.add(temp);
+    			answer.concat(expandExpr);
+    		} else {
+    			argsWithTemps.add(arg);
+    		}
+    	}
+    	IRMethodCallExpression newExpr = new IRMethodCallExpression(ir.getMethodCall().getName(), argsWithTemps);
+    	CFG newCFG = new CFG(new CFGMethodCall(newExpr));
+    	return answer.concat(newCFG);
     }
 
     @Override
     public CFG on(IRReturnStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        if (ir.isVoid()) {
+            return new CFG(new CFGReturn());
+        }
+        IRExpression returnExpr = ir.getReturnExpr();
+        String name = returnExpr.accept(namer);
+        CFG returnCFG = returnExpr.accept(this);
+        IRVariableExpression returnVar = new IRVariableExpression(name);
+        CFG returnStat = new CFG(new CFGReturn(returnVar));
+        return returnCFG.concat(returnStat);
     }
 
     @Override
     public CFG on(IRWhileStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        CFGLine startNoOp = makeNoOp();
+        CFGLine endNoOp = makeNoOp();
+        envStack.add(new CFGLoopEnv(startNoOp, endNoOp));
+
+        IRExpression cond = statement.getCondition();
+        IRBlock block = ir.getBlock();
+        CFG blockGraph = block.accept(this);
+        CFGLine blockStart = blockGraph.getStart();
+        CFGLine blockEnd = blockGraph.getEnd();
+        CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
+        blockEnd.setNext(condStart);
+        startNoOp.setNext(condStart);
+
+        envStack.remove(envStack.size()-1);
+        return new CFG(startNoOp, endNoOp);
     }
 
     // SHORT CIRCUITING
