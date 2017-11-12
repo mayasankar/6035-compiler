@@ -38,6 +38,12 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
     private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
+    List<CFGLoopEnv> envStack;
+
+
+    public CFGCreator() {
+        envStack = new ArrayList<>();
+    }
 
     /**
      * Destructs a CFG for every method in the given program. All lines in the CFG will be valid CFGLines.
@@ -310,8 +316,23 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRLoopStatement ir) {
-        // TODO Auto-generated method stub
-        return null;
+        if (ir.getStatementType() == IRStatement.StatementType.BREAK) {
+            CFGLine noOp = makeNoOp();
+            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+            CFGLine followingLine = containingLoop.getFollowingLine();
+            noOp.setNext(followingLine);
+            return new CFG(noOp);
+        }
+        else if (ir.getStatementType() == IRStatement.StatementType.CONTINUE) {
+            CFGLine noOp = makeNoOp();
+            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+            CFGLine startLine = containingLoop.getStartLine();
+            noOp.setNext(startLine);
+            return new CFG(noOp);
+        }
+        else {
+            throw new RuntimeException("Invalid loop statement type: " ir.getStatementType().toString());
+        }
     }
 
     @Override
