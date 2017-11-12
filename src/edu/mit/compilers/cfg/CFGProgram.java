@@ -7,8 +7,8 @@ import edu.mit.compilers.symbol_tables.MethodTable;
 
 public class CFGProgram {
     private final Map<String, CFG> methodCFGMap = new HashMap<>();
-    private final MethodTable methodTable;
-   
+    private final MethodTable methodTable = new MethodTable();
+
     public void addMethod(String name, CFG methodCFG) {
         methodCFGMap.put(name, methodCFG);
     }
