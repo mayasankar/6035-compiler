@@ -370,7 +370,7 @@ public class BlockAssembler {
                 Integer lenValue = new Integer(var.getLength());
                 return "mov $" + lenValue.toString() + ", %r10\n";
             case UNARY:
-                String op = ((IRUnaryOpExpression)expr).getOperator().getText();
+                String op = ((IRUnaryOpExpression)expr).getOperator();
                 IRExpression argExpr = ((IRUnaryOpExpression)expr).getArgument();
                 code += makeCodeIRExpression(argExpr); // value in %r10
                 if (op.equals("!")){
@@ -410,7 +410,7 @@ public class BlockAssembler {
     }
 
     private String makeCodeIRBinaryOpExpression(IRBinaryOpExpression expr){
-        String op = expr.getOperator().getText();
+        String op = expr.getOperator();
         IRExpression leftExpr = expr.getLeftExpr();
         IRExpression rightExpr = expr.getRightExpr();
         String code = "";

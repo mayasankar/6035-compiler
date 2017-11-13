@@ -17,10 +17,10 @@ public abstract class IRNode {
 	public int column = -1;
 	protected VariableTable variableScope;
 	protected MethodTable methodTable;
-	
+
 	public interface IRNodeVisitor<R>{
 		public R on(IRProgram ir);
-		
+
 		public R on(IRFieldDecl ir);
 		public R on(IRLocalDecl ir);
 		public R on(IRParameterDecl ir);
@@ -35,7 +35,7 @@ public abstract class IRNode {
 		public R onBool(IRLiteral<Boolean> ir);
         public R onString(IRLiteral<String> ir);
 		public R onInt(IRLiteral<BigInteger> ir);
-		
+
 		public R on(IRAssignStatement ir);
 		public R on(IRBlock ir);
 		public R on(IRForStatement ir);
@@ -45,7 +45,7 @@ public abstract class IRNode {
 		public R on(IRReturnStatement ir);
 		public R on(IRWhileStatement ir);
 	}
-	
+
 	public abstract <R> R accept(IRNodeVisitor<R> visitor);
 
 	public String location(){

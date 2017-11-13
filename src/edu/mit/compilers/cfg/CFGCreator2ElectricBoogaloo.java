@@ -51,7 +51,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
      * @param program the IR to destruct
      * @return a map from method name to its CFG
      */
-    public static CFGProgram destructCFGsFromIR(IRProgram program) {
+    public static CFGProgram destruct(IRProgram program) {
         CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
         creator.program = new CFGProgram(program);
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
@@ -455,14 +455,14 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         switch(expr.getExpressionType()) {
           case UNARY: {
             IRUnaryOpExpression unExpr = (IRUnaryOpExpression) expr;
-            if (unExpr.getOperator().getText().equals("!")) {
+            if (unExpr.getOperator().equals("!")) {
                 return shortcircuitNotExpression(unExpr, trueBranch, falseBranch);
             }
             return shortcircuitBasicExpression(expr, trueBranch, falseBranch);
           }
           case BINARY: {
             IRBinaryOpExpression biExpr = (IRBinaryOpExpression) expr;
-            String op = biExpr.getOperator().getText();
+            String op = biExpr.getOperator();
             if (op.equals("&&")) {
                 return shortcircuitAndExpression(biExpr, trueBranch, falseBranch);
             }

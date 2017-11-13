@@ -10,31 +10,36 @@ import edu.mit.compilers.symbol_tables.TypeDescriptor;
 public class IRUnaryOpExpression extends IRExpression {
 
 	//private IRUnaryOperator operator;
-	private Token operator;
+	private String operator;
 	private IRExpression argument;
 
 	public IRUnaryOpExpression(Token operator, IRExpression argument) {
-		setLineNumbers(operator);
+		//setLineNumbers(operator);
+		expressionType = IRExpression.ExpressionType.UNARY;
+		this.operator = operator.getText();
+		this.argument = argument;
+	}
+
+	public IRUnaryOpExpression(String operator, IRExpression argument) {
 		expressionType = IRExpression.ExpressionType.UNARY;
 		this.operator = operator;
 		this.argument = argument;
 	}
 
-	public Token getOperator() { return operator; }
+	public String getOperator() { return operator; }
 	public IRExpression getArgument() { return argument; }
 
 	@Override
 	public TypeDescriptor getType() {
 		// TODO dear god refactor this
-		String op = operator.getText();
-		if (op.equals("!")) {
+		if (operator.equals("!")) {
 			return TypeDescriptor.BOOL;
 		}
-		else if (op.equals("-")) {
+		else if (operator.equals("-")) {
 			return TypeDescriptor.INT;
 		}
 		else {
-			throw new RuntimeException("Undefined operator " + op + ".");
+			throw new RuntimeException("Undefined operator " + operator + ".");
 		}
 	}
 
@@ -45,14 +50,14 @@ public class IRUnaryOpExpression extends IRExpression {
 
 	@Override
 	public String toString() { //TODO remove if null
-		return operator.getText() + ((argument == null) ? "var" : argument);
+		return operator + ((argument == null) ? "var" : argument);
 	}
-	
+
 	@Override
 	public int getDepth() {
 		return argument.getDepth() + 1;
 	}
-	
+
 	@Override
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);
