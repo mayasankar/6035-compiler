@@ -36,6 +36,12 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         return null;
     }
 
+    // compares the thing currently in %r10 to the var
+    private String boundsCheck() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     @Override
     public String on(CFGAssignStatement line) {
         String code = "";
@@ -46,7 +52,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
         if (varAssigned.isArray()) {
             code += onExpression(varAssigned.getIndexExpression()); // array index now in %r10
-            // TODO bounds checking
+            // bounds checking
+            code += "mov " + stacker.getMaxSize(varAssigned.getName()) + ", %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "jge .out_of_bounds\n";
+            code += "cmp $0, %r10\n";
+            code += "jl .out_of_bounds\n";
+
+            // TODO whatever Maya was doing with global things in getCodeForIndexExpr in BlockAssembler
         }
 
         code += "pop %r11\n"; // value now in %r11
@@ -72,8 +85,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             code += onDepthZeroExpression(returnExpr);  // return value now in %r10
             code += "mov %r10, %rax\n";
         }
-        // TODO jump to end
-        // code += "jmp " + methodLabel + "_end\n"; // jump to end of method where we return
+        code += "jmp " + label + "_end\n"; // jump to end of method where we return
         return code;
     }
 
