@@ -56,7 +56,7 @@ class Main {
         }
 
         if (CLI.target == Action.ASSEMBLY){
-            CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
+            CFGCreator creator = new CFGCreator();
             CFGProgram program = creator.destruct(ir);
             AssemblerNew assembler = new AssemblerNew(program);
             assembler.printToStream(outputStream);

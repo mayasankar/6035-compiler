@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.math.BigInteger;
 
@@ -58,7 +59,33 @@ public class CFG {
     }
 
     public CFG blockify() {
-    	throw new RuntimeException("not implemented yet");
+        List<CFGLine> queue = new LinkedList<>();
+        queue.add(start);
+        while(!queue.isEmpty()) {
+            CFGBlock block = new CFGBlock();
+            CFGLine firstLine = queue.remove(0);
+            
+            if(firstLine.getCorrespondingBlock() != null) {
+                continue;
+            }
+            
+            updateBlockWithLine(firstLine, block);
+            CFGLine line = firstLine;
+            while(!line.isBranch() && !line.getTrueBranch().isMerge()) {
+                line = line.getTrueBranch();
+                updateBlockWithLine(line, block);
+            }
+            
+            queue.add(line.getTrueBranch());
+            queue.add(line.getFalseBranch()); 
+        }
+        
+        return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
+    }
+    
+    private void updateBlockWithLine(CFGLine line, CFGBlock block) {
+        block.addLine(line);
+        line.setCorrespondingBlock(block);
     }
 
     public void deadCodeElimination() {

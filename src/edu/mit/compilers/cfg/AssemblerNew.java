@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 
+import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.cfg.lines.*;
 
 public class AssemblerNew {
@@ -16,7 +17,10 @@ public class AssemblerNew {
 		stacker = new VariableStackAssigner(program);
 		code = "";
 		for(String method: program.getMethodNames()) {
-			code += makeCodeHelper(program.getMethodCFG(method));
+		    int numParams = program.getNumParams(method);
+		    TypeDescriptor returnType = program.getMethodReturnType(method);
+		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType);
+			code += methodAssembler.assemble(program.getMethodCFG(method));
 		}
 
 	}
@@ -24,10 +28,5 @@ public class AssemblerNew {
 	public void printToStream(OutputStream os) throws IOException {
 		PrintWriter writer = new PrintWriter(os);
 		writer.println(code);
-	}
-
-	private List<String> makeCodeHelper(CFG methodCFG) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

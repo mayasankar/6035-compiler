@@ -64,7 +64,7 @@ public abstract class CFGLine {
     	public R on(CFGMethodCall line);
         public R on(CFGBlock line);
     }
-
+    
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;
     }

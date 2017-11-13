@@ -54,4 +54,8 @@ public class CFGProgram {
     		methodCFGMap.put(name, methodCFGMap.get(name).blockify());
     	}
     }
+
+    public int getNumParams(String method) {
+        return methodTable.get(method).getParameters().getVariableList().size();
+    }
 }
