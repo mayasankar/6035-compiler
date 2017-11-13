@@ -9,16 +9,16 @@ public class CFGMethodCall extends CFGLine {
 
     public CFGMethodCall(CFGLine trueBranch, CFGLine falseBranch, IRMethodCallExpression expression) {
         super(trueBranch, falseBranch);
-        if (expression.getDepth() > 1) {
-            throw new RuntimeException("CFGMethodCalls must not have >1 expression depth: " + expression.toString());
+        if (expression.getDepth() > 0) {
+            throw new RuntimeException("CFGMethodCalls must not have >0 expression depth: " + expression.toString());
         }
         this.expression = expression;
     }
 
     public CFGMethodCall(IRMethodCallExpression expression) {
         super();
-        if (expression.getDepth() > 1) {
-            throw new RuntimeException("CFGMethodCalls must not have >1 expression depth: " + expression.toString());
+        if (expression.getDepth() > 0) {
+            throw new RuntimeException("CFGMethodCalls must not have >0 expression depth: " + expression.toString());
         }
         this.expression = expression;
     }
