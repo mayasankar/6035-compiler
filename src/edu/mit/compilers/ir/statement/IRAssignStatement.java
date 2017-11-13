@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import antlr.Token;
+import antlr.CommonToken;
 
 import edu.mit.compilers.grammar.DecafParserTokenTypes;
 import edu.mit.compilers.ir.IRNode;
@@ -22,6 +23,13 @@ public class IRAssignStatement extends IRStatement {
 		this.operator = operator;
 		this.value = value;
         statementType = IRStatement.StatementType.ASSIGN_EXPR;
+	}
+
+	public IRAssignStatement(IRVariableExpression varAssigned, IRExpression value) {
+		this.varAssigned = varAssigned;
+		this.operator = new CommonToken("=");
+		this.value = value;
+		statementType = IRStatement.StatementType.ASSIGN_EXPR;
 	}
 
 	public String getVariableName(){

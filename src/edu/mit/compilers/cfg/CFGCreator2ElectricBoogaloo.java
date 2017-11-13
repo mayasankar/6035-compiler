@@ -34,6 +34,7 @@ import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
+import edu.mit.compilers.symbol_tables.VariableTable;
 
 public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
@@ -166,8 +167,16 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRTernaryOpExpression ir) {
-        // TODO Auto-generated method stub
-        return null;
+        String tempName = ir.accept(namer);
+        IRExpression ifCondition = ir.getCondition();
+        IRExpression trueExpression = ir.getTrueExpression();
+        IRAssignStatement trueAssignment = new IRAssignStatement(new IRVariableExpression(tempName), trueExpression);
+        IRBlock trueBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
+        IRExpression falseExpression = ir.getFalseExpression();
+        IRAssignStatement falseAssignment = new IRAssignStatement(new IRVariableExpression(tempName), falseExpression);
+        IRBlock falseBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
+        IRIfStatement convertedTernary = new IRIfStatement(ifCondition, trueBlock, falseBlock);
+        return convertedTernary.accept(this);
     }
 
     @Override
