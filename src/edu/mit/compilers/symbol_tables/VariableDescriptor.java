@@ -24,6 +24,7 @@ public class VariableDescriptor implements Named {
     public int getStackOffset() { return stackOffset; }
 	public String getName() { return declaration.getName(); }
     public int getLength() { return declaration.getLength(); }
+    public boolean isArray() { return declaration.isArray(); }
 
     // returns the new value of rsp after putting this var on the stack
     public int pushOntoStack(int rsp) {
