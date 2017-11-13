@@ -55,7 +55,8 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
-
+        creator.program.blockify();
+        
         return creator.program;
     }
 

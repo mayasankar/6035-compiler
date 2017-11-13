@@ -75,7 +75,10 @@ public abstract class CFGLine {
     	public R on(CFGNoOp line);
     	public R on(CFGReturn line);
     	public R on(CFGMethodCall line);
+    	public R on(CFGBlock block);
     }
+    
+    public abstract <R> R accept(CFGNewVisitor<R> visitor);
 
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;
