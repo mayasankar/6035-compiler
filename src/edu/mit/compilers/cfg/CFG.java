@@ -55,6 +55,10 @@ public class CFG {
 
         return this;
     }
+    
+    public CFG blockify() {
+    	throw new RuntimeException("not implemented yet");
+    }
 
     public void deadCodeElimination() {
         CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
