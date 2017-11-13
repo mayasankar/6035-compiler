@@ -16,7 +16,8 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
-import edu.mit.compilers.cfg.CFGLine;
+import edu.mit.compilers.cfg.lines.*;
+
 
 // todo list
 // multi-line, insert here
@@ -55,7 +56,7 @@ public class CFG {
 
         return this;
     }
-    
+
     public CFG blockify() {
     	throw new RuntimeException("not implemented yet");
     }
@@ -106,11 +107,8 @@ public class CFG {
 
             // set of elements assigned in this line; remove the line if there's one and it's dead after
             String assignedVar = "";
-            if (line instanceof CFGDecl) {
-                assignedVar = ((CFGDecl)line).getDecl().getName();
-            }
-            else if (line instanceof CFGStatement && ((CFGStatement)line).getStatement() instanceof IRAssignStatement) {
-                assignedVar = ((IRAssignStatement)((CFGStatement)line).getStatement()).getVariableName();
+            if (line instanceof CFGAssignStatement) {
+                assignedVar = ((CFGAssignStatement)line).getVarAssigned().getName();
             }
             //System.out.println("assignedVar: " + assignedVar);
             if (! assignedVar.equals("")){

@@ -38,6 +38,7 @@ import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.cfg.lines.*;
 
 public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
@@ -91,14 +92,14 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         if(decl.isArray()) {
             CFG returnCFG = new CFG(makeNoOp());
             for(int i=0; i<decl.getLength(); ++i) {
-                CFGLine setZero = new CFGAssignStatement2(decl.getName(),
+                CFGLine setZero = new CFGAssignStatement(decl.getName(),
                         new IRIntLiteral(BigInteger.valueOf(i)),
                         new IRIntLiteral(BigInteger.ZERO));
                 returnCFG.concat(new CFG(setZero));
             }
             return returnCFG;
         } else {
-            return new CFG(new CFGAssignStatement2(decl.getName(), new IRIntLiteral(BigInteger.ZERO)));
+            return new CFG(new CFGAssignStatement(decl.getName(), new IRIntLiteral(BigInteger.ZERO)));
         }
     }
 
@@ -114,10 +115,10 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             CFG argumentCFG = ir.getArgument().accept(this);
             IRVariableExpression tempValue = new IRVariableExpression(ir.getArgument().accept(namer));
             IRUnaryOpExpression simplerExpr = new IRUnaryOpExpression(ir.getOperator(), tempValue);
-            CFGLine unaryLine = new CFGAssignStatement2(exprTempName, simplerExpr);
+            CFGLine unaryLine = new CFGAssignStatement(exprTempName, simplerExpr);
             return argumentCFG.concat(new CFG(unaryLine));
         } else {
-            return new CFG(new CFGAssignStatement2(exprTempName, ir));
+            return new CFG(new CFGAssignStatement(exprTempName, ir));
         }
     }
 
@@ -126,8 +127,8 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         String tempName = ir.accept(namer);
         if(Arrays.asList("&&","||").contains(ir.getOperator().toString())) {
             CFGLine noOp = new CFGNoOp();
-            CFGLine trueLine = new CFGAssignStatement2(tempName, new IRBoolLiteral(true));
-            CFGLine falseLine = new CFGAssignStatement2(tempName, new IRBoolLiteral(false));
+            CFGLine trueLine = new CFGAssignStatement(tempName, new IRBoolLiteral(true));
+            CFGLine falseLine = new CFGAssignStatement(tempName, new IRBoolLiteral(false));
             trueLine.setNext(noOp);
             falseLine.setNext(noOp);
 
@@ -161,10 +162,10 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             }
 
             IRBinaryOpExpression simpleExpr = new IRBinaryOpExpression(exprArgs.get(0), ir.getOperator(), exprArgs.get(1));
-            CFGLine exprLine = new CFGAssignStatement2(ir.accept(namer), simpleExpr);
+            CFGLine exprLine = new CFGAssignStatement(ir.accept(namer), simpleExpr);
             return returnCFG.concat(new CFG(exprLine));
         } else {
-            return new CFG(new CFGAssignStatement2(tempName, ir));
+            return new CFG(new CFGAssignStatement(tempName, ir));
         }
     }
 
@@ -184,7 +185,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRLenExpression ir) {
-        CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
+        CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
         return new CFG(lenLine);
     }
 
@@ -197,11 +198,11 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
             IRVariableExpression indexTempExpr = new IRVariableExpression(varIndex.accept(namer));
             IRVariableExpression simplerExpr = new IRVariableExpression(ir.getName(), indexTempExpr);
-            CFGLine varExpr = new CFGAssignStatement2(ir.accept(namer), simplerExpr);
+            CFGLine varExpr = new CFGAssignStatement(ir.accept(namer), simplerExpr);
 
             return returnCFG.concat(new CFG(varExpr));
         } else {
-            CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
+            CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
             return new CFG(lenLine);
         }
     }
@@ -225,28 +226,28 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             }
 
             IRMethodCallExpression simplerExpr = new IRMethodCallExpression(ir.getName(), newArgs);
-            CFGLine varExpr = new CFGAssignStatement2(ir.accept(namer), simplerExpr);
+            CFGLine varExpr = new CFGAssignStatement(ir.accept(namer), simplerExpr);
 
             return returnCFG.concat(new CFG(varExpr));
         } else {
-            CFGLine lenLine = new CFGAssignStatement2(ir.accept(namer), ir);
+            CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
             return new CFG(lenLine);
         }
     }
 
     @Override
     public CFG onBool(IRLiteral<Boolean> ir) {
-        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
+        return new CFG(new CFGAssignStatement(ir.accept(namer), ir));
     }
 
     @Override
     public CFG onString(IRLiteral<String> ir) {
-        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
+        return new CFG(new CFGAssignStatement(ir.accept(namer), ir));
     }
 
     @Override
     public CFG onInt(IRLiteral<BigInteger> ir) {
-        return new CFG(new CFGAssignStatement2(ir.accept(namer), ir));
+        return new CFG(new CFGAssignStatement(ir.accept(namer), ir));
     }
 
     @Override
@@ -273,7 +274,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             ir = new IRAssignStatement(var, newExpr);
         }
         if (ir.getValue().getDepth() == 0) {
-    		return new CFG(new CFGAssignStatement2(ir));
+    		return new CFG(new CFGAssignStatement(ir));
     	}
         else {
     		CFG expandedExpr = ir.getValue().accept(this);
@@ -284,10 +285,10 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
                 CFG expandedIndexExpr = location.getIndexExpression().accept(this);
                 String locationLastVar = location.getIndexExpression().accept(namer);
                 expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
-                assignLine = new CFGAssignStatement2(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
+                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
                 expandedIndexExpr.getEnd().setNext(assignLine);
             } else {
-        		assignLine = new CFGAssignStatement2(ir.getVariableName(), new IRVariableExpression(lastVar));
+        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
         		expandedExpr.getEnd().setNext(assignLine);
             }
     		return new CFG(expandedExpr.getStart(), assignLine);
@@ -332,8 +333,8 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         IRAssignStatement stepFunction = ir.getStepFunction();
         IRBlock block = ir.getBlock();
 
-        CFGAssignStatement2 initLine = new CFGAssignStatement2(initializer);
-        CFGAssignStatement2 stepLine = new CFGAssignStatement2(stepFunction);
+        CFGAssignStatement initLine = new CFGAssignStatement(initializer);
+        CFGAssignStatement stepLine = new CFGAssignStatement(stepFunction);
         CFG blockGraph = block.accept(this);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();

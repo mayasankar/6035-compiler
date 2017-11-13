@@ -16,6 +16,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
+import edu.mit.compilers.cfg.lines.*;
 
 
 public class CFGLoopEnv {
