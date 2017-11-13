@@ -37,14 +37,14 @@ import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
-import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
     private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
-    List<CFGLoopEnv> envStack = new ArrayList<>();
+    private List<CFGLoopEnv> envStack = new ArrayList<>();
 
 
     /**
@@ -59,6 +59,9 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
+        }
+        for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
+            creator.program.addVariable(var);
         }
 
         return creator.program;
