@@ -58,7 +58,7 @@ public class CFG {
         return this;
     }
 
-    public CFG blockify() {
+    public CFG blockify() { // TODO test
         List<CFGLine> queue = new LinkedList<>();
         queue.add(start);
         while(!queue.isEmpty()) {
@@ -71,13 +71,13 @@ public class CFG {
 
             updateBlockWithLine(firstLine, block);
             CFGLine line = firstLine;
-            while(!line.isBranch() && !line.getTrueBranch().isMerge()) {
+            while(!line.isEnd() && !line.isBranch() && !line.getTrueBranch().isMerge()) {
                 line = line.getTrueBranch();
                 updateBlockWithLine(line, block);
             }
-
-            queue.add(line.getTrueBranch());
-            queue.add(line.getFalseBranch());
+            queue.addAll(line.getChildren());
+            //queue.add(line.getTrueBranch());
+            //queue.add(line.getFalseBranch());
         }
 
         return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());

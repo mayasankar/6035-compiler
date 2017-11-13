@@ -1,6 +1,5 @@
 package edu.mit.compilers.tools;
 
-import java.util.Arrays;
 import java.util.Vector;
 
 /**
@@ -165,7 +164,6 @@ public class CLI {
         } else {
           optsList = args[i].substring(6).split(",");
         }
-        System.out.println(Arrays.toString(optsList));
         for (int j = 0; j < optsList.length; j++) {
           if (optsList[j].equals("all")) {
             for (int k = 0; k < opts.length; k++) {

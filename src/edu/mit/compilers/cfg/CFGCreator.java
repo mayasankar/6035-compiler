@@ -66,9 +66,6 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
             creator.program.addVariable(var);
         }
-
-        creator.program.blockify();
-
         return creator.program;
     }
 
