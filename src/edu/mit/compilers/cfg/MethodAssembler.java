@@ -2,6 +2,10 @@ package edu.mit.compilers.cfg;
 
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
+import edu.mit.compilers.ir.expression.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
@@ -22,12 +26,12 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     }
 
     // NOTE: GUARANTEED TO ONLY USE %r10
-    private onDepthZeroExpression(IRExpression expr) {
+    private String onDepthZeroExpression(IRExpression expr) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    private onExpression(IRExpression expr) {
+    private String onExpression(IRExpression expr) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -38,13 +42,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         IRVariableExpression varAssigned = line.getVarAssigned();
         String stackLocation = stacker.getAddress(varAssigned.getName());  // includes %r10 as offset if array
         code += onExpression(line.getExpression());  // value now in %r10
-        code += "mov %r10, %r11\n"; // value now in %r11
+        code += "push %r10\n"; // will get it out right before the end and assign to %r11
 
         if (varAssigned.isArray()) {
             code += onExpression(varAssigned.getIndexExpression()); // array index now in %r10
             // TODO bounds checking
         }
 
+        code += "pop %r11\n"; // value now in %r11
         code += "mov %r11, " + stackLocation + "\n";
         return code;
     }
@@ -61,17 +66,20 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     @Override
     public String on(CFGReturn line) {
-        if (!line.isVoid())
+        String code = "";
+        if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
             code += onDepthZeroExpression(returnExpr);  // return value now in %r10
             code += "mov %r10, %rax\n";
         }
-        code += "jmp " + methodLabel + "_end\n"; // jump to end of method where we return
+        // TODO jump to end
+        // code += "jmp " + methodLabel + "_end\n"; // jump to end of method where we return
         return code;
     }
 
     @Override
     public String on(CFGMethodCall line) {
+        String code = "";
         IRMethodCallExpression methodCall = line.getExpression();
         List<IRExpression> arguments = methodCall.getArguments();
         List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
