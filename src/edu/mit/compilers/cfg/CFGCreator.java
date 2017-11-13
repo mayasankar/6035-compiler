@@ -83,7 +83,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRFieldDecl ir) {
-        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
+        return onDecl(ir);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRParameterDecl ir) {
-        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
+        return onDecl(ir);
     }
 
     private CFG onDecl(IRMemberDecl decl) {
