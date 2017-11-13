@@ -1,5 +1,6 @@
 package edu.mit.compilers.cfg;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,10 @@ public class CFGProgram {
 
     public List<VariableDescriptor> getGlobalVariables() {
         return globalVariables;
+    }
+
+    public Collection<CFG> getAllMethodCFGs() {
+        return methodCFGMap.values();
     }
 
     public CFG getMethodCFG(String methodName) {

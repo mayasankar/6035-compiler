@@ -83,97 +83,37 @@ public class CFG {
         return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
     }
 
+    public Set<CFGLine> getAllLines() { // TODO mayars test
+        Set<CFGLine> toProcess = new HashSet<>();
+        toProcess.add(start);
+        Set<CFGLine> answer = new HashSet<>();
+        while (! toProcess.isEmpty()) {
+            CFGLine line = toProcess.iterator().next();
+            toProcess.remove(line);
+            answer.add(line);
+            for (CFGLine nextLine : line.getChildren()) {
+                if (! answer.contains(nextLine)) {
+                    toProcess.add(nextLine);
+                }
+            }
+        }
+        return answer;
+    }
+
+    public void removeLine(CFGLine line) { // TODO mayars test
+        CFGLine newLine = new CFGNoOp();
+        for (CFGLine parentLine : line.getParents()) {
+            parentLine.replaceChildren(line, newLine);
+        }
+        newLine.copyChildren(line);
+        if (end == start) { start = newLine; }
+        if (end == line) { end = newLine; }
+    }
+
     private void updateBlockWithLine(CFGLine line, CFGBlock block) {
         block.addLine(line);
         line.setCorrespondingBlock(block);
     }
 
-/*private void doLivenessAnalysisOLD() {
-        CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
-        Set<CFGLine> toUpdate = new HashSet<>();
-        Set<CFGLine> alreadyUpdated = new HashSet<>();
-        toUpdate.add(this.end);
-        while (! toUpdate.isEmpty()) {
-            CFGLine line = toUpdate.iterator().next();
-            toUpdate.remove(line);
-            alreadyUpdated.add(line);
 
-            System.out.println("\nSTART setDCE:");
-            Set<String> dce = line.getSetDCE();
-            for (String elem : dce) {
-                System.out.println("\t" + elem);
-            }
-            Boolean changed = line.accept(visitor);
-            dce = line.getSetDCE();
-            System.out.println("\nEND setDCE:");
-            for (String elem : dce) {
-                System.out.println("\t" + elem);
-            }
-            if (changed) {
-                alreadyUpdated.removeAll(line.getParents());
-            }
-            toUpdate.addAll(line.getParents());
-            toUpdate.removeAll(alreadyUpdated);
-        }
-    }*/
-
-    private void doLivenessAnalysis() {
-        DCE dce = new DCE();
-        dce.doLivenessAnalysis(this);
-    }
-
-    public void deadCodeElimination() {
-        doLivenessAnalysis();
-
-        if (true) { return; }
-
-        /*
-        // iterate through and eliminate dead code
-        Set<CFGLine> toPossiblyRemove = new HashSet<>();
-        toPossiblyRemove.add(this.end);
-        Set<CFGLine> alreadyChecked = new HashSet<>();
-        IRNode.IRNodeVisitor<Set<String>> checkAssignments = new ASSIGNVisitor();
-        //System.out.println("Removing\n");
-        while (! toPossiblyRemove.isEmpty()) {
-            CFGLine line = toPossiblyRemove.iterator().next();
-            alreadyChecked.add(line);
-            toPossiblyRemove.addAll(line.getParents());
-            toPossiblyRemove.removeAll(alreadyChecked);
-            // System.out.println("To possibly remove:\n");
-            // for (CFGLine tpr : toPossiblyRemove) {
-            //     System.out.println("\t" + tpr.ownValue());
-            // }
-
-            // set of elements assigned in this line; remove the line if there's one and it's dead after
-            String assignedVar = "";
-            if (line instanceof CFGAssignStatement) {
-                assignedVar = ((CFGAssignStatement)line).getVarAssigned().getName();
-            }
-            //System.out.println("assignedVar: " + assignedVar);
-            if (! assignedVar.equals("")){
-                // compute the set of variables needed *AFTER* the line - union of DCEs of children
-                Set<String> afterSetDCE = new HashSet<>();
-                afterSetDCE.addAll(line.getTrueBranch().getSetDCE());
-                afterSetDCE.addAll(line.getFalseBranch().getSetDCE());
-                // System.out.println("afterSetDCE:\n");
-                // for (String tpr : afterSetDCE) {
-                //     System.out.println("\t" + tpr);
-                // }
-                // if you don't have the assigned variable in the live set, your line was dead and you can remove it
-                if (!afterSetDCE.contains(assignedVar)) {
-                    //continue; // this entire things should do nada
-                    // remove by replacing with NOOP
-                    CFGLine replacementLine = new CFGNoOp(line.getTrueBranch(), line.getFalseBranch());
-                    for (CFGLine p : line.getParents()){
-                        p.replaceChildren(line, replacementLine);
-                    }
-                    line.getTrueBranch().removeParent(line);
-                    line.getFalseBranch().removeParent(line);
-                }
-            }
-
-        }*/
-
-        return;
-    }
 }

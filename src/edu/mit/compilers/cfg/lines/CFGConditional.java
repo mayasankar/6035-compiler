@@ -27,6 +27,8 @@ public class CFGConditional extends CFGLine {
 
     @Override
     public boolean isNoOp() { return false; }
+    @Override
+    public boolean isAssign() { return false; }
 
     @Override
     public String ownValue() {

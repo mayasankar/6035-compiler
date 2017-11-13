@@ -28,7 +28,7 @@ public abstract class CFGLine {
     protected CFGBlock correspondingBlock;
 
     // for DCE
-    protected Set<String> setDCE = new HashSet<>(); // in[thisline]; TODO rename to livenessIN
+    protected Set<String> livenessIN = new HashSet<>(); // in[thisline];
     protected Set<String> livenessOUT = new HashSet<>();
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
@@ -65,7 +65,7 @@ public abstract class CFGLine {
     	public R on(CFGMethodCall line);
         public R on(CFGBlock line);
     }
-    
+
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;
     }
@@ -92,13 +92,13 @@ public abstract class CFGLine {
         this.parents.remove(parent);
     }
 
-    public Set<String> getLivenessIn() { return this.setDCE; }
-    public void setLivenessIn(Set<String> newSet) { this.setDCE = newSet; }
+    public Set<String> getLivenessIn() { return this.livenessIN; }
+    public void setLivenessIn(Set<String> newSet) { this.livenessIN = newSet; }
     public Set<String> getLivenessOut() { return this.livenessOUT; }
     public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
 
-    public Set getSetDCE() { return this.setDCE; }
-    public void setSetDCE(Set newSet) { this.setDCE = newSet; }
+    // public Set getSetDCE() { return this.setDCE; }
+    // public void setSetDCE(Set newSet) { this.setDCE = newSet; }
 
     public CFGLine getTrueBranch() {
         return trueBranch;
@@ -130,14 +130,20 @@ public abstract class CFGLine {
     public void replaceChildren(CFGLine oldChild, CFGLine newChild){
         if (this.trueBranch.equals(oldChild)) {
             this.trueBranch = newChild;
-            newChild.addParentLine(this);
+            newChild.addParentLine(this == oldChild ? newChild : this);
         }
         if (this.falseBranch.equals(oldChild)) {
             this.falseBranch = newChild;
             if (this.isBranch()){
-                newChild.addParentLine(this);
+                newChild.addParentLine(this == oldChild ? newChild : this);
             }
         }
+    }
+
+    // the children of this are set to the children of other, except loops other->other become loops this->this.
+    public void copyChildren(CFGLine other) {
+        this.trueBranch = other.trueBranch == other ? this : other.trueBranch;
+        this.falseBranch = other.falseBranch == other ? this : other.falseBranch;
     }
 
     public boolean isEnd() {
@@ -158,6 +164,7 @@ public abstract class CFGLine {
     public boolean isNoOp() {
         throw new RuntimeException("Must be overridden by child class of CFGLine.");
     }
+    public abstract boolean isAssign();
 
     @Override
     public String toString() {

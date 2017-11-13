@@ -1,4 +1,4 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.cfg.optimizations;
 
 import java.util.List;
 import java.util.HashMap;
@@ -15,9 +15,9 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
+import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
-// boolean returns true always
 public class CfgUseVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
     private IRNode.IRNodeVisitor<Set<String>> USE = new USEVisitor();
@@ -26,7 +26,7 @@ public class CfgUseVisitor implements CFGLine.CFGVisitor<Set<String>> {
     public Set<String> on(CFGBlock line){
         // TODO should this do anything other than nothing? I think we never call it on this
         //return false;
-        throw new RuntimeException("DCEVisitor should never be called on a CFGBlock.");
+        throw new RuntimeException("CfgUseVisitor should never be called on a CFGBlock.");
     }
 
 

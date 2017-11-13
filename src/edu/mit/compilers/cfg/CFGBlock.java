@@ -31,7 +31,7 @@ public class CFGBlock extends CFGLine {
         // doesn't increment parent counter because CFGBlock just copies the underlying structure of lines
     }
 
-    public void addLine(CFGLine l) { 
+    public void addLine(CFGLine l) {
         lines.add(l);
         if(firstLine == null) {
             firstLine = l;
@@ -44,7 +44,7 @@ public class CFGBlock extends CFGLine {
     public <R> R accept(CFGVisitor<R> visitor){
 		return visitor.on(this);
 	}
-    
+
     @Override
     public CFGLine getTrueBranch() {
         return lastLine.getTrueBranch().getCorrespondingBlock();
@@ -54,20 +54,25 @@ public class CFGBlock extends CFGLine {
     public CFGLine getFalseBranch() {
         return lastLine.getFalseBranch().getCorrespondingBlock();
     }
-    
+
     @Override
     public CFGBlock getCorrespondingBlock() {
         return this;
     }
-    
+
     @Override
     public List<CFGLine> getParents() {
         List<CFGLine> answer = new ArrayList<>();
         for(CFGLine line: firstLine.getParents()) {
             answer.add(line.getCorrespondingBlock());
         }
-        
+
         return answer;
+    }
+
+    @Override
+    public boolean isAssign() {
+        throw new RuntimeException("Unimplemented");
     }
 
 }

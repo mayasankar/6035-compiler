@@ -56,6 +56,9 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         CFGCreator creator = new CFGCreator();
         creator.program = new CFGProgram(program);
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
+            if (method.isImport()) {
+                continue; // TODO what is the correct behaviour?
+            }
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
@@ -74,7 +77,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     @Override
-    public CFG on(IRProgram ir) {
+    public CFG on(IRProgram ir) { // TODO this error references a function that doesn't exist
         throw new RuntimeException("Please call makeCFGsFromIR instead!");
     }
 
