@@ -323,8 +323,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             f.concat(decl.accept(this));
         }
         CFG s = destructStatementList(statements);
-        f.getEnd().setNext(s.getStart());
-        return new CFG(f.getStart(), s.getEnd());
+        return f.concat(s);
     }
 
     @Override

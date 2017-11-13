@@ -50,7 +50,7 @@ public class CFGAssignStatement extends CFGLine {
     public boolean isNoOp() { return false; }
 
     @Override
-    public boolean isAssign() { return false; }
+    public boolean isAssign() { return true; }
 
     @Override
     public String ownValue() {

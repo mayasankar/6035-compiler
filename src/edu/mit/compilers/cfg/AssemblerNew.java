@@ -1,7 +1,7 @@
 package edu.mit.compilers.cfg;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
@@ -25,8 +25,7 @@ public class AssemblerNew {
 
 	}
 
-	public void printToStream(OutputStream os) throws IOException {
-		PrintWriter writer = new PrintWriter(os);
-		writer.println(code);
+	public void printToStream(PrintStream os) throws IOException {
+        os.println(code);
 	}
 }

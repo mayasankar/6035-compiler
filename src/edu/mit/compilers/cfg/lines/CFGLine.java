@@ -97,9 +97,6 @@ public abstract class CFGLine {
     public Set<String> getLivenessOut() { return this.livenessOUT; }
     public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
 
-    // public Set getSetDCE() { return this.setDCE; }
-    // public void setSetDCE(Set newSet) { this.setDCE = newSet; }
-
     public CFGLine getTrueBranch() {
         return trueBranch;
     }
@@ -188,7 +185,7 @@ public abstract class CFGLine {
             str += falseBranch.stringHelper(numIndents+1, depthLimit-1);
         }
         else if (trueBranch != null) {
-            str += trueBranch.stringHelper(numIndents, depthLimit-1);
+            str += trueBranch.stringHelper(numIndents, depthLimit);
         }
         return str;
     }

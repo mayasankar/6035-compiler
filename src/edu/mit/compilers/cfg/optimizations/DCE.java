@@ -19,6 +19,8 @@ import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class DCE implements Optimization {
+    // TODO (mayars) make sure you keep running DCE until nothing changes.
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
@@ -29,6 +31,11 @@ public class DCE implements Optimization {
         }
         for (CFG cfg : cfgProgram.getAllMethodCFGs()) {
             doLivenessAnalysis(cfg, globals);
+            System.out.println("Original CFG:");
+            System.out.println(cfg);
+            removeDeadCode(cfg);
+            System.out.println("DCE-Optimized CFG:");
+            System.out.println(cfg);
         }
     }
 
@@ -71,6 +78,7 @@ public class DCE implements Optimization {
             if (! line.isAssign()) {
                 continue;
             }
+            System.out.println("Considering removing " + line.ownValue());
             boolean removeThisLine = true;
             Set<String> aliveAtEnd = line.getLivenessOut();
             Set<String> assigned = line.accept(ASSIGN);
@@ -81,7 +89,13 @@ public class DCE implements Optimization {
                 break;
             }
             if (removeThisLine) {
+                System.out.println("Removing " + line.ownValue());
+                System.out.println("Before removal:");
+                System.out.println(cfg);
                 cfg.removeLine(line);
+                System.out.println("After removal:");
+                System.out.println(cfg);
+                System.out.println("\n");
             }
         }
     }
