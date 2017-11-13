@@ -38,8 +38,8 @@ public class CFGProgram {
         return globalVariables;
     }
 
-    public Collection<CFG> getAllMethodCFGs() {
-        return methodCFGMap.values();
+    public Map<String, CFG> getMethodToCFGMap() {
+        return methodCFGMap;
     }
 
     public CFG getMethodCFG(String methodName) {

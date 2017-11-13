@@ -127,14 +127,18 @@ public abstract class CFGLine {
 
     // NOTE: we assume the oldChild is getting removed and thus we don't have to go fix its parents list
     public void replaceChildren(CFGLine oldChild, CFGLine newChild){
+        if (this == oldChild) {
+            // throw an exception? this can happen but it would be nice to know
+            return;
+        }
         if (this.trueBranch == oldChild) {
             this.trueBranch = newChild;
-            newChild.addParentLine(this == oldChild ? newChild : this);
+            newChild.addParentLine(this);
         }
         if (this.falseBranch == oldChild) {
             this.falseBranch = newChild;
             if (this.isBranch()){
-                newChild.addParentLine(this == oldChild ? newChild : this);
+                newChild.addParentLine(this);
             }
         }
     }
@@ -142,7 +146,9 @@ public abstract class CFGLine {
     // the children of this are set to the children of other, except loops other->other become loops this->this.
     public void stealChildren(CFGLine other) {
         if (other.isEnd()) {
-            // do nothing; both trueBranch and falseBranch should already be null
+            // these steps are probably unnecessary.
+            trueBranch = null;
+            falseBranch = null;
         } else if (other.isBranch()) {
             this.trueBranch = other.trueBranch == other ? this : other.trueBranch;
             trueBranch.addParentLine(this);
@@ -180,6 +186,7 @@ public abstract class CFGLine {
         return stringHelper(0, 20);
     }
 
+    // NOTE: it is bad at printing things that will infinite loop
     public String stringHelper(int numIndents, int depthLimit) {
         if (depthLimit <= 0) {
             return "";
@@ -188,7 +195,7 @@ public abstract class CFGLine {
         for (int i=0; i<numIndents; i++){
             prefix += "-";
         }
-        String str = prefix + ownValue() + "\n";
+        String str = prefix + ownValue() + /*"\n\tIN: " + livenessIN + "\n\tOUT: " + livenessOUT + */"\n";
         if (isBranch()) {
             if (trueBranch == null || falseBranch == null) {
                 throw new RuntimeException("Branches should not be null: " + this.ownValue());
@@ -197,7 +204,10 @@ public abstract class CFGLine {
             str += falseBranch.stringHelper(numIndents+1, depthLimit-1);
         }
         else if (trueBranch != null) {
-            str += trueBranch.stringHelper(numIndents, depthLimit);
+            // NOTE if you're getting a stack overflow error, your CFG has an
+            // infinite loop and you want to change depthLimit to depthLimit-1
+            // in this line for debug output
+            str += trueBranch.stringHelper(numIndents, depthLimit); // depthLimit-1
         }
         return str;
     }

@@ -100,14 +100,35 @@ public class CFG {
         return answer;
     }
 
-    public void removeLine(CFGLine line) { // TODO mayars test
-        CFGLine newLine = new CFGNoOp();
+    // NOTE if newLine is a newly created CFGLine, then you need to call
+    // newLine.stealChildren(line) in addition to replaceLine(line, newline)
+    // the two commute (probably).
+    public void replaceLine(CFGLine line, CFGLine newLine) { // TODO test
+        newLine.removeParent(line);
         for (CFGLine parentLine : line.getParents()) {
             parentLine.replaceChildren(line, newLine);
         }
-        newLine.stealChildren(line);
-        if (end == start) { start = newLine; }
-        if (end == line) { end = newLine; }
+        if (line == start) { start = newLine; }
+        if (line == end) { end = newLine; }
+    }
+
+    public void removeLine(CFGLine line) { // TODO test
+        if (line.isBranch()) {
+            throw new RuntimeException("trying to remove a branch");
+        }
+        if (line.isEnd()) {
+            replaceLine(line, new CFGNoOp());
+        } else {
+            replaceLine(line, line.getTrueBranch());
+        }
+        // replaces the line with a noop.
+        // CFGLine newLine = new CFGNoOp();
+        // for (CFGLine parentLine : line.getParents()) {
+        //     parentLine.replaceChildren(line, newLine);
+        // }
+        // newLine.stealChildren(line);
+        // if (end == start) { start = newLine; }
+        // if (end == line) { end = newLine; }
     }
 
     private void updateBlockWithLine(CFGLine line, CFGBlock block) {
