@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.List;
+import java.math.BigInteger;
+import antlr.Token;
+import antlr.CommonToken;
 
 import edu.mit.compilers.ir.IRNode;
 import edu.mit.compilers.ir.IRProgram;
@@ -248,6 +251,27 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
+        if (!ir.getOperator().equals("=")) {
+            IRVariableExpression var = ir.getVarAssigned();
+            IRBinaryOpExpression newExpr;
+            switch (ir.getOperator()) {
+                case "+=":
+                    newExpr = new IRBinaryOpExpression(var, new CommonToken("+"), ir.getValue());
+                    break;
+                case "-=":
+                    newExpr = new IRBinaryOpExpression(var, new CommonToken("-"), ir.getValue());
+                    break;
+                case "++":
+                    newExpr = new IRBinaryOpExpression(var, new CommonToken("+"), new IRIntLiteral(new BigInteger("1")));
+                    break;
+                case "--":
+                    newExpr = new IRBinaryOpExpression(var, new CommonToken("-"), new IRIntLiteral(new BigInteger("1")));
+                    break;
+                default:
+                    throw new RuntimeException("Invalid assign statement operator: " + ir.getOperator());
+            }
+            ir = new IRAssignStatement(var, newExpr);
+        }
         if (ir.getValue().getDepth() == 0) {
     		return new CFG(new CFGAssignStatement2(ir));
     	}
