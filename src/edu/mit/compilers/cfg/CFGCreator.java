@@ -40,7 +40,7 @@ import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.VariableTable;
 import edu.mit.compilers.cfg.lines.*;
 
-public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
+public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
     private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
@@ -53,7 +53,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
      * @return a map from method name to its CFG
      */
     public static CFGProgram destruct(IRProgram program) {
-        CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
+        CFGCreator creator = new CFGCreator();
         creator.program = new CFGProgram(program);
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
             CFG methodCFG = method.accept(creator);
