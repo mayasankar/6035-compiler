@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.math.BigInteger;
 
@@ -16,7 +17,8 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
-import edu.mit.compilers.cfg.CFGLine;
+import edu.mit.compilers.cfg.lines.*;
+
 
 // todo list
 // multi-line, insert here
@@ -56,12 +58,37 @@ public class CFG {
         return this;
     }
 
-    // public Set<CFGLine> getAllLines() {
-    //     // TODO implement
-    //     return new HashSet<>();
-    // }
+    public CFG blockify() {
+        List<CFGLine> queue = new LinkedList<>();
+        queue.add(start);
+        while(!queue.isEmpty()) {
+            CFGBlock block = new CFGBlock();
+            CFGLine firstLine = queue.remove(0);
 
-    /*private void doLivenessAnalysisOLD() {
+            if(firstLine.getCorrespondingBlock() != null) {
+                continue;
+            }
+
+            updateBlockWithLine(firstLine, block);
+            CFGLine line = firstLine;
+            while(!line.isBranch() && !line.getTrueBranch().isMerge()) {
+                line = line.getTrueBranch();
+                updateBlockWithLine(line, block);
+            }
+
+            queue.add(line.getTrueBranch());
+            queue.add(line.getFalseBranch());
+        }
+
+        return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
+    }
+
+    private void updateBlockWithLine(CFGLine line, CFGBlock block) {
+        block.addLine(line);
+        line.setCorrespondingBlock(block);
+    }
+
+/*private void doLivenessAnalysisOLD() {
         CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
         Set<CFGLine> toUpdate = new HashSet<>();
         Set<CFGLine> alreadyUpdated = new HashSet<>();
@@ -91,8 +118,8 @@ public class CFG {
     }*/
 
     private void doLivenessAnalysis() {
-        DCEVisitor visitor = new DCEVisitor();
-        visitor.doLivenessAnalysis(this);
+        DCE dce = new DCE();
+        dce.doLivenessAnalysis(this);
     }
 
     public void deadCodeElimination() {
@@ -100,6 +127,7 @@ public class CFG {
 
         if (true) { return; }
 
+        /*
         // iterate through and eliminate dead code
         Set<CFGLine> toPossiblyRemove = new HashSet<>();
         toPossiblyRemove.add(this.end);
@@ -118,11 +146,8 @@ public class CFG {
 
             // set of elements assigned in this line; remove the line if there's one and it's dead after
             String assignedVar = "";
-            if (line instanceof CFGDecl) {
-                assignedVar = ((CFGDecl)line).getDecl().getName();
-            }
-            else if (line instanceof CFGStatement && ((CFGStatement)line).getStatement() instanceof IRAssignStatement) {
-                assignedVar = ((IRAssignStatement)((CFGStatement)line).getStatement()).getVariableName();
+            if (line instanceof CFGAssignStatement) {
+                assignedVar = ((CFGAssignStatement)line).getVarAssigned().getName();
             }
             //System.out.println("assignedVar: " + assignedVar);
             if (! assignedVar.equals("")){
@@ -147,7 +172,7 @@ public class CFG {
                 }
             }
 
-        }
+        }*/
 
         return;
     }

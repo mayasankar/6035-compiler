@@ -13,11 +13,18 @@ import edu.mit.compilers.trees.ConcreteTree;
 public class IRBinaryOpExpression extends IRExpression{
 	private IRExpression leftExpr;
 	private IRExpression rightExpr;
-
-	private Token operator;
+	private String operator;
 
 	public IRBinaryOpExpression(IRExpression leftExpr, Token operator, IRExpression rightExpr) {
-		setLineNumbers(leftExpr);
+		//setLineNumbers(leftExpr);
+		expressionType = IRExpression.ExpressionType.BINARY;
+		this.leftExpr = leftExpr;
+		this.operator = operator.getText();
+		this.rightExpr = rightExpr;
+	}
+
+	public IRBinaryOpExpression(IRExpression leftExpr, String operator, IRExpression rightExpr) {
+		//setLineNumbers(leftExpr);
 		expressionType = IRExpression.ExpressionType.BINARY;
 		this.leftExpr = leftExpr;
 		this.operator = operator;
@@ -26,21 +33,17 @@ public class IRBinaryOpExpression extends IRExpression{
 
 	public IRExpression getLeftExpr() { return leftExpr; }
 	public IRExpression getRightExpr() { return rightExpr; }
-	public Token getOperator() { return operator; }
+	public String getOperator() { return operator; }
 
 	@Override
 	public TypeDescriptor getType() {
-		// TODO dear god refactor this
-		String op = operator.getText();
-		if (op.equals("==") || op.equals("!=") || op.equals("&&") || op.equals("||") || op.equals("<")
-            || op.equals("<=") || op.equals(">") || op.equals(">=")) {
-			return TypeDescriptor.BOOL;
-		}
-		else if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") ) {
-			return TypeDescriptor.INT;
-		}
-		else {
-			throw new RuntimeException("Undefined operator " + op + ".");
+		switch (operator) {
+			case "==": case "!=": case "&&": case "||": case "<": case "<=": case ">": case ">=":
+				return TypeDescriptor.BOOL;
+			case "+": case "-": case "*": case "/": case "%":
+				return TypeDescriptor.INT;
+			default:
+				throw new RuntimeException("Undefined operator " + operator + ".");
 		}
 	}
 
@@ -51,7 +54,7 @@ public class IRBinaryOpExpression extends IRExpression{
 
 	@Override
 	public String toString() { //TODO remove if null
-		return (leftExpr == null ? "var" : leftExpr.toString()) + " " + operator.getText() + " " + (rightExpr == null ? "var" : rightExpr.toString());
+		return (leftExpr == null ? "var" : leftExpr.toString()) + " " + operator + " " + (rightExpr == null ? "var" : rightExpr.toString());
 	}
 
 	@Override
