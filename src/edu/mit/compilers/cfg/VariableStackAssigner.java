@@ -18,8 +18,11 @@ public class VariableStackAssigner {
 			throw new RuntimeException("Attempted to access unallocated variable '" + variableName + "'.");
 		}
 		int offset = var.getStackOffset();
-		return "-" + new Integer(offset).toString() + "(%rbp)";
+		if (var.isArray()) {
+            return "-" + (new Integer(offset).toString()) + "(%rbp, %r10, 8)";
+        } else {
+            return "-" + (new Integer(offset).toString()) + "(%rbp)";
+        }
 	}
 
-	// TODO also add a getAddress with an offset expr?
 }
