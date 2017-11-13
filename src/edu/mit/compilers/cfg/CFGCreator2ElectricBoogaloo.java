@@ -50,7 +50,7 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
      */
     public static CFGProgram destructCFGsFromIR(IRProgram program) {
         CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
-
+        creator.program = new CFGProgram(program);
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
@@ -476,15 +476,6 @@ public class CFGCreator2ElectricBoogaloo implements IRNode.IRNodeVisitor<CFG> {
         CFGLine beginNot = shortcircuit(expr.getArgument(), falseBranch, trueBranch);
         return beginNot;
     }
-
-
-
-
-
-
-
-
-
 
     private static class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
 

@@ -68,6 +68,14 @@ public abstract class CFGLine {
 		public R on(CFGAssignStatement line);
         public R on(CFGAssignStatement2 line);
 	}
+    
+    public interface CFGNewVisitor<R> {
+    	public R on(CFGAssignStatement2 line);
+    	public R on(CFGConditional line);
+    	public R on(CFGNoOp line);
+    	public R on(CFGReturn line);
+    	public R on(CFGMethodCall line);
+    }
 
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;

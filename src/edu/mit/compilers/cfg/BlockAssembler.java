@@ -18,6 +18,7 @@ public class BlockAssembler {
     int blockCount;
     int stringCount;
     int numAllocs;
+    int ternCount = 0;
     TypeDescriptor returnType;
     Map<CFGBlock, String> blockLabels;
     Map<String, String> stringLabels;
@@ -384,21 +385,20 @@ public class BlockAssembler {
                 }
                 return code;
             case TERNARY:
+            	String toFalse = ".tern_" + ternCount +"_to_false\n";
+            	String toEnd = ".tern_" + ternCount +"_to_end\n";
                 IRTernaryOpExpression tern = (IRTernaryOpExpression) expr;
                 IRExpression condition = tern.getCondition();
                 code += makeCodeIRExpression(condition); //bool for tern now in %r10
-                code += "mov %r10, %r11\n";
+                code += "cmp 0, %r10\n";
+                code += "je "+ toFalse;
                 IRExpression trueExpr = tern.getTrueExpression();
                 code += makeCodeIRExpression(trueExpr);
-                code += "imul %r11, %r10\n";
-                code += "mov %r10, %rax\n"; // if condition, put expr into r9, otherwise 0
-                code += "mov $1, %r10\n";
-                code += "sub %r11, %r10\n";
-                code += "mov %r10, %r11\n"; // put not condition into r11
+                code += "jmp " + toEnd;
+                code += toFalse;
                 IRExpression falseExpr = tern.getFalseExpression();
                 code += makeCodeIRExpression(falseExpr);
-                code += "imul %r11, %r10\n";
-                code += "add %rax, %r10\n";
+                code += toEnd;
                 return code;
             case BINARY:
                 return makeCodeIRBinaryOpExpression((IRBinaryOpExpression)expr);
