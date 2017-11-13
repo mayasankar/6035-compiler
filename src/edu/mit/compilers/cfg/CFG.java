@@ -105,7 +105,7 @@ public class CFG {
         for (CFGLine parentLine : line.getParents()) {
             parentLine.replaceChildren(line, newLine);
         }
-        newLine.copyChildren(line);
+        newLine.stealChildren(line);
         if (end == start) { start = newLine; }
         if (end == line) { end = newLine; }
     }

@@ -88,7 +88,7 @@ public class DCE implements Optimization {
                 }
                 break;
             }
-            if (removeThisLine) {
+            if (removeThisLine) { // TODO might want to replace the line, e.g. i = increment_x(1); with increment_x(1);
                 System.out.println("Removing " + line.ownValue());
                 System.out.println("Before removal:");
                 System.out.println(cfg);

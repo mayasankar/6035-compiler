@@ -123,13 +123,15 @@ public abstract class CFGLine {
         this.parents.add(parent);
     }
 
+    // the following two functions are for use in CFG.remove(CFGLine).
+
     // NOTE: we assume the oldChild is getting removed and thus we don't have to go fix its parents list
     public void replaceChildren(CFGLine oldChild, CFGLine newChild){
-        if (this.trueBranch.equals(oldChild)) {
+        if (this.trueBranch == oldChild) {
             this.trueBranch = newChild;
             newChild.addParentLine(this == oldChild ? newChild : this);
         }
-        if (this.falseBranch.equals(oldChild)) {
+        if (this.falseBranch == oldChild) {
             this.falseBranch = newChild;
             if (this.isBranch()){
                 newChild.addParentLine(this == oldChild ? newChild : this);
@@ -138,9 +140,19 @@ public abstract class CFGLine {
     }
 
     // the children of this are set to the children of other, except loops other->other become loops this->this.
-    public void copyChildren(CFGLine other) {
-        this.trueBranch = other.trueBranch == other ? this : other.trueBranch;
-        this.falseBranch = other.falseBranch == other ? this : other.falseBranch;
+    public void stealChildren(CFGLine other) {
+        if (other.isEnd()) {
+            // do nothing; both trueBranch and falseBranch should already be null
+        } else if (other.isBranch()) {
+            this.trueBranch = other.trueBranch == other ? this : other.trueBranch;
+            trueBranch.addParentLine(this);
+            this.falseBranch = other.falseBranch == other ? this : other.falseBranch;
+            if (trueBranch != falseBranch) {
+                falseBranch.addParentLine(this);
+            }
+        } else {
+            setNext(other.trueBranch == other ? this : other.trueBranch);
+        }
     }
 
     public boolean isEnd() {
