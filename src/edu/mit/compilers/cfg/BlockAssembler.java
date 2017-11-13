@@ -144,6 +144,13 @@ public class BlockAssembler {
 
         String code = "";
 
+        System.out.println("Line: " + line.ownValue());
+        System.out.print("Liveness IN:  ");
+        for (String s : line.getLivenessIn()) { System.out.print(s + "; "); }
+        System.out.print("\nLiveness OUT: ");
+        for (String s : line.getLivenessOut()) { System.out.print(s + "; "); }
+        System.out.println();
+
         //try {
             if (line instanceof CFGNoOp) {
                 code += "";

@@ -56,12 +56,12 @@ public class CFG {
         return this;
     }
 
-    public Set<CFGLine> getAllLines() {
-        // TODO implement
-        return new HashSet<>();
-    }
+    // public Set<CFGLine> getAllLines() {
+    //     // TODO implement
+    //     return new HashSet<>();
+    // }
 
-    private void doLivenessAnalysisOLD() {
+    /*private void doLivenessAnalysisOLD() {
         CFGLine.CFGVisitor<Boolean> visitor = new DCEVisitor();
         Set<CFGLine> toUpdate = new HashSet<>();
         Set<CFGLine> alreadyUpdated = new HashSet<>();
@@ -88,7 +88,7 @@ public class CFG {
             toUpdate.addAll(line.getParents());
             toUpdate.removeAll(alreadyUpdated);
         }
-    }
+    }*/
 
     private void doLivenessAnalysis() {
         DCEVisitor visitor = new DCEVisitor();
@@ -97,6 +97,8 @@ public class CFG {
 
     public void deadCodeElimination() {
         doLivenessAnalysis();
+
+        if (true) { return; }
 
         // iterate through and eliminate dead code
         Set<CFGLine> toPossiblyRemove = new HashSet<>();
