@@ -1,7 +1,7 @@
 package edu.mit.compilers.cfg;
 import java.util.ArrayList;
 import java.util.List;
-import edu.mit.compilers.cfg.CFGLine;
+import edu.mit.compilers.cfg.lines.CFGLine;
 import java.util.Set;
 
 public class CFGBlock extends CFGLine {

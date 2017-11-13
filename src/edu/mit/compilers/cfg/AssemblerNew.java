@@ -7,11 +7,12 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
+import edu.mit.compilers.cfg.lines.*;
 
 public class AssemblerNew {
 	private String code;
 	private VariableStackAssigner stacker;
-	
+
 	public AssemblerNew(CFGProgram program) {
 		stacker = new VariableStackAssigner(program);
 		code = "";
@@ -21,12 +22,11 @@ public class AssemblerNew {
 		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType);
 			code += methodAssembler.assemble(program.getMethodCFG(method));
 		}
-		
+
 	}
 
 	public void printToStream(OutputStream os) throws IOException {
 		PrintWriter writer = new PrintWriter(os);
 		writer.println(code);
 	}
-
 }

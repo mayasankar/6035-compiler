@@ -191,8 +191,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         // part of 15, part of 17
         IRExpression arg = expr.getArgument();
         arg.accept(this);
-        Token opToken = expr.getOperator();
-        String op = opToken.getText();
+        String op = expr.getOperator();
         if (op.equals("-")) {
             if (arg.getType() != TypeDescriptor.INT) {
                 notifyError("Argument for unary minus must be of type int.", arg);
@@ -216,7 +215,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         left.accept(this);
         right.accept(this);
 
-        String op = expr.getOperator().getText();
+        String op = expr.getOperator();
         if (op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/") || op.equals("%") || op.equals("<")
             || op.equals("<=") || op.equals(">") || op.equals(">=")) {
             if (left.getType() != TypeDescriptor.INT) {

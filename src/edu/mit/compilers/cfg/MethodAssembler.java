@@ -1,8 +1,9 @@
 package edu.mit.compilers.cfg;
 
+import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
-public class MethodAssembler implements CFGLine.CFGNewVisitor<String> {
+public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     private String label;
     private int numParams;
@@ -21,7 +22,7 @@ public class MethodAssembler implements CFGLine.CFGNewVisitor<String> {
     }
 
     @Override
-    public String on(CFGAssignStatement2 line) {
+    public String on(CFGAssignStatement line) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -55,5 +56,6 @@ public class MethodAssembler implements CFGLine.CFGNewVisitor<String> {
         // TODO Auto-generated method stub
         return null;
     }
+
 
 }

@@ -56,10 +56,10 @@ class Main {
         }
 
         if (CLI.target == Action.ASSEMBLY){
-            CFGCreator creator = new CFGCreator();
-            Map<String, CFGBlock> graphs = creator.destruct(ir);
-            Assembler assembler = new Assembler();
-            assembler.makeCode(graphs, outputStream, ir.getMethodTable(), ir.getVariableTable());
+            CFGCreator2ElectricBoogaloo creator = new CFGCreator2ElectricBoogaloo();
+            CFGProgram program = creator.destruct(ir);
+            AssemblerNew assembler = new AssemblerNew(program);
+            assembler.printToStream(outputStream);
         }
       }
     } catch(Exception e) {

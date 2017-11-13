@@ -17,7 +17,8 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
-import edu.mit.compilers.cfg.CFGLine;
+import edu.mit.compilers.cfg.lines.*;
+
 
 // todo list
 // multi-line, insert here
@@ -56,7 +57,7 @@ public class CFG {
 
         return this;
     }
-    
+
     public CFG blockify() {
         List<CFGLine> queue = new LinkedList<>();
         queue.add(start);
@@ -70,13 +71,13 @@ public class CFG {
             
             updateBlockWithLine(firstLine, block);
             CFGLine line = firstLine;
-            while(!line.isBranch() && !line.trueBranch.isMerge()) {
+            while(!line.isBranch() && !line.getTrueBranch().isMerge()) {
                 line = line.getTrueBranch();
                 updateBlockWithLine(line, block);
             }
             
-            queue.add(line.trueBranch);
-            queue.add(line.falseBranch); 
+            queue.add(line.getTrueBranch());
+            queue.add(line.getFalseBranch()); 
         }
         
         return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
@@ -133,11 +134,8 @@ public class CFG {
 
             // set of elements assigned in this line; remove the line if there's one and it's dead after
             String assignedVar = "";
-            if (line instanceof CFGDecl) {
-                assignedVar = ((CFGDecl)line).getDecl().getName();
-            }
-            else if (line instanceof CFGStatement && ((CFGStatement)line).getStatement() instanceof IRAssignStatement) {
-                assignedVar = ((IRAssignStatement)((CFGStatement)line).getStatement()).getVariableName();
+            if (line instanceof CFGAssignStatement) {
+                assignedVar = ((CFGAssignStatement)line).getVarAssigned().getName();
             }
             //System.out.println("assignedVar: " + assignedVar);
             if (! assignedVar.equals("")){

@@ -1,23 +1,24 @@
-package edu.mit.compilers.cfg;
-import edu.mit.compilers.cfg.CFGLine;
-import edu.mit.compilers.ir.expression.IRExpression;
+package edu.mit.compilers.cfg.lines;
+
+
+import edu.mit.compilers.ir.expression.*;
 import java.util.Set;
 
-public class CFGConditional extends CFGLine {
-    IRExpression expression;
+public class CFGMethodCall extends CFGLine {
+    IRMethodCallExpression expression;
 
-    public CFGConditional(CFGLine trueBranch, CFGLine falseBranch, IRExpression expression) {
+    public CFGMethodCall(CFGLine trueBranch, CFGLine falseBranch, IRMethodCallExpression expression) {
         super(trueBranch, falseBranch);
         if (expression.getDepth() > 1) {
-            throw new RuntimeException("CFGConditionals must not have >1 expression depth: " + expression.toString());
+            throw new RuntimeException("CFGMethodCalls must not have >1 expression depth: " + expression.toString());
         }
         this.expression = expression;
     }
 
-    public CFGConditional(IRExpression expression) {
+    public CFGMethodCall(IRMethodCallExpression expression) {
         super();
         if (expression.getDepth() > 1) {
-            throw new RuntimeException("CFGConditionals must not have >1 expression depth: " + expression.toString());
+            throw new RuntimeException("CFGMethodCalls must not have >1 expression depth: " + expression.toString());
         }
         this.expression = expression;
     }

@@ -15,6 +15,7 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
+import edu.mit.compilers.cfg.lines.*;
 
 // boolean returns true if we changed something, false if not
 public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
@@ -48,7 +49,7 @@ public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
 
 
     @Override
-    public Boolean on(CFGAssignStatement2 line){
+    public Boolean on(CFGAssignStatement line){
         Set<String> use = line.getExpression().accept(USE);
         Set<String> assign = line.getVarAssigned().accept(USE);
         return onHelper(line, use, assign);
@@ -86,48 +87,5 @@ public class DCEVisitor implements CFGLine.CFGVisitor<Boolean> {
     public Boolean on(CFGNoOp line){
         Set empty = new HashSet<>();
         return onHelper(line, empty, empty);
-    }
-
-
-    // DELETE BELOW
-
-    @Override
-    public Boolean on(CFGStatement line){
-        IRStatement statement = line.getStatement();
-        Set<String> use = statement.accept(USE);
-        Set<String> assign = statement.accept(ASSIGN);
-        return onHelper(line, use, assign);
-    }
-
-    @Override
-    public Boolean on(CFGExpression line){
-        IRExpression expr = line.getExpression();
-        Set<String> use = expr.accept(USE);
-        Set<String> assign = expr.accept(ASSIGN);
-        return onHelper(line, use, assign);
-    }
-
-    @Override
-    public Boolean on(CFGDecl line){
-        IRMemberDecl decl = line.getDecl();
-        Set<String> use = decl.accept(USE);
-        Set<String> assign = decl.accept(ASSIGN);
-        return onHelper(line, use, assign);
-    }
-
-    @Override
-    public Boolean on(CFGMethodDecl line){
-        IRMethodDecl decl = line.getMethodDecl();
-        Set<String> use = decl.accept(USE);
-        Set<String> assign = decl.accept(ASSIGN);
-        return onHelper(line, use, assign);
-    }
-
-    @Override
-    public Boolean on(CFGAssignStatement line){
-        IRStatement statement = line.getStatement();
-        Set<String> use = statement.accept(USE);
-        Set<String> assign = statement.accept(ASSIGN);
-        return onHelper(line, use, assign);
     }
 }

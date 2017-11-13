@@ -1,5 +1,6 @@
-package edu.mit.compilers.cfg;
-import edu.mit.compilers.cfg.CFGLine;
+package edu.mit.compilers.cfg.lines;
+
+
 import edu.mit.compilers.ir.expression.IRExpression;
 import java.util.Set;
 

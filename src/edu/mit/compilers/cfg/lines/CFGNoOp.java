@@ -1,5 +1,6 @@
-package edu.mit.compilers.cfg;
-import edu.mit.compilers.cfg.CFGLine;
+package edu.mit.compilers.cfg.lines;
+
+
 import java.util.Set;
 
 public class CFGNoOp extends CFGLine {

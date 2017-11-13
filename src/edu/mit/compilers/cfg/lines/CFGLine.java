@@ -1,4 +1,4 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.cfg.lines;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
+import edu.mit.compilers.cfg.*;
 
 
 public abstract class CFGLine {
@@ -56,30 +57,14 @@ public abstract class CFGLine {
     public abstract <R> R accept(CFGVisitor<R> visitor);
 
     public interface CFGVisitor<R> {
-		public R on(CFGBlock line);
-		public R on(CFGStatement line);
-		public R on(CFGExpression line);
-		public R on(CFGDecl line);
-		public R on(CFGMethodDecl line);
-		public R on(CFGNoOp line);
-        public R on(CFGReturn line);
-        public R on(CFGMethodCall line);
-        public R on(CFGConditional line);
-		public R on(CFGAssignStatement line);
-        public R on(CFGAssignStatement2 line);
-	}
-    
-    public interface CFGNewVisitor<R> {
-    	public R on(CFGAssignStatement2 line);
+    	public R on(CFGAssignStatement line);
     	public R on(CFGConditional line);
     	public R on(CFGNoOp line);
     	public R on(CFGReturn line);
     	public R on(CFGMethodCall line);
-    	public R on(CFGBlock block);
+        public R on(CFGBlock line);
     }
     
-    public abstract <R> R accept(CFGNewVisitor<R> visitor);
-
     public CFGBlock getCorrespondingBlock() {
         return correspondingBlock;
     }
