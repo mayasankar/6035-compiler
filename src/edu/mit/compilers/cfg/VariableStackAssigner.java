@@ -25,4 +25,17 @@ public class VariableStackAssigner {
         }
 	}
 
+	public String getMaxSize(String variableName) {
+		VariableDescriptor var = variables.get(variableName);
+		if (var == null) {
+			throw new RuntimeException("Attempted to access unallocated variable '" + variableName + "'.");
+		}
+		if (var.isArray()) {
+			int max_index = var.getLength();
+			return "$" + (new Integer(max_index).toString());
+        } else {
+            throw new RuntimeException("Attempted to call getMaxSize() on non-array variable '" + variableName + "'.");
+        }
+	}
+
 }
