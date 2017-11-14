@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.math.BigInteger;
 
-import antlr.Token;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.ir.expression.*;
@@ -22,6 +21,8 @@ public class DCE implements Optimization {
     // TODO (mayars) make sure that initializing global variables is added to
     // the CFG for main() because then we don't need to initialize global
     // variables to 0/false if they're initialized later.
+
+    // TODO (mayars) make sure use/assign sets interface correctly with array variables
 
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();

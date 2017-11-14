@@ -3,7 +3,9 @@ package edu.mit.compilers.cfg.optimizations;
 import edu.mit.compilers.cfg.CFGProgram;
 
 public class Optimizer {
-    //the ith optimization name must correspond to the ith optimization
+    // NOTE the ith optimization name must correspond to the ith optimization
+    // NOTE the order of optimizations is the order in which they will run
+    // repeats are allowed
     public final static String[] optimizationNames = new String[] { "dce" };
     public final static Optimization[] optimizations = new Optimization[] { new DCE() };
 

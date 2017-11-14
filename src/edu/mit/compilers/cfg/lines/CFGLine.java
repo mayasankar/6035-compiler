@@ -28,8 +28,11 @@ public abstract class CFGLine {
     protected CFGBlock correspondingBlock;
 
     // for DCE
-    protected Set<String> livenessIN = new HashSet<>(); // in[thisline];
+    protected Set<String> livenessIN = new HashSet<>();
     protected Set<String> livenessOUT = new HashSet<>();
+    // for CP
+    protected Map<String, Set<IRExpression>> reachingDefinitionsIN = new HashMap<>();
+    protected Map<String, Set<IRExpression>> reachingDefinitionsOUT = new HashMap<>();
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
