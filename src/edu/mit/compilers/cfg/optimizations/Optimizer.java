@@ -4,8 +4,8 @@ import edu.mit.compilers.cfg.CFGProgram;
 
 public class Optimizer {
     //the ith optimization name must correspond to the ith optimization
-    public final static String[] optimizationNames = new String[] { "dce" };
-    public final static Optimization[] optimizations = new Optimization[] { new DCE() };
+    public final static String[] optimizationNames = new String[] { "cse", "cp", "dce" };
+    public final static Optimization[] optimizations = new Optimization[] { new CSE(), new CP(), new DCE() };
 
     public static void optimize(CFGProgram cfgProgram, boolean[] opts) {
         for (int i = 0; i < opts.length; ++i) {

@@ -27,6 +27,10 @@ public abstract class CFGLine {
     protected List<CFGLine> parents;
     protected CFGBlock correspondingBlock;
 
+    // for CSE
+    protected Set<IRExpression> availableExpressionsIN = new HashSet<>();
+    protected Set<IRExpression> availableExpressionsOUT = new HashSet<>();
+
     // for DCE
     protected Set<String> livenessIN = new HashSet<>(); // in[thisline];
     protected Set<String> livenessOUT = new HashSet<>();
