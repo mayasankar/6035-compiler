@@ -79,4 +79,30 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 		return visitor.on(this);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRVariableExpression) {
+			IRVariableExpression expr = (IRVariableExpression)obj;
+			if (this.variableName.equals(expr.variableName)) {
+				if (this.isArray()) {
+					if (this.arrayIndex.equals(expr.arrayIndex)) {
+						return true;
+					}
+				}
+				else {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		if (this.isArray()) {
+			return this.variableName.hashCode() + 17*this.arrayIndex.hashCode();
+		}
+		return this.variableName.hashCode();
+	}
+
 }

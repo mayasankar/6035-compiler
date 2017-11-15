@@ -68,4 +68,18 @@ public class IRMethodCallExpression extends IRExpression {
 		return visitor.on(this);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRMethodCallExpression) {
+			IRMethodCallExpression expr = (IRMethodCallExpression)obj;
+			return (this.functionName.equals(expr.functionName) && this.arguments.equals(expr.arguments));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.functionName.hashCode() + 17*this.arguments.hashCode();
+	}
+
 }

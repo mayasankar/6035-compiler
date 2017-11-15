@@ -44,12 +44,12 @@ public class IRTernaryOpExpression extends IRExpression {
 	public String toString() {
 		return condition + " ? " + trueExpression + " : " + falseExpression;
 	}
-	
+
 	@Override
 	public int getDepth() {
 		return Math.max(Math.max(trueExpression.getDepth(), falseExpression.getDepth()), condition.getDepth()) + 1;
 	}
-	
+
 	@Override
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);
@@ -58,6 +58,20 @@ public class IRTernaryOpExpression extends IRExpression {
 	@Override
 	public <R> R accept(IRNodeVisitor<R> visitor) {
 		return visitor.on(this);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRTernaryOpExpression) {
+			IRTernaryOpExpression expr = (IRTernaryOpExpression)obj;
+			return (this.condition.equals(expr.condition) && this.trueExpression.equals(expr.trueExpression) && this.falseExpression.equals(expr.falseExpression));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.condition.hashCode() + 17*this.trueExpression.hashCode() + 19*this.falseExpression.hashCode();
 	}
 
 }
