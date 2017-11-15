@@ -184,7 +184,16 @@ public class CSE implements Optimization {
         }
 
         private IRExpression reduceExpression(IRExpression expr, Map<IRExpression, Set<String>> availableExpressions){
-            return null; // TODO
+            if (availableExpressions.containsKey(expr)) {
+                Set<String> varNames = availableExpressions.get(expr);
+                if (varNames.isEmpty()) {
+                    throw new RuntimeException("availableExpressions should never map to the empty set.");
+                }
+                String varName = varNames.iterator().next(); // just get one, we don't care which
+                IRExpression newExpr = new IRVariableExpression(varName);
+                return newExpr;
+            }
+            return expr;
         }
     }
     //
