@@ -348,7 +348,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         List<IRExpression> arguments = expr.getArguments();
         // == CODE TO CHECK PARAMETER LISTS ARE THE SAME
         if (!md.isImport()) { // don't check imports match parameter lengths
-            List<VariableDescriptor> parameters = md.getParameters().getVariableDescriptorList();
+            List<IRMemberDecl> parameters = md.getParameters().getVariableList();
             if (parameters.size() != arguments.size()) {
                 notifyError("Method " + md.getName() + " called with " + arguments.size() +
                 " parameters; needs " + parameters.size() + ".", expr);
