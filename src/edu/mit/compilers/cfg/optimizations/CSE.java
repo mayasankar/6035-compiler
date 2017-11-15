@@ -75,6 +75,7 @@ public class CSE implements Optimization {
         return;
     }
 
+    // helper for doAvailableExpressionAnalysis
     private Map<IRExpression, Set<String>> mergeMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map1.keySet()) {
@@ -87,6 +88,7 @@ public class CSE implements Optimization {
         return returnMap;
     }
 
+    // helper for doAvailableExpressionAnalysis
     private Map<IRExpression, Set<String>> unionMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         Set<IRExpression> keySetUnion = map1.keySet();
@@ -109,6 +111,7 @@ public class CSE implements Optimization {
         return returnMap;
     }
 
+    // helper for doAvailableExpressionAnalysis
     private Map<IRExpression, Set<String>> killVariablesFromMap(Set<String> vars, Map<IRExpression, Set<String>> map) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map.keySet()) {
@@ -122,90 +125,68 @@ public class CSE implements Optimization {
         return returnMap;
     }
 
-    private void reduceCommonSubexpressions(CFG cfg) {
-        throw new RuntimeException("Unimplemented");
+    // returns true if some expressions have been reduced, false if not
+    // NOTE we probably don't actually do anything with the return value, but may as well keep it in case future useful
+    private boolean reduceCommonSubexpressions(CFG cfg) {
+        SubexpressionReducer reducer = new SubexpressionReducer(cfg);
+        Set<CFGLine> toPossiblyReduce = cfg.getAllLines();
+        boolean changed = false;
+
+        for (CFGLine line : toPossiblyReduce) {
+            changed = changed || line.accept(reducer);
+        }
+        return changed;
     }
-    //
-    // /**
-    //  * returns whether or not dead code has been removed this iteration
-    //  */
-    // private boolean removeDeadCode(CFG cfg) {
-    //     DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg);
-    //     Set<CFGLine> toPossiblyRemove = cfg.getAllLines();
-    //     boolean changed = false;
-    //
-    //     for (CFGLine line : toPossiblyRemove) {
-    //         changed = changed || line.accept(eliminator);
-    //         // if (line.accept(eliminator)) {
-    //         //     System.out.println("Removed: " + line.ownValue());
-    //         //     changed = true;
-    //         // }
-    //     }
-    //     return changed;
-    // }
-    //
-    // // returns true if gen/kill sets might change, i.e. usually when we have removed a line
-    // private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
-    //     private CFG cfg;
-    //
-    //     public DeadCodeEliminator(CFG cfg) { this.cfg = cfg; }
-    //
-    //     @Override
-    //     public Boolean on(CFGAssignStatement line) {
-    //         // use liveness sets
-    //         Set<String> aliveAtEnd = line.getLivenessOut();
-    //         Set<String> assigned = line.accept(ASSIGN);
-    //         for (String var : assigned) {
-    //             if (aliveAtEnd.contains(var)) {
-    //                 return false;
-    //             }
-    //         }
-    //         cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
-    //         return true;
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGConditional line) {
-    //         // remove it if it is not a branch
-    //         if (! line.isBranch()) {
-    //             cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGNoOp line) {
-    //         // could remove it if it can be condensed out
-    //         if (! line.isEnd()) {
-    //             cfg.removeLine(line);
-    //         }
-    //         return false; // even if we're removing a noop, we are not affecting gen/kill sets
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGReturn line) {
-    //         // TODO is there any case where it could be deleted?
-    //         return false;
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGMethodCall line) {
-    //         // TODO remove it if the method doesn't call any globals
-    //         if (line.getExpression().affectsGlobals()) {
-    //             return false;
-    //         } else {
-    //             cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
-    //             return true;
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGBlock line) {
-    //         throw new RuntimeException("Eliminating blocks is hard");
-    //     }
-    // }
+
+    // returns true if the line has been reduced
+    private class SubexpressionReducer implements CFGLine.CFGVisitor<Boolean> {
+        private CFG cfg;
+
+        public SubexpressionReducer(CFG cfg) { this.cfg = cfg; }
+
+        @Override
+        public Boolean on(CFGAssignStatement line) {
+            IRExpression oldExpr = line.getExpression();
+            IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
+            if (!oldExpr.equals(newExpr)) {
+                line.setExpression(newExpr);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGConditional line) {
+            // depth 0 so doesn't make sense to reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGNoOp line) {
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGReturn line) {
+            // depth 0 so doesn't make sense to reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGMethodCall line) {
+            // methods may have side effects so we can't necessarily reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGBlock line) {
+            throw new RuntimeException("Reducing blocks is hard.");
+        }
+
+        private IRExpression reduceExpression(IRExpression expr, Map<IRExpression, Set<String>> availableExpressions){
+            return null; // TODO
+        }
+    }
     //
     //
     // // if you are deleting a line which evaluates this expression it returns the CFGLine
