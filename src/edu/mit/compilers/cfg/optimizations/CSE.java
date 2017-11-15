@@ -19,64 +19,92 @@ import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CSE implements Optimization {
-    // TODO (mayars) make sure that initializing global variables is added to
-    // the CFG for main() because then we don't need to initialize global
-    // variables to 0/false if they're initialized later.
+    private CfgGenExpressionVisitor GEN = new CfgGenExpressionVisitor();
 
-    // private CfgUseVisitor USE = new CfgUseVisitor();
-    // private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
-    //
+    // everything works in Map<IRExpression, Set<String>>s
+    // mapping an available expression to the variables that it is assigned to
+    // then to merge two branches into a child, we have Map<IRExpression, Union of its Sets>
+
     public void optimize(CFGProgram cfgProgram) {
-    //     Set<String> globals = new HashSet<>();
-    //     for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
-    //         globals.add(var.getName());
-    //     }
-    //     for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
-    //         CFG cfg = method.getValue();
-    //         System.out.println("Original CFG:");
-    //         System.out.println(cfg);
-    //         boolean changed = true;
-    //         while (changed) {
-    //             doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
-    //             changed = removeDeadCode(cfg);
-    //         }
-    //         System.out.println("DCE-Optimized CFG:");
-    //         System.out.println(cfg);
-    //     }
-        throw new RuntimeException("Unimplemented");
+        for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
+            CFG cfg = method.getValue();
+            doAvailableExpressionAnalysis(cfg);
+            reduceCommonSubexpressions(cfg);
+        }
     }
-    //
-    private void doAvailableExpressionAnalysis(CFG cfg, Set<String> globals) {
-    //     CFGLine end = cfg.getEnd();
-    //     end.setLivenessOut(new HashSet<String>(globals));
-    //     Set<String> endIn = new HashSet<String>(globals);
-    //     endIn.addAll(end.accept(USE));
-    //     end.setLivenessIn(endIn);
-    //
-    //     // TODO if this becomes too slow, make changed into a field variable
-    //     // and update it with only the places where things are changed
-    //     Set<CFGLine> changed = new HashSet<CFGLine>(cfg.getAllLines());
-    //     changed.remove(end);
-    //
-    //     while (! changed.isEmpty()) {
-    //         CFGLine line = changed.iterator().next();
-    //         changed.remove(line);
-    //
-    //         Set<String> newOut = new HashSet<>();
-    //         for (CFGLine child : line.getChildren()) {
-    //             newOut.addAll(child.getLivenessIn());
-    //         }
-    //         Set<String> newIn = new HashSet<>();
-    //         newIn.addAll(line.accept(USE));
-    //         Set<String> newOutDuplicate = new HashSet<>(newOut);
-    //         newOutDuplicate.removeAll(line.accept(ASSIGN));
-    //         newIn.addAll(newOutDuplicate);
-    //         if (! newIn.equals(line.getLivenessIn())) {
-    //             changed.addAll(line.getParents());
-    //         }
-    //         line.setLivenessIn(newIn);
-    //         line.setLivenessOut(newOut);
-    //     }
+
+    private void doAvailableExpressionAnalysis(CFG cfg) {
+        CFGLine start = cfg.getStart();
+
+        start.setAvailableExpressionsIn(new HashMap<IRExpression, Set<String>>()); // TODO unnecessary remove
+        start.setAvailableExpressionsOut(start.accept(GEN));
+
+        // TODO could make it so we assign a temp variable for each intermediate expression
+        // so that we can reuse it even if it gets assigned to diff-named variables in diff blocks
+        // but that sounds hard and maybe unnecessary
+
+        Set<CFGLine> changed = new HashSet<CFGLine>(cfg.getAllLines());
+        changed.remove(start);
+
+        while (!changed.isEmpty()) {
+            CFGLine line = changed.iterator().next();
+            changed.remove(line);
+
+            Map<IRExpression, Set<String>> newIn = null;
+            for (CFGLine parent : line.getParents()) {
+                if (newIn == null) {
+                    newIn = parent.getAvailableExpressionsOut();
+                }
+                else {
+                    newIn = mergeMaps(newIn, parent.getAvailableExpressionsOut());
+                }
+            }
+            line.setAvailableExpressionsIn(newIn);
+
+            Map<IRExpression, Set<String>> newOut = unionMaps(newIn, line.accept(GEN));
+            if (! newOut.equals(line.getAvailableExpressionsOut())) {
+                changed.addAll(line.getChildren());
+            }
+            line.setAvailableExpressionsOut(newOut);
+        }
+        return;
+    }
+
+    private Map<IRExpression, Set<String>> mergeMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        for (IRExpression key : map1.keySet()) {
+            if (map2.containsKey(key)) {
+                Set<String> vars = map1.get(key);
+                vars.retainAll(map2.get(key));
+                returnMap.put(key, vars);
+            }
+        }
+        return returnMap;
+    }
+
+    private Map<IRExpression, Set<String>> unionMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        Set<IRExpression> keySetUnion = map1.keySet();
+        keySetUnion.addAll(map2.keySet());
+        for (IRExpression key : keySetUnion) {
+            if (map1.containsKey(key) && map2.containsKey(key)) {
+                Set<String> vars = map1.get(key);
+                vars.addAll(map2.get(key));
+                returnMap.put(key, vars);
+            }
+            else if (map1.containsKey(key)){
+                Set<String> vars = map1.get(key);
+                returnMap.put(key, vars);
+            }
+            else {
+                Set<String> vars = map2.get(key);
+                returnMap.put(key, vars);
+            }
+        }
+        return returnMap;
+    }
+
+    private void reduceCommonSubexpressions(CFG cfg) {
         throw new RuntimeException("Unimplemented");
     }
     //
