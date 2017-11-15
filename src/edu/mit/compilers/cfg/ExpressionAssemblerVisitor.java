@@ -51,11 +51,6 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     }
 
     @Override
-    public String on(IRBinaryOpExpression ir){
-        return null; // TODO
-    }
-
-    @Override
     public String on(IRTernaryOpExpression ir){
         throw new RuntimeException("Ternaries should have been deconstructed into IF/THEN/ELSE before making assembly.");
     }
@@ -132,5 +127,49 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             label = stringLabels.get(stringValue);
         }
         return "mov $" + label + ", %r10\n";
+    }
+
+    @Override
+    public String on(IRBinaryOpExpression ir){  // definitely uses more than %r10
+        String op = ir.getOperator();
+        IRExpression leftExpr = ir.getLeftExpr();
+        IRExpression rightExpr = ir.getRightExpr();
+        String code = "";
+        code += rightExpr.accept(this); // right value in %r10
+        code += "mov %r10, %r11\n"; // right value in %r11
+        code += leftExpr.accept(this); // left value in %r10, right value in %r11  (doesn't overwrite %r11 b/c subexprs required to be depth 0)
+        switch (op) {
+            case "+":
+                code += "add %r11, %r10\n";  // expression output value in %r10
+                return code;
+            case "-":
+                code += "sub %r11, %r10\n";
+                return code;
+            case "*":
+                code += "imul %r11, %r10\n";
+                return code;
+            case "/": case "%":
+                code += "mov $0, %rdx\n";
+                code += "mov %r10, %rax\n";
+                code += "idiv %r11\n";
+                code += "mov " + ((op == "/") ? "%rax" : "%rdx") + ", %r10\n";
+                return code;
+            case "&&":
+                code += "and %r11, %r10\n";
+                return code;
+            case "||":
+                code += "or %r11, %r10\n";
+                return code;
+            case "==": case "!=": case "<": case ">": case "<=": case ">=":
+                code += "cmp %r11, %r10\n";
+                code += "mov $0, %r10\n";
+                code += "mov $1, %r11\n";
+                String dir = (op == "==") ? "e" : (op == "!=") ? "ne" : (op == "<") ? "l" : (op == "<=") ? "le" : (op == ">") ? "g" : "ge";
+                code += "cmov" + dir + " %r11, %r10\n";  // cmove, cmovne, cmovl, cmovg, cmovle, cmovge
+                return code;
+            default:
+                throw new RuntimeException("unsupported operation in binary expression");
+        }
+
     }
 }
