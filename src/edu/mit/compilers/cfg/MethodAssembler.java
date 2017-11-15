@@ -29,20 +29,16 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     // NOTE: GUARANTEED TO ONLY USE %r10
     private String onDepthZeroExpression(IRExpression expr) {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO Arkadiy did you want to refactor this?
+        if (expr.getDepth() > 0) {
+            throw new RuntimeException("Called onDepthZeroExpression on expression of non-zero depth.");
+        }
+        return expr.accept(expressionAssembler);
     }
 
     private String onExpression(IRExpression expr) {
         // TODO Arkadiy did you want to refactor this?
-
-        return null;
-    }
-
-    // compares the thing currently in %r10 to the var
-    private String boundsCheck() {
-        // TODO Auto-generated method stub
-        return null;
+        return expr.accept(expressionAssembler);
     }
 
     @Override
