@@ -13,12 +13,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     private int numParams;
     private VariableStackAssigner stacker;
     private TypeDescriptor returnType;
+    private ExpressionAssemblerVisitor expressionAssembler;
 
     public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType) {
         this.label = method;
         this.numParams = numParams;
         this.stacker = stacker;
         this.returnType = returnType;
+        this.expressionAssembler = new ExpressionAssemblerVisitor(stacker);
     }
 
     public String assemble(CFG cfg) {
@@ -32,7 +34,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     }
 
     private String onExpression(IRExpression expr) {
-        // TODO Auto-generated method stub
+        // TODO Arkadiy did you want to refactor this?
+
         return null;
     }
 

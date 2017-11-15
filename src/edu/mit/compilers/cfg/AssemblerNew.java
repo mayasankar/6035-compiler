@@ -19,10 +19,12 @@ public class AssemblerNew {
 		code = ".globl main\n";
 
 		for (VariableDescriptor var : program.getGlobalVariables()) {
+			//System.out.println("Adding global variable: " + var.toString());
             code += var.toGlobalAssembly();
         }
 
 		for(String method: program.getMethodNames()) {
+			//System.out.println("Adding code for method: " + method.toString());
 		    int numParams = program.getNumParams(method);
 		    TypeDescriptor returnType = program.getMethodReturnType(method);
 		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType);
