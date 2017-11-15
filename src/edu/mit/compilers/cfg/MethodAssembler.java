@@ -6,6 +6,7 @@ import edu.mit.compilers.ir.expression.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
@@ -20,11 +21,19 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         this.numParams = numParams;
         this.stacker = stacker;
         this.returnType = returnType;
-        this.expressionAssembler = new ExpressionAssemblerVisitor(stacker);
+        this.expressionAssembler = new ExpressionAssemblerVisitor(label, stacker);
     }
 
     public String assemble(CFG cfg) {
-        return cfg.getStart().accept(this);
+        // TODO also have enter/return/etc.
+        String code = cfg.getStart().accept(this); // TODO huh? this shouldn't get all lines. -jamb
+        Map<String, String> stringLabels = expressionAssembler.getStringLabels();
+        for (String stringValue : stringLabels.keySet()){
+            String label = stringLabels.get(stringValue);
+            code += "\n" + label + ":\n";
+            code += ".string " + stringValue + "\n";
+        }
+        return code;
     }
 
     // NOTE: GUARANTEED TO ONLY USE %r10

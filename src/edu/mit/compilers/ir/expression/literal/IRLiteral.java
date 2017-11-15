@@ -32,11 +32,6 @@ public abstract class IRLiteral<T> extends IRExpression {
 	}
 
 	@Override
-	public <R> R accept(IRExpressionVisitor<R> visitor) {
-		return visitor.on(this);
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof IRLiteral) {
 			IRLiteral expr = (IRLiteral)obj;

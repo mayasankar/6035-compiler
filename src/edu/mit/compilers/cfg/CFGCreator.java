@@ -27,6 +27,7 @@ import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
+import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
@@ -539,7 +540,17 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         }
 
         @Override
-        public <T> String on(IRLiteral<T> ir) {
+        public String on(IRBoolLiteral ir) {
+            return "literal_temp_" + ir.hashCode();
+        }
+
+        @Override
+        public String on(IRStringLiteral ir) {
+            return "literal_temp_" + ir.hashCode();
+        }
+
+        @Override
+        public String on(IRIntLiteral ir) {
             return "literal_temp_" + ir.hashCode();
         }
 

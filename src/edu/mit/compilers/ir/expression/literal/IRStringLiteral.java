@@ -19,9 +19,14 @@ public class IRStringLiteral extends IRLiteral<String> {
 	public String toString() {
 		return "\"" + value + "\"";
 	}
-	
+
 	@Override
     public <R> R accept(IRNodeVisitor<R> visitor) {
         return visitor.onString(this);
     }
+
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

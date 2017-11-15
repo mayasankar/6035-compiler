@@ -25,9 +25,14 @@ public class IRIntLiteral extends IRLiteral<BigInteger> {
 	public String toString() {
 		return "" + value + "";
 	}
-	
+
 	@Override
     public <R> R accept(IRNodeVisitor<R> visitor) {
         return visitor.onInt(this);
     }
+
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }
