@@ -20,6 +20,8 @@ import edu.mit.compilers.cfg.lines.*;
 
 public class CSE implements Optimization {
     private CfgGenExpressionVisitor GEN = new CfgGenExpressionVisitor();
+    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
+    private USEVisitor IRNodeUSE = new USEVisitor();
 
     // everything works in Map<IRExpression, Set<String>>s
     // mapping an available expression to the variables that it is assigned to
@@ -62,6 +64,9 @@ public class CSE implements Optimization {
             line.setAvailableExpressionsIn(newIn);
 
             Map<IRExpression, Set<String>> newOut = unionMaps(newIn, line.accept(GEN));
+            Set<String> killedVars = line.accept(ASSIGN);
+            newOut = killVariablesFromMap(killedVars, newOut);
+
             if (! newOut.equals(line.getAvailableExpressionsOut())) {
                 changed.addAll(line.getChildren());
             }
@@ -99,6 +104,19 @@ public class CSE implements Optimization {
             else {
                 Set<String> vars = map2.get(key);
                 returnMap.put(key, vars);
+            }
+        }
+        return returnMap;
+    }
+
+    private Map<IRExpression, Set<String>> killVariablesFromMap(Set<String> vars, Map<IRExpression, Set<String>> map) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        for (IRExpression key : map.keySet()) {
+            Set<String> usedVariables = key.accept(IRNodeUSE);
+            usedVariables.retainAll(vars);
+            if (usedVariables.isEmpty()) {
+                // the expression does not use any variables getting killed, so we can add it
+                returnMap.put(key, map.get(key));
             }
         }
         return returnMap;
