@@ -27,6 +27,7 @@ import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
+import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
@@ -37,14 +38,14 @@ import edu.mit.compilers.ir.statement.IRLoopStatement;
 import edu.mit.compilers.ir.statement.IRMethodCallStatement;
 import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
-import edu.mit.compilers.symbol_tables.VariableTable;
+import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
     private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
-    List<CFGLoopEnv> envStack = new ArrayList<>();
+    private List<CFGLoopEnv> envStack = new ArrayList<>();
 
 
     /**
@@ -56,12 +57,16 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         CFGCreator creator = new CFGCreator();
         creator.program = new CFGProgram(program);
         for (IRMethodDecl method : program.getMethodTable().getMethodList()) {
+            if (method.isImport()) {
+                continue; // TODO what is the correct behaviour?
+            }
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
-        creator.program.blockify();
-        
+        for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
+            creator.program.addVariable(var);
+        }
         return creator.program;
     }
 
@@ -70,13 +75,13 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     @Override
-    public CFG on(IRProgram ir) {
+    public CFG on(IRProgram ir) { // TODO this error references a function that doesn't exist
         throw new RuntimeException("Please call makeCFGsFromIR instead!");
     }
 
     @Override
     public CFG on(IRFieldDecl ir) {
-        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
+        return onDecl(ir);
     }
 
     @Override
@@ -86,7 +91,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRParameterDecl ir) {
-        throw new RuntimeException("pls dont come up pls dont come up pls dont come up");
+        return onDecl(ir);
     }
 
     private CFG onDecl(IRMemberDecl decl) {
@@ -319,8 +324,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             f.concat(decl.accept(this));
         }
         CFG s = destructStatementList(statements);
-        f.getEnd().setNext(s.getStart());
-        return new CFG(f.getStart(), s.getEnd());
+        return f.concat(s);
     }
 
     @Override
@@ -536,7 +540,17 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         }
 
         @Override
-        public <T> String on(IRLiteral<T> ir) {
+        public String on(IRBoolLiteral ir) {
+            return "literal_temp_" + ir.hashCode();
+        }
+
+        @Override
+        public String on(IRStringLiteral ir) {
+            return "literal_temp_" + ir.hashCode();
+        }
+
+        @Override
+        public String on(IRIntLiteral ir) {
             return "literal_temp_" + ir.hashCode();
         }
 

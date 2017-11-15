@@ -30,6 +30,10 @@ public class IRMethodCallExpression extends IRExpression {
 		type = t;
 	}
 
+    // TODO for optimization, implement this better
+    // this allows DCE to delete calls to this method.
+    public boolean affectsGlobals() { return true; }
+
 	@Override
 	public List<IRExpression> getChildren() {
 		return arguments;
@@ -44,7 +48,7 @@ public class IRMethodCallExpression extends IRExpression {
 		answer += ")";
 		return answer;
 	}
-	
+
 	@Override
 	public int getDepth() {
 		int maxArgDepth = 0;
@@ -53,7 +57,7 @@ public class IRMethodCallExpression extends IRExpression {
 		}
 		return maxArgDepth + 1;
 	}
-	
+
 	@Override
 	public <R> R accept(IRExpressionVisitor<R> visitor) {
 		return visitor.on(this);
@@ -62,6 +66,20 @@ public class IRMethodCallExpression extends IRExpression {
 	@Override
 	public <R> R accept(IRNodeVisitor<R> visitor) {
 		return visitor.on(this);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRMethodCallExpression) {
+			IRMethodCallExpression expr = (IRMethodCallExpression)obj;
+			return (this.functionName.equals(expr.functionName) && this.arguments.equals(expr.arguments));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.functionName.hashCode() + 17*this.arguments.hashCode();
 	}
 
 }

@@ -1,6 +1,7 @@
 package edu.mit.compilers;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Map;
 
 import antlr.CharStreamException;
@@ -17,11 +18,12 @@ import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.trees.SemanticCheckerVisitor;
 import edu.mit.compilers.cfg.*;
+import edu.mit.compilers.cfg.optimizations.Optimizer;
 
 class Main {
   public static void main(String[] args) {
     try {
-      CLI.parse(args, new String[0]);
+      CLI.parse(args, Optimizer.optimizationNames);
       InputStream inputStream = args.length == 0 ?
           System.in : new java.io.FileInputStream(CLI.infile);
       PrintStream outputStream = CLI.outfile == null ? System.out
@@ -58,6 +60,7 @@ class Main {
         if (CLI.target == Action.ASSEMBLY){
             CFGCreator creator = new CFGCreator();
             CFGProgram program = creator.destruct(ir);
+            Optimizer.optimize(program, CLI.opts);
             AssemblerNew assembler = new AssemblerNew(program);
             assembler.printToStream(outputStream);
         }

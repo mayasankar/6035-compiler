@@ -19,4 +19,9 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
     public <R> R accept(IRNodeVisitor<R> visitor) {
         return visitor.onBool(this);
     }
+
+	@Override
+	public <R> R accept(IRExpressionVisitor<R> visitor) {
+		return visitor.on(this);
+	}
 }

@@ -1,17 +1,22 @@
 package edu.mit.compilers.cfg;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 import edu.mit.compilers.ir.IRProgram;
 import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
+import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CFGProgram {
     private final Map<String, CFG> methodCFGMap = new HashMap<>();
     private final MethodTable methodTable;
+    private final List<VariableDescriptor> globalVariables = new ArrayList<>();
 
     public CFGProgram(IRProgram program) {
     	methodTable = program.getMethodTable();
@@ -21,8 +26,20 @@ public class CFGProgram {
         methodCFGMap.put(name, methodCFG);
     }
 
+    public void addVariable(VariableDescriptor global) {
+        globalVariables.add(global);
+    }
+
     public Set<String> getMethodNames() {
     	return methodCFGMap.keySet();
+    }
+
+    public List<VariableDescriptor> getGlobalVariables() {
+        return globalVariables;
+    }
+
+    public Map<String, CFG> getMethodToCFGMap() {
+        return methodCFGMap;
     }
 
     public CFG getMethodCFG(String methodName) {

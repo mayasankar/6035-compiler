@@ -25,14 +25,23 @@ public abstract class IRLiteral<T> extends IRExpression {
 	public List<IRExpression> getChildren() {
 		return Arrays.asList();
 	}
-	
+
 	@Override
 	public int getDepth() {
 		return 0;
 	}
-	
+
 	@Override
-	public <R> R accept(IRExpressionVisitor<R> visitor) {
-		return visitor.on(this);
+	public boolean equals(Object obj) {
+		if (obj instanceof IRLiteral) {
+			IRLiteral expr = (IRLiteral)obj;
+			return (this.getType().equals(expr.getType()) && this.value.equals(expr.value));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.value.hashCode() + 17*this.getType().hashCode();
 	}
 }

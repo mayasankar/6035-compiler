@@ -51,4 +51,18 @@ public class IRLenExpression extends IRExpression implements IRExpression.Rename
 	public <R> R accept(IRNodeVisitor<R> visitor) {
 		return visitor.on(this);
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IRLenExpression) {
+            IRLenExpression expr = (IRLenExpression)obj;
+            return (this.variableName.equals(expr.variableName));
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.variableName.hashCode();
+    }
 }

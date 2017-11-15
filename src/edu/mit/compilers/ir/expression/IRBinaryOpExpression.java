@@ -35,6 +35,17 @@ public class IRBinaryOpExpression extends IRExpression{
 	public IRExpression getRightExpr() { return rightExpr; }
 	public String getOperator() { return operator; }
 
+	private boolean isCommutative() {
+		switch (operator) {
+			case "==": case "!=": case "&&": case "||": case "+":case "*":
+				return true;
+			case "<": case "<=": case ">": case ">=": case "-": case "/": case "%":
+				return false;
+			default:
+				throw new RuntimeException("Undefined operator " + operator + ".");
+		}
+	}
+
 	@Override
 	public TypeDescriptor getType() {
 		switch (operator) {
@@ -70,6 +81,28 @@ public class IRBinaryOpExpression extends IRExpression{
 	@Override
 	public <R> R accept(IRNodeVisitor<R> visitor) {
 		return visitor.on(this);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRBinaryOpExpression) {
+			IRBinaryOpExpression expr = (IRBinaryOpExpression)obj;
+			if (! this.operator.equals(expr.operator)) {
+				return false;
+			}
+			if (this.isCommutative()) {
+				if (this.leftExpr.equals(expr.rightExpr) && this.rightExpr.equals(expr.leftExpr)) {
+					return true;
+				}
+			}
+			return (this.leftExpr.equals(expr.leftExpr) && this.rightExpr.equals(expr.rightExpr));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.rightExpr.hashCode() + this.leftExpr.hashCode() + 17*this.operator.hashCode();
 	}
 
 }

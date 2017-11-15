@@ -4,40 +4,51 @@ import edu.mit.compilers.ir.*;
 import edu.mit.compilers.ir.decl.*;
 
 public class VariableDescriptor implements Named {
-    // TODO (mayars) remove, so we can separate symbol tables from IR
-    IRMemberDecl declaration;
 
-    // String name;
-    // TypeDescriptor type;
-    // int spaceRequired;
+    String name;
+    TypeDescriptor type;
+    int length;
     int stackOffset;
+    IRMemberDecl decl; // TODO I tried to remove this like the previous TODO said, but I'm pretty sure it's too deeply ingrained in SemanticCheckerVisitor. -jamb
 
     public VariableDescriptor(IRMemberDecl decl) {
-        declaration = decl;
+        this.name = decl.getName();
+        this.type = decl.getType();
+        this.length = decl.getLength();
+        this.decl = decl;
     }
 
-    public TypeDescriptor getType() { return declaration.getType(); }
+    // NOTE only use this at CFG; cannot be used for array variables; assumes you'll never actually need decl
+    public VariableDescriptor(String name) {
+        // TODO do we break anything by claiming this is always INT? (should be fine at CFG)
+        this.name = name;
+        this.type = TypeDescriptor.INT;
+        this.length = 0;
+        this.decl = null;
+    }
 
-    // TODO should be removed
-    public IRMemberDecl getDecl() { return declaration; }
+    public TypeDescriptor getType() { return type; }
 
     public int getStackOffset() { return stackOffset; }
-	public String getName() { return declaration.getName(); }
-    public int getLength() { return declaration.getLength(); }
+	public String getName() { return name; }
+    public int getLength() { return length; }
+    public boolean isArray() { return type.isArray(); }
+    public int getSpaceRequired() { return 8 * (isArray() ? length : 1); }
+    public IRMemberDecl getDecl() { return decl; }
 
     // returns the new value of rsp after putting this var on the stack
     public int pushOntoStack(int rsp) {
-        stackOffset = rsp + declaration.getSpaceRequired();
+        stackOffset = rsp + getSpaceRequired();
         return stackOffset;
     }
 
     // TODO (mayars) fix
     @Override
     public String toString() {
-        return declaration.toString() + " (rsp: " + stackOffset + ")";
+        return name + " (rsp: " + stackOffset + ")";
     }
 
     public String toGlobalAssembly() {
-        return ".comm " + declaration.getName() + ", " + declaration.getSpaceRequired() + ", 8\n";
+        return ".comm " + name + ", " + getSpaceRequired() + ", 8\n";
     }
 }
