@@ -128,7 +128,7 @@ public class CSE implements Optimization {
     // returns true if some expressions have been reduced, false if not
     // NOTE we probably don't actually do anything with the return value, but may as well keep it in case future useful
     private boolean reduceCommonSubexpressions(CFG cfg) {
-        SubexpressionReducer reducer = new SubexpressionReducer(cfg);
+        SubexpressionReducer reducer = new SubexpressionReducer();
         Set<CFGLine> toPossiblyReduce = cfg.getAllLines();
         boolean changed = false;
 
@@ -140,9 +140,8 @@ public class CSE implements Optimization {
 
     // returns true if the line has been reduced
     private class SubexpressionReducer implements CFGLine.CFGVisitor<Boolean> {
-        private CFG cfg;
 
-        public SubexpressionReducer(CFG cfg) { this.cfg = cfg; }
+        public SubexpressionReducer() {}
 
         @Override
         public Boolean on(CFGAssignStatement line) {
@@ -196,51 +195,5 @@ public class CSE implements Optimization {
             return expr;
         }
     }
-    //
-    //
-    // // if you are deleting a line which evaluates this expression it returns the CFGLine
-    // // you want to replace that line with.
-    // // returns either CFGMethodCall (if expression is a method call that affects
-    // // global variables), or line.getNext() (if line is not end) or new noop (if line is end)
-    // private static class LineReplacer implements IRExpression.IRExpressionVisitor<CFGLine> {
-    //     private CFGLine line;
-    //
-    //     public LineReplacer(CFGLine line) { this.line = line; }
-    //
-    //     public static CFGLine getReplacementLine(CFGLine line) {
-    //         if (line.isBranch()) {
-    //             throw new RuntimeException("Trying to delete a branch");
-    //         }
-    //         if (line.isEnd()) {
-    //             return new CFGNoOp();
-    //         } else {
-    //             return line.getTrueBranch();
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public CFGLine on(IRMethodCallExpression ir) {
-    //         if (ir.affectsGlobals()) {
-    //             CFGLine newLine = new CFGMethodCall(ir);
-    //             newLine.stealChildren(line);
-    //             return newLine;
-    //         } else {
-    //             return getReplacementLine(line);
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public CFGLine on(IRUnaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRBinaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRTernaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRLenExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRVariableExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public <T> CFGLine on(IRLiteral<T> ir) { return getReplacementLine(line); }
-    //}
 
 }
