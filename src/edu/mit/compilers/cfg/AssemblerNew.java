@@ -16,7 +16,7 @@ public class AssemblerNew {
 
 	public AssemblerNew(CFGProgram program) {
 		stacker = new VariableStackAssigner(program);
-		code = ".globl main\n";
+		code = ".globl main\n\n";
 
 		for (VariableDescriptor var : program.getGlobalVariables()) {
 			//System.out.println("Adding global variable: " + var.toString());

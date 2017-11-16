@@ -36,7 +36,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     public String assemble(CFG cfg) {
         // TODO also have enter/return/etc.
-        String code = cfg.getStart().accept(this); // TODO huh? this shouldn't get all lines. -jamb
+        String code = label + ":\n";
+        code += cfg.getStart().accept(this);
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();
         for (String stringValue : stringLabels.keySet()){
             String label = stringLabels.get(stringValue);
@@ -138,14 +139,17 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         if(blockNames.containsKey(block)) {
             return "";
         } else {
-            blockNames.put(block, label + "_" + blockCount);
+            blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
-        String code = "";
+        String code = "\n" + blockNames.get(block) + ":\n";
         for(CFGLine line: block.getLines()) {
             code += line.accept(this);
         }
-        return code + block.getTrueBranch().accept(this) + block.getFalseBranch().accept(this);
+        if (! block.isEnd()) {
+            code += block.getTrueBranch().accept(this) + block.getFalseBranch().accept(this);
+        }
+        return code;
     }
 
 
