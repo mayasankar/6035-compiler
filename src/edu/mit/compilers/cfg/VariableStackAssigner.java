@@ -62,4 +62,6 @@ public class VariableStackAssigner {
         }
 	}
 
+	public int getNumAllocs() { return this.variables.keySet().size(); }
+
 }

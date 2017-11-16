@@ -26,7 +26,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType) {
         this.label = method;
-        this.numAllocs = numParams;
+        this.numAllocs = stacker.getNumAllocs();
         this.stacker = stacker;
         this.returnType = returnType;
         this.blockNames = new HashMap<>();
@@ -35,16 +35,34 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     }
 
     public String assemble(CFG cfg) {
-        // TODO also have enter/return/etc.
-        String code = label + ":\n";
-        code += cfg.getStart().accept(this);
+        String prefix = label + ":\n";
+        String code = cfg.getStart().accept(this);
+
+        // if it doesn't have anywhere returning, but should, have it jump to the runtime error
+        if (this.returnType != TypeDescriptor.VOID) {
+            code += "jmp .nonreturning_method\n";
+        }
+
+        // if it has void return, or if a return statement tells it to jump here, leave
+        code += "\n"+ label + "_end:\n";
+        if (label.equals("main")) { // makes sure exit code is 0
+            code += "mov $0, %rax\n";
+        }
+        code += "leave\n" + "ret\n";
+
+        // String literals
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();
         for (String stringValue : stringLabels.keySet()){
             String label = stringLabels.get(stringValue);
             code += "\n" + label + ":\n";
             code += ".string " + stringValue + "\n";
         }
-        return code;
+
+        // figure out how many allocations we did
+        String allocSpace = new Integer(8*numAllocs).toString();  // TODO is this the right number? it's # variables in stacker
+        prefix += "enter $" + allocSpace + ", $0\n";
+
+        return prefix + code;
     }
 
     // NOTE: GUARANTEED TO ONLY USE %r10
@@ -147,7 +165,13 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             code += line.accept(this);
         }
         if (! block.isEnd()) {
-            code += block.getTrueBranch().accept(this) + block.getFalseBranch().accept(this);
+            String childrenCode = block.getTrueBranch().accept(this);
+            childrenCode += block.getFalseBranch().accept(this);
+            // jump statement to false child
+            code += "mov $0, %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
+            code += childrenCode;
         }
         return code;
     }
