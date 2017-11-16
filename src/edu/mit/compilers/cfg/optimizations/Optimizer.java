@@ -14,6 +14,5 @@ public class Optimizer {
             if (! opts[i]) { continue; }
             optimizations[i].optimize(cfgProgram);
         }
-        cfgProgram.blockify();
     }
 }
