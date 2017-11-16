@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.HashMap;
 
 public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
@@ -16,21 +17,20 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     private int numAllocs;
     private VariableStackAssigner stacker;
     private TypeDescriptor returnType;
-    
+
     private Map<CFGBlock, String> blockNames;
-    private int blockCount = 0;
-    
-    private Map<String, String> stringNames;
-    private int stringCount = 0;
-    
-    
+    private int blockCount;
+
     private ExpressionAssemblerVisitor expressionAssembler;
+
 
     public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType) {
         this.label = method;
         this.numAllocs = numParams;
         this.stacker = stacker;
         this.returnType = returnType;
+        this.blockNames = new HashMap<>();
+        this.blockCount = 0;
         this.expressionAssembler = new ExpressionAssemblerVisitor(label, stacker);
     }
 
