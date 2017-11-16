@@ -57,7 +57,8 @@ public class CFGProgram {
 
     public void blockify() {
     	for(String name : methodCFGMap.keySet()) {
-    		methodCFGMap.put(name, methodCFGMap.get(name).blockify());
+            methodCFGMap.get(name).blockify();
+    		methodCFGMap.put(name, methodCFGMap.get(name));
     	}
     }
 

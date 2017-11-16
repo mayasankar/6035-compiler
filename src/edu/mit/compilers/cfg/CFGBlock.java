@@ -21,15 +21,15 @@ public class CFGBlock extends CFGLine {
 
     public List<CFGLine> getLines() { return lines; }
 
-    public void setTrueBranch(CFGBlock next) {
-        this.trueBranch = next;
-        // doesn't increment parent counter because CFGBlock just copies the underlying structure of lines
-    }
-
-    public void setFalseBranch(CFGBlock next) {
-        this.falseBranch = next;
-        // doesn't increment parent counter because CFGBlock just copies the underlying structure of lines
-    }
+    // public void setTrueBranch(CFGBlock next) {
+    //     this.trueBranch = next;
+    //     // doesn't increment parent counter because CFGBlock just copies the underlying structure of lines
+    // }
+    //
+    // public void setFalseBranch(CFGBlock next) {
+    //     this.falseBranch = next;
+    //     // doesn't increment parent counter because CFGBlock just copies the underlying structure of lines
+    // }
 
     public void addLine(CFGLine l) {
         lines.add(l);

@@ -36,7 +36,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     public String assemble(CFG cfg) {
         String prefix = label + ":\n";
-        String code = cfg.getStart().accept(this);
+        String code = cfg.getStart().getCorrespondingBlock().accept(this);
 
         // if it doesn't have anywhere returning, but should, have it jump to the runtime error
         if (this.returnType != TypeDescriptor.VOID) {
