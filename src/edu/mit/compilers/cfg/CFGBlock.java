@@ -75,4 +75,20 @@ public class CFGBlock extends CFGLine {
         throw new RuntimeException("Unimplemented");
     }
 
+    @Override
+    public boolean isEnd() {
+        if (lastLine.getTrueBranch() == null) {
+            if (lastLine.getFalseBranch() != null) {
+                throw new RuntimeException("CFGLine has one null branch and one non-null branch.");
+            }
+            else {
+                return true;
+            }
+        }
+        else if (lastLine.getFalseBranch() == null) {
+            throw new RuntimeException("CFGLine has one null branch and one non-null branch.");
+        }
+        return false;
+    }
+
 }

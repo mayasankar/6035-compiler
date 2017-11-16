@@ -62,13 +62,11 @@ public class CFG {
         List<CFGLine> queue = new LinkedList<>();
         queue.add(start);
         while(!queue.isEmpty()) {
-            CFGBlock block = new CFGBlock();
             CFGLine firstLine = queue.remove(0);
-
-            if(firstLine.getCorrespondingBlock() != null) {
+            if (firstLine.getCorrespondingBlock() != null) {
                 continue;
             }
-
+            CFGBlock block = new CFGBlock();
             updateBlockWithLine(firstLine, block);
             CFGLine line = firstLine;
             while(!line.isEnd() && !line.isBranch() && !line.getTrueBranch().isMerge()) {

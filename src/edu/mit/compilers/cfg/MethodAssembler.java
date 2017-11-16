@@ -48,7 +48,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         if (label.equals("main")) { // makes sure exit code is 0
             code += "mov $0, %rax\n";
         }
-        code += "leave\n" + "ret\n";
+        code += "leave\n" + "ret\n\n";
 
         // String literals
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();
@@ -154,14 +154,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     @Override
     public String on(CFGBlock block) {
-        if(blockNames.containsKey(block)) {
+        if (blockNames.containsKey(block)) {
             return "";
         } else {
             blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
         String code = "\n" + blockNames.get(block) + ":\n";
-        for(CFGLine line: block.getLines()) {
+        for (CFGLine line: block.getLines()) {
             code += line.accept(this);
         }
         if (! block.isEnd()) {
