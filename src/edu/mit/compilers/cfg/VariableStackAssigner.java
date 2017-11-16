@@ -3,10 +3,12 @@ package edu.mit.compilers.cfg;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.*;
+import edu.mit.compilers.ir.decl.*;
 
 public class VariableStackAssigner {
 	private Map<String, VariableDescriptor> variables = new HashMap<>();
@@ -24,6 +26,10 @@ public class VariableStackAssigner {
 			int stackPointer = 0;
 			for (CFGLine line : lines) {
 				Set<String> assignedVariables = line.accept(ASSIGN);
+				List<IRMemberDecl> params = program.getAllParameters(method);
+				for (IRMemberDecl param : params) {
+					assignedVariables.add(param.getName());
+				}
 				for (String varName : assignedVariables) {
 					if (! variables.containsKey(varName)){
 						// TODO I'm pretty sure this doesn't work for arrays but not sure how to fix. -jamb

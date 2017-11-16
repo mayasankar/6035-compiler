@@ -12,6 +12,7 @@ import edu.mit.compilers.symbol_tables.MethodTable;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.ir.decl.*;
 
 public class CFGProgram {
     private final Map<String, CFG> methodCFGMap = new HashMap<>();
@@ -55,12 +56,16 @@ public class CFGProgram {
     }
 
     public void blockify() {
-    	for(String name: methodCFGMap.keySet()) {
+    	for(String name : methodCFGMap.keySet()) {
     		methodCFGMap.put(name, methodCFGMap.get(name).blockify());
     	}
     }
 
     public int getNumParams(String method) {
         return methodTable.get(method).getParameters().getVariableList().size();
+    }
+
+    public List<IRMemberDecl> getAllParameters(String method) {
+        return methodTable.get(method).getParameters().getVariableList();
     }
 }
