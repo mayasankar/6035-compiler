@@ -75,8 +75,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     @Override
-    public CFG on(IRProgram ir) { // TODO this error references a function that doesn't exist
-        throw new RuntimeException("Please call makeCFGsFromIR instead!");
+    public CFG on(IRProgram ir) {
+        throw new RuntimeException("Please call destruct(IRProgram) instead!");
     }
 
     @Override
@@ -258,6 +258,31 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
+        ir = canonicalizeAssignStatement(ir);
+        if (ir.getValue().getDepth() == 0) {
+    		return new CFG(new CFGAssignStatement(ir));
+    	}
+        else {
+    		CFG expandedExpr = ir.getValue().accept(this);
+            String lastVar = ir.getValue().accept(namer);
+            IRVariableExpression location = ir.getVarAssigned();
+            CFGLine assignLine;
+            if (location.isArray()) {
+                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
+                String locationLastVar = location.getIndexExpression().accept(namer);
+                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
+                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
+                expandedIndexExpr.getEnd().setNext(assignLine);
+            } else {
+        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
+        		expandedExpr.getEnd().setNext(assignLine);
+            }
+    		return new CFG(expandedExpr.getStart(), assignLine);
+    	}
+    }
+
+    // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements
+    private IRAssignStatement canonicalizeAssignStatement(IRAssignStatement ir) {
         if (!ir.getOperator().equals("=")) {
             IRVariableExpression var = ir.getVarAssigned();
             IRBinaryOpExpression newExpr;
@@ -279,26 +304,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             }
             ir = new IRAssignStatement(var, newExpr);
         }
-        if (ir.getValue().getDepth() == 0) {
-    		return new CFG(new CFGAssignStatement(ir));
-    	}
-        else {
-    		CFG expandedExpr = ir.getValue().accept(this);
-            String lastVar = ir.getValue().accept(namer);
-            IRVariableExpression location = ir.getVarAssigned();
-            CFGLine assignLine;
-            if (location.isArray()) {
-                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
-                String locationLastVar = location.getIndexExpression().accept(namer);
-                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
-                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
-                expandedIndexExpr.getEnd().setNext(assignLine);
-            } else {
-        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
-        		expandedExpr.getEnd().setNext(assignLine);
-            }
-    		return new CFG(expandedExpr.getStart(), assignLine);
-    	}
+        return ir;
     }
 
     // helper; TODO Arkadiy wanted to fix this I think
@@ -338,8 +344,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRAssignStatement stepFunction = ir.getStepFunction();
         IRBlock block = ir.getBlock();
 
-        CFGAssignStatement initLine = new CFGAssignStatement(initializer);
-        CFGAssignStatement stepLine = new CFGAssignStatement(stepFunction);
+        CFGAssignStatement initLine = new CFGAssignStatement(canonicalizeAssignStatement(initializer));
+        CFGAssignStatement stepLine = new CFGAssignStatement(canonicalizeAssignStatement(stepFunction));
         CFG blockGraph = block.accept(this);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
