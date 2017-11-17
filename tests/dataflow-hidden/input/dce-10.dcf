@@ -1,0 +1,30 @@
+import printf;
+int get_int ( int x ) {
+  return x;
+}
+bool get_bool ( bool x ) {
+  return x;
+}
+int foo ( ) {
+  int a, b, c, i, d;
+  bool x;
+  a = get_int ( 7 );
+  b = get_int ( 2 );
+  x = get_bool ( true );
+  c = 0;
+  d = a+b;
+  for (i = 1; i < 20; i += 1) {
+    a = 3;
+    if ( x ) {
+      c = c+i*i* d;
+    }
+    x = !x;
+  }
+  c = c + 10*d;
+  return c+d;
+}
+void main ( ) {
+  int c;
+  c = foo ( );
+  printf ( "%d\n", c );
+}

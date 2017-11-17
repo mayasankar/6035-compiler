@@ -24,8 +24,13 @@ public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
 	@Override
     public Set<String> on(CFGBlock line){
+        Set<String> assignSet = new HashSet<>();
+        for (CFGLine l : line.getLines()) {
+            assignSet.addAll(l.accept(this));
+        }
+        return assignSet;
         // TODO should this do anything other than nothing? I think we never call it on this
-        throw new RuntimeException("CfgAssignVisitor should never be called on a CFGBlock.");
+        //throw new RuntimeException("CfgAssignVisitor should never be called on a CFGBlock.");
     }
 
 

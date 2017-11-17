@@ -68,4 +68,18 @@ public class IRUnaryOpExpression extends IRExpression {
 		return visitor.on(this);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRUnaryOpExpression) {
+			IRUnaryOpExpression expr = (IRUnaryOpExpression)obj;
+			return (this.argument.equals(expr.argument) && this.operator.equals(expr.operator));
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.argument.hashCode() + 17*this.operator.hashCode();
+	}
+
 }

@@ -115,9 +115,11 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
         List<IRMemberDecl> variables = table.getVariableList();
         HashSet<String> variablesSet = new HashSet<>();
 		for (IRMemberDecl var : variables){
-			String newName = prefix + "_" + ++declarationCounter + "_" + var.getName();
-			varDeclsToRename.add(new VariableDeclarationProcessor(newName, var));
-            if (variablesSet.contains(var.getName())){
+			if(!prefix.equals("global")) {
+				String newName = prefix + "_" + ++declarationCounter + "_" + var.getName();
+				varDeclsToRename.add(new VariableDeclarationProcessor(newName, var));
+            }
+			if (variablesSet.contains(var.getName())){
                 notifyError("Attempted to declare variable " + var.getName() +
                 " but a variable of that name already exists in the same scope.", var);
             }

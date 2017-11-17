@@ -1,0 +1,24 @@
+import printf;
+int get_int ( int x ) {
+  return x;
+}
+void main ( ) {
+  int a, b, c, d, e, f;
+  bool x;
+  a = get_int ( 5 );
+  b = get_int ( 5 );
+  c = get_int ( 7 );
+  d = get_int ( 4 );
+  e = 0;
+  f = 0;
+  x = false;
+  x = a == b;
+  if ( x ) {
+    e = c - d;
+  }
+  if ( a == b ) {
+    f = c + d;
+  }
+  printf ( "%d\n", e );
+  printf ( "%d\n", f );
+}

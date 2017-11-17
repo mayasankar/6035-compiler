@@ -28,9 +28,8 @@ public abstract class CFGLine {
     protected CFGBlock correspondingBlock;
 
     // for CSE
-    protected Set<IRExpression> availableExpressionsIN = new HashSet<>();
-    protected Set<IRExpression> availableExpressionsOUT = new HashSet<>();
-
+    protected Map<IRExpression, Set<String>> availableExpressionsIN = new HashMap<>();
+    protected Map<IRExpression, Set<String>> availableExpressionsOUT = new HashMap<>();
     // for DCE
     protected Set<String> livenessIN = new HashSet<>();
     protected Set<String> livenessOUT = new HashSet<>();
@@ -99,6 +98,10 @@ public abstract class CFGLine {
         this.parents.remove(parent);
     }
 
+    public Map<IRExpression, Set<String>> getAvailableExpressionsIn() { return this.availableExpressionsIN; }
+    public void setAvailableExpressionsIn(Map<IRExpression, Set<String>> newSet) { this.availableExpressionsIN = newSet; }
+    public Map<IRExpression, Set<String>> getAvailableExpressionsOut() { return this.availableExpressionsOUT; }
+    public void setAvailableExpressionsOut(Map<IRExpression, Set<String>> newSet) { this.availableExpressionsOUT = newSet; }
     public Set<String> getLivenessIn() { return this.livenessIN; }
     public void setLivenessIn(Set<String> newSet) { this.livenessIN = newSet; }
     public Set<String> getLivenessOut() { return this.livenessOUT; }

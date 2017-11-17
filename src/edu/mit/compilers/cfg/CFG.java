@@ -58,17 +58,15 @@ public class CFG {
         return this;
     }
 
-    public CFG blockify() { // TODO test
+    public void blockify() { // TODO test
         List<CFGLine> queue = new LinkedList<>();
         queue.add(start);
         while(!queue.isEmpty()) {
-            CFGBlock block = new CFGBlock();
             CFGLine firstLine = queue.remove(0);
-
-            if(firstLine.getCorrespondingBlock() != null) {
+            if (firstLine.getCorrespondingBlock() != null) {
                 continue;
             }
-
+            CFGBlock block = new CFGBlock();
             updateBlockWithLine(firstLine, block);
             CFGLine line = firstLine;
             while(!line.isEnd() && !line.isBranch() && !line.getTrueBranch().isMerge()) {
@@ -76,14 +74,12 @@ public class CFG {
                 updateBlockWithLine(line, block);
             }
             queue.addAll(line.getChildren());
-            //queue.add(line.getTrueBranch());
-            //queue.add(line.getFalseBranch());
         }
 
-        return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
+        //return new CFG(start.getCorrespondingBlock(), end.getCorrespondingBlock());
     }
 
-    public Set<CFGLine> getAllLines() { // TODO mayars test
+    public Set<CFGLine> getAllLines() { // TODO mayars test; also note that after blockifying this returns list of blocks
         Set<CFGLine> toProcess = new HashSet<>();
         toProcess.add(start);
         Set<CFGLine> answer = new HashSet<>();

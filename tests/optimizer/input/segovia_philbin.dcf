@@ -1,0 +1,80 @@
+import pgm_get_next_pixel;
+import start_caliper;
+import pgm_get_rows;
+import pgm_get_cols;
+import pgm_write_next_pixel;
+import end_caliper;
+import pgm_open_for_write;
+import pgm_open_for_read;
+import pgm_close;
+
+// A test program that causes many groups to crash
+// Does nonsense (half of a HSV transformation, with lots of missing steps)
+int image[2000000];
+int cols, rows;
+int size;
+void read() {
+  int i;
+  pgm_open_for_read("segovia.pgm");
+  cols = pgm_get_cols();
+  rows = pgm_get_rows();
+  size = cols * rows;
+  for (i = 0; i < size; i += 1) {
+    image[i] = pgm_get_next_pixel();
+  }
+  pgm_close();
+}
+void write() {
+  int i;
+  pgm_open_for_write("segovia_philbin.pgm", cols, rows);
+  size = cols * rows;
+  for (i = 0; i < size; i += 1) {
+    pgm_write_next_pixel(image[i]);
+  }
+  pgm_close();
+}
+void philbin() {
+  int row, col;
+  row = 0;
+  col = 0;
+  for (row = 0; row < rows; row += 1) {
+    for (col = 0; col < cols; col += 1) {
+      int min, max;
+      int delta;
+      int h, s, v;
+      int r, g, b;
+      r = image[((row * 3 * cols) + (col * 3)) + 0];
+      g = image[((row * 3 * cols) + (col * 3)) + 1];
+      b = image[((row * 3 * cols) + (col * 3)) + 2];
+      h = -1;
+      s = 0;
+      max = r;
+      min = g;
+      if(b>=max && b>=max) {
+        max=b;
+      }
+      if(g>=max && g>=max) {
+        max=g;
+      }
+      if(b<=min && b<=min) {
+        min=b;
+      }
+      if(g<=min && g<=min) {
+        min=g;
+      }
+      delta = max - min;
+      if(delta != 0) {
+        h = 60 *(g - b) / delta;
+      }
+      image[((row * 3 * cols) +(col * 3)) + 0] = h;
+    }
+  }
+}
+void main() {
+  read();
+  start_caliper();
+  cols = cols/3;
+  philbin();
+  end_caliper();
+  write();
+}

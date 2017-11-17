@@ -34,7 +34,9 @@ public abstract class IRExpression extends IRNode {
 		public R on(IRLenExpression ir);
 		public R on(IRVariableExpression ir);
 		public R on(IRMethodCallExpression ir);
-		public <T> R on(IRLiteral<T> ir);
+		public R on(IRBoolLiteral ir);
+		public R on(IRIntLiteral ir);
+		public R on(IRStringLiteral ir);
 	}
 
 	public abstract <R> R accept(IRExpressionVisitor<R> visitor);
@@ -47,4 +49,10 @@ public abstract class IRExpression extends IRNode {
 
 	@Override
 	public abstract List<IRExpression> getChildren();
+
+	@Override
+	public abstract boolean equals(Object obj);
+
+	@Override
+	public abstract int hashCode();
 }

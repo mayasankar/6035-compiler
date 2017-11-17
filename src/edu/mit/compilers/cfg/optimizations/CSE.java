@@ -19,192 +19,181 @@ import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CSE implements Optimization {
-    // TODO (mayars) make sure that initializing global variables is added to
-    // the CFG for main() because then we don't need to initialize global
-    // variables to 0/false if they're initialized later.
+    private CfgGenExpressionVisitor GEN = new CfgGenExpressionVisitor();
+    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
+    private USEVisitor IRNodeUSE = new USEVisitor();
 
-    // private CfgUseVisitor USE = new CfgUseVisitor();
-    // private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
-    //
+    // everything works in Map<IRExpression, Set<String>>s
+    // mapping an available expression to the variables that it is assigned to
+    // then to merge two branches into a child, we have Map<IRExpression, Union of its Sets>
+
     public void optimize(CFGProgram cfgProgram) {
-    //     Set<String> globals = new HashSet<>();
-    //     for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
-    //         globals.add(var.getName());
-    //     }
-    //     for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
-    //         CFG cfg = method.getValue();
-    //         System.out.println("Original CFG:");
-    //         System.out.println(cfg);
-    //         boolean changed = true;
-    //         while (changed) {
-    //             doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
-    //             changed = removeDeadCode(cfg);
-    //         }
-    //         System.out.println("DCE-Optimized CFG:");
-    //         System.out.println(cfg);
-    //     }
-        throw new RuntimeException("Unimplemented");
+        for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
+            CFG cfg = method.getValue();
+            doAvailableExpressionAnalysis(cfg);
+            reduceCommonSubexpressions(cfg);
+        }
     }
-    //
-    private void doAvailableExpressionAnalysis(CFG cfg, Set<String> globals) {
-    //     CFGLine end = cfg.getEnd();
-    //     end.setLivenessOut(new HashSet<String>(globals));
-    //     Set<String> endIn = new HashSet<String>(globals);
-    //     endIn.addAll(end.accept(USE));
-    //     end.setLivenessIn(endIn);
-    //
-    //     // TODO if this becomes too slow, make changed into a field variable
-    //     // and update it with only the places where things are changed
-    //     Set<CFGLine> changed = new HashSet<CFGLine>(cfg.getAllLines());
-    //     changed.remove(end);
-    //
-    //     while (! changed.isEmpty()) {
-    //         CFGLine line = changed.iterator().next();
-    //         changed.remove(line);
-    //
-    //         Set<String> newOut = new HashSet<>();
-    //         for (CFGLine child : line.getChildren()) {
-    //             newOut.addAll(child.getLivenessIn());
-    //         }
-    //         Set<String> newIn = new HashSet<>();
-    //         newIn.addAll(line.accept(USE));
-    //         Set<String> newOutDuplicate = new HashSet<>(newOut);
-    //         newOutDuplicate.removeAll(line.accept(ASSIGN));
-    //         newIn.addAll(newOutDuplicate);
-    //         if (! newIn.equals(line.getLivenessIn())) {
-    //             changed.addAll(line.getParents());
-    //         }
-    //         line.setLivenessIn(newIn);
-    //         line.setLivenessOut(newOut);
-    //     }
-        throw new RuntimeException("Unimplemented");
+
+    private void doAvailableExpressionAnalysis(CFG cfg) {
+        CFGLine start = cfg.getStart();
+
+        start.setAvailableExpressionsIn(new HashMap<IRExpression, Set<String>>()); // TODO unnecessary remove
+        start.setAvailableExpressionsOut(start.accept(GEN));
+
+        // TODO could make it so we assign a temp variable for each intermediate expression
+        // so that we can reuse it even if it gets assigned to diff-named variables in diff blocks
+        // but that sounds hard and maybe unnecessary
+
+        Set<CFGLine> changed = new HashSet<CFGLine>(cfg.getAllLines());
+        changed.remove(start);
+
+        while (!changed.isEmpty()) {
+            CFGLine line = changed.iterator().next();
+            changed.remove(line);
+
+            Map<IRExpression, Set<String>> newIn = null;
+            for (CFGLine parent : line.getParents()) {
+                if (newIn == null) {
+                    newIn = parent.getAvailableExpressionsOut();
+                }
+                else {
+                    newIn = mergeMaps(newIn, parent.getAvailableExpressionsOut());
+                }
+            }
+            line.setAvailableExpressionsIn(newIn);
+
+            Map<IRExpression, Set<String>> newOut = unionMaps(newIn, line.accept(GEN));
+            Set<String> killedVars = line.accept(ASSIGN);
+            newOut = killVariablesFromMap(killedVars, newOut);
+
+            if (! newOut.equals(line.getAvailableExpressionsOut())) {
+                changed.addAll(line.getChildren());
+            }
+            line.setAvailableExpressionsOut(newOut);
+        }
+        return;
     }
-    //
-    // /**
-    //  * returns whether or not dead code has been removed this iteration
-    //  */
-    // private boolean removeDeadCode(CFG cfg) {
-    //     DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg);
-    //     Set<CFGLine> toPossiblyRemove = cfg.getAllLines();
-    //     boolean changed = false;
-    //
-    //     for (CFGLine line : toPossiblyRemove) {
-    //         changed = changed || line.accept(eliminator);
-    //         // if (line.accept(eliminator)) {
-    //         //     System.out.println("Removed: " + line.ownValue());
-    //         //     changed = true;
-    //         // }
-    //     }
-    //     return changed;
-    // }
-    //
-    // // returns true if gen/kill sets might change, i.e. usually when we have removed a line
-    // private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
-    //     private CFG cfg;
-    //
-    //     public DeadCodeEliminator(CFG cfg) { this.cfg = cfg; }
-    //
-    //     @Override
-    //     public Boolean on(CFGAssignStatement line) {
-    //         // use liveness sets
-    //         Set<String> aliveAtEnd = line.getLivenessOut();
-    //         Set<String> assigned = line.accept(ASSIGN);
-    //         for (String var : assigned) {
-    //             if (aliveAtEnd.contains(var)) {
-    //                 return false;
-    //             }
-    //         }
-    //         cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
-    //         return true;
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGConditional line) {
-    //         // remove it if it is not a branch
-    //         if (! line.isBranch()) {
-    //             cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGNoOp line) {
-    //         // could remove it if it can be condensed out
-    //         if (! line.isEnd()) {
-    //             cfg.removeLine(line);
-    //         }
-    //         return false; // even if we're removing a noop, we are not affecting gen/kill sets
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGReturn line) {
-    //         // TODO is there any case where it could be deleted?
-    //         return false;
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGMethodCall line) {
-    //         // TODO remove it if the method doesn't call any globals
-    //         if (line.getExpression().affectsGlobals()) {
-    //             return false;
-    //         } else {
-    //             cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
-    //             return true;
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public Boolean on(CFGBlock line) {
-    //         throw new RuntimeException("Eliminating blocks is hard");
-    //     }
-    // }
-    //
-    //
-    // // if you are deleting a line which evaluates this expression it returns the CFGLine
-    // // you want to replace that line with.
-    // // returns either CFGMethodCall (if expression is a method call that affects
-    // // global variables), or line.getNext() (if line is not end) or new noop (if line is end)
-    // private static class LineReplacer implements IRExpression.IRExpressionVisitor<CFGLine> {
-    //     private CFGLine line;
-    //
-    //     public LineReplacer(CFGLine line) { this.line = line; }
-    //
-    //     public static CFGLine getReplacementLine(CFGLine line) {
-    //         if (line.isBranch()) {
-    //             throw new RuntimeException("Trying to delete a branch");
-    //         }
-    //         if (line.isEnd()) {
-    //             return new CFGNoOp();
-    //         } else {
-    //             return line.getTrueBranch();
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public CFGLine on(IRMethodCallExpression ir) {
-    //         if (ir.affectsGlobals()) {
-    //             CFGLine newLine = new CFGMethodCall(ir);
-    //             newLine.stealChildren(line);
-    //             return newLine;
-    //         } else {
-    //             return getReplacementLine(line);
-    //         }
-    //     }
-    //
-    //     @Override
-    //     public CFGLine on(IRUnaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRBinaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRTernaryOpExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRLenExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public CFGLine on(IRVariableExpression ir) { return getReplacementLine(line); }
-    //     @Override
-    //     public <T> CFGLine on(IRLiteral<T> ir) { return getReplacementLine(line); }
-    //}
+
+    // helper for doAvailableExpressionAnalysis
+    private Map<IRExpression, Set<String>> mergeMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        for (IRExpression key : map1.keySet()) {
+            if (map2.containsKey(key)) {
+                Set<String> vars = map1.get(key);
+                vars.retainAll(map2.get(key));
+                returnMap.put(key, vars);
+            }
+        }
+        return returnMap;
+    }
+
+    // helper for doAvailableExpressionAnalysis
+    private Map<IRExpression, Set<String>> unionMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        Set<IRExpression> keySetUnion = map1.keySet();
+        keySetUnion.addAll(map2.keySet());
+        for (IRExpression key : keySetUnion) {
+            if (map1.containsKey(key) && map2.containsKey(key)) {
+                Set<String> vars = map1.get(key);
+                vars.addAll(map2.get(key));
+                returnMap.put(key, vars);
+            }
+            else if (map1.containsKey(key)){
+                Set<String> vars = map1.get(key);
+                returnMap.put(key, vars);
+            }
+            else {
+                Set<String> vars = map2.get(key);
+                returnMap.put(key, vars);
+            }
+        }
+        return returnMap;
+    }
+
+    // helper for doAvailableExpressionAnalysis
+    private Map<IRExpression, Set<String>> killVariablesFromMap(Set<String> vars, Map<IRExpression, Set<String>> map) {
+        Map<IRExpression, Set<String>> returnMap = new HashMap<>();
+        for (IRExpression key : map.keySet()) {
+            Set<String> usedVariables = key.accept(IRNodeUSE);
+            usedVariables.retainAll(vars);
+            if (usedVariables.isEmpty()) {
+                // the expression does not use any variables getting killed, so we can add it
+                returnMap.put(key, map.get(key));
+            }
+        }
+        return returnMap;
+    }
+
+    // returns true if some expressions have been reduced, false if not
+    // NOTE we probably don't actually do anything with the return value, but may as well keep it in case future useful
+    private boolean reduceCommonSubexpressions(CFG cfg) {
+        SubexpressionReducer reducer = new SubexpressionReducer();
+        Set<CFGLine> toPossiblyReduce = cfg.getAllLines();
+        boolean changed = false;
+
+        for (CFGLine line : toPossiblyReduce) {
+            changed = changed || line.accept(reducer);
+        }
+        return changed;
+    }
+
+    // returns true if the line has been reduced
+    private class SubexpressionReducer implements CFGLine.CFGVisitor<Boolean> {
+
+        public SubexpressionReducer() {}
+
+        @Override
+        public Boolean on(CFGAssignStatement line) {
+            IRExpression oldExpr = line.getExpression();
+            IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
+            if (!oldExpr.equals(newExpr)) {
+                line.setExpression(newExpr);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGConditional line) {
+            // depth 0 so doesn't make sense to reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGNoOp line) {
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGReturn line) {
+            // depth 0 so doesn't make sense to reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGMethodCall line) {
+            // methods may have side effects so we can't necessarily reduce
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGBlock line) {
+            throw new RuntimeException("Reducing blocks is hard.");
+        }
+
+        private IRExpression reduceExpression(IRExpression expr, Map<IRExpression, Set<String>> availableExpressions){
+            if (availableExpressions.containsKey(expr)) {
+                Set<String> varNames = availableExpressions.get(expr);
+                if (varNames.isEmpty()) {
+                    throw new RuntimeException("availableExpressions should never map to the empty set.");
+                }
+                String varName = varNames.iterator().next(); // just get one, we don't care which
+                IRExpression newExpr = new IRVariableExpression(varName);
+                return newExpr;
+            }
+            return expr;
+        }
+    }
 
 }

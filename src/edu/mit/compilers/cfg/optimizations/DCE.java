@@ -206,7 +206,11 @@ public class DCE implements Optimization {
         @Override
         public CFGLine on(IRVariableExpression ir) { return getReplacementLine(line); }
         @Override
-        public <T> CFGLine on(IRLiteral<T> ir) { return getReplacementLine(line); }
+        public CFGLine on(IRBoolLiteral ir) { return getReplacementLine(line); }
+        @Override
+        public CFGLine on(IRIntLiteral ir) { return getReplacementLine(line); }
+        @Override
+        public CFGLine on(IRStringLiteral ir) { return getReplacementLine(line); }
     }
 
 }

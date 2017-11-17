@@ -1,0 +1,15 @@
+import printf;
+int get_int ( int x ) {
+  return x;
+}
+void main ( ) {
+  int a, b, c, d, e, f;
+  a = get_int ( 2 );
+  b = get_int ( 3 );
+  c = a;
+  d = b;
+  e = c + d;
+  f = d + c;
+  printf ( "%d\n", e );
+  printf ( "%d\n", f );
+}

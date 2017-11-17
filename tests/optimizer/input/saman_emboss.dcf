@@ -1,0 +1,68 @@
+import pgm_get_next_pixel;
+import start_caliper;
+import pgm_get_rows;
+import pgm_get_cols;
+import pgm_write_next_pixel;
+import end_caliper;
+import pgm_open_for_write;
+import pgm_open_for_read;
+import pgm_close;
+
+// Embosses a black and white pgm image
+int imageIn[130000];
+int imageOut[130000];
+int cols, rows, size;
+void read() {
+  int i, j;
+  pgm_open_for_read( "saman.pgm");
+  cols = pgm_get_cols();
+  rows = pgm_get_rows();
+  size = cols * rows;
+  for (i = 0; i < rows; i += 1) {
+    for (j = 0; j < cols; j += 1) {
+      imageIn[i*303+j] = pgm_get_next_pixel();
+    }
+  }
+  pgm_close();
+}
+void write() {
+  int i, j;
+  pgm_open_for_write( "saman_emboss.pgm", cols, rows);
+  size = cols * rows;
+  for (i = 0; i < rows; i += 1) {
+    for (j = 0; j < cols; j += 1) {
+      pgm_write_next_pixel( imageOut[i*303+j]);
+    }
+  }
+  pgm_close();
+}
+void emboss() {
+  int i, j;
+  for (i = 1; i < rows-1; i += 1) {
+    for (j = 1; j < cols-1; j += 1) {
+      int p1, p2, p3, p4, p5, p6, t;
+      p1 = imageIn[( i-1) *303 + j-1];
+      p2 = imageIn[( i-1) *303 + j];
+      p3 = imageIn[i*303 + j-1];
+      p4 = imageIn[i*303 + j+1];
+      p5 = imageIn[( i+1) *303 + j];
+      p6 = imageIn[( i+1) *303 + j+1];
+      t = 128 + p4 + p5 + p6 - p1 - p2 - p3;
+      // clip
+      if( t < 0) {
+        t = 0;
+      }
+      if( t > 255) {
+        t = 255;
+      }
+      imageOut[i*303 + j] = t;
+    }
+  }
+}
+void main() {
+  read();
+  start_caliper();
+  emboss();
+  end_caliper();
+  write();
+}

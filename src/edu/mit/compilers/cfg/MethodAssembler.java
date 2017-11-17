@@ -1,45 +1,82 @@
 package edu.mit.compilers.cfg;
 
+import java.util.Map;
+
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 
 public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 
     private String label;
-    private int numParams;
+    private int numAllocs;
     private VariableStackAssigner stacker;
     private TypeDescriptor returnType;
 
+    private Map<CFGBlock, String> blockNames;
+    private int blockCount;
+
+    private ExpressionAssemblerVisitor expressionAssembler;
+
+
     public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType) {
         this.label = method;
-        this.numParams = numParams;
+        this.numAllocs = stacker.getNumAllocs();
         this.stacker = stacker;
         this.returnType = returnType;
+        this.blockNames = new HashMap<>();
+        this.blockCount = 0;
+        this.expressionAssembler = new ExpressionAssemblerVisitor(label, stacker);
     }
 
     public String assemble(CFG cfg) {
-        return cfg.getStart().accept(this);
+        String prefix = label + ":\n";
+        String code = cfg.getStart().getCorrespondingBlock().accept(this);
+
+        // if it doesn't have anywhere returning, but should, have it jump to the runtime error
+        if (this.returnType != TypeDescriptor.VOID) {
+            code += "jmp .nonreturning_method\n";
+        }
+
+        // if it has void return, or if a return statement tells it to jump here, leave
+        code += "\n"+ label + "_end:\n";
+        if (label.equals("main")) { // makes sure exit code is 0
+            code += "mov $0, %rax\n";
+        }
+        code += "leave\n" + "ret\n\n";
+
+        // String literals
+        Map<String, String> stringLabels = expressionAssembler.getStringLabels();
+        for (String stringValue : stringLabels.keySet()){
+            String label = stringLabels.get(stringValue);
+            code += "\n" + label + ":\n";
+            code += ".string " + stringValue + "\n";
+        }
+
+        // figure out how many allocations we did
+        String allocSpace = new Integer(8*numAllocs).toString();  // TODO is this the right number? it's # variables in stacker
+        prefix += "enter $" + allocSpace + ", $0\n";
+
+        return prefix + code;
     }
 
     // NOTE: GUARANTEED TO ONLY USE %r10
     private String onDepthZeroExpression(IRExpression expr) {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO Arkadiy did you want to refactor this?
+        if (expr.getDepth() > 0) {
+            throw new RuntimeException("Called onDepthZeroExpression on expression of non-zero depth.");
+        }
+        return expr.accept(expressionAssembler);
     }
 
     private String onExpression(IRExpression expr) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    // compares the thing currently in %r10 to the var
-    private String boundsCheck() {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO Arkadiy did you want to refactor this?
+        return expr.accept(expressionAssembler);
     }
 
     @Override
@@ -114,12 +151,34 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         code += "mov %rax, %r10\n";
         return code;
     }
-
     @Override
     public String on(CFGBlock block) {
-        // TODO Auto-generated method stub
-        return null;
+        if (blockNames.containsKey(block)) {
+            return "";
+        } else {
+            blockNames.put(block, "." + label + "_" + blockCount);
+            blockCount += 1;
+        }
+        
+        String code = "\n" + blockNames.get(block) + ":\n";
+        String childrenCode = "";
+        
+        if (! block.isEnd()) {
+            childrenCode = block.getTrueBranch().accept(this);
+            if(block.isBranch()) {
+                childrenCode += block.getFalseBranch().accept(this);
+            }
+        }
+        
+        for (CFGLine line: block.getLines()) {
+            code += line.accept(this);
+        }
+        if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getTrueBranch()).equals("null")) {
+            code += "mov $0, %r11\n";
+            code += "cmp %r11, %r10\n";
+            code += "je " + blockNames.get(block.getTrueBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
+            code += childrenCode;
+        }
+        return code;
     }
-
-
 }

@@ -27,6 +27,7 @@ import edu.mit.compilers.ir.expression.IRUnaryOpExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.expression.literal.IRBoolLiteral;
 import edu.mit.compilers.ir.expression.literal.IRIntLiteral;
+import edu.mit.compilers.ir.expression.literal.IRStringLiteral;
 import edu.mit.compilers.ir.expression.literal.IRLiteral;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
 import edu.mit.compilers.ir.statement.IRStatement;
@@ -60,6 +61,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                 continue; // TODO what is the correct behaviour?
             }
             CFG methodCFG = method.accept(creator);
+			System.out.println(methodCFG.toString());
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
@@ -74,8 +76,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     @Override
-    public CFG on(IRProgram ir) { // TODO this error references a function that doesn't exist
-        throw new RuntimeException("Please call makeCFGsFromIR instead!");
+    public CFG on(IRProgram ir) {
+        throw new RuntimeException("Please call destruct(IRProgram) instead!");
     }
 
     @Override
@@ -247,7 +249,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG onString(IRLiteral<String> ir) {
-        return new CFG(new CFGAssignStatement(ir.accept(namer), ir));
+        System.out.println("String: " + ir.getValue());
+		return new CFG(new CFGAssignStatement(ir.accept(namer), ir));
     }
 
     @Override
@@ -257,6 +260,31 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
+        ir = canonicalizeAssignStatement(ir);
+        if (ir.getValue().getDepth() == 0) {
+    		return new CFG(new CFGAssignStatement(ir));
+    	}
+        else {
+    		CFG expandedExpr = ir.getValue().accept(this);
+            String lastVar = ir.getValue().accept(namer);
+            IRVariableExpression location = ir.getVarAssigned();
+            CFGLine assignLine;
+            if (location.isArray()) {
+                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
+                String locationLastVar = location.getIndexExpression().accept(namer);
+                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
+                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
+                expandedIndexExpr.getEnd().setNext(assignLine);
+            } else {
+        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
+        		expandedExpr.getEnd().setNext(assignLine);
+            }
+    		return new CFG(expandedExpr.getStart(), assignLine);
+    	}
+    }
+
+    // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements
+    private IRAssignStatement canonicalizeAssignStatement(IRAssignStatement ir) {
         if (!ir.getOperator().equals("=")) {
             IRVariableExpression var = ir.getVarAssigned();
             IRBinaryOpExpression newExpr;
@@ -278,26 +306,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             }
             ir = new IRAssignStatement(var, newExpr);
         }
-        if (ir.getValue().getDepth() == 0) {
-    		return new CFG(new CFGAssignStatement(ir));
-    	}
-        else {
-    		CFG expandedExpr = ir.getValue().accept(this);
-            String lastVar = ir.getValue().accept(namer);
-            IRVariableExpression location = ir.getVarAssigned();
-            CFGLine assignLine;
-            if (location.isArray()) {
-                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
-                String locationLastVar = location.getIndexExpression().accept(namer);
-                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
-                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
-                expandedIndexExpr.getEnd().setNext(assignLine);
-            } else {
-        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
-        		expandedExpr.getEnd().setNext(assignLine);
-            }
-    		return new CFG(expandedExpr.getStart(), assignLine);
-    	}
+        return ir;
     }
 
     // helper; TODO Arkadiy wanted to fix this I think
@@ -337,8 +346,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRAssignStatement stepFunction = ir.getStepFunction();
         IRBlock block = ir.getBlock();
 
-        CFGAssignStatement initLine = new CFGAssignStatement(initializer);
-        CFGAssignStatement stepLine = new CFGAssignStatement(stepFunction);
+        CFGAssignStatement initLine = new CFGAssignStatement(canonicalizeAssignStatement(initializer));
+        CFGAssignStatement stepLine = new CFGAssignStatement(canonicalizeAssignStatement(stepFunction));
         CFG blockGraph = block.accept(this);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
@@ -507,42 +516,64 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     private static class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
-
+        
+        private int count = 0;
+		private Map<IRExpression, Integer> named = new HashMap<>();
+        
+        private int incrementCount(IRExpression expr) {
+            if(named.containsKey(expr)) {
+				return named.get(expr);
+			} else {
+				count += 1;
+            	named.put(expr, count);
+				return count;
+			}
+        }
+        
         @Override
         public String on(IRUnaryOpExpression ir) {
-            return "unary_temp_" + ir.hashCode();
+            return "unary_temp_" + incrementCount(ir);
         }
 
         @Override
         public String on(IRBinaryOpExpression ir) {
-            return "binary_temp_" + ir.hashCode();
+            return "binary_temp_" + incrementCount(ir);
         }
 
         @Override
         public String on(IRTernaryOpExpression ir) {
-            return "ternary_temp_" + ir.hashCode();
+            return "ternary_temp_" + incrementCount(ir);
         }
 
         @Override
         public String on(IRLenExpression ir) {
-            return "array_length_temp_" + ir.hashCode();
+            return "array_length_temp_" + incrementCount(ir);
         }
 
         @Override
         public String on(IRVariableExpression ir) {
-            return "variable_temp_" + ir.hashCode();
+            return "variable_temp_" + incrementCount(ir);
         }
 
         @Override
         public String on(IRMethodCallExpression ir) {
-            return "method_call_temp_" + ir.hashCode();
+            return "method_call_temp_" + incrementCount(ir);
         }
 
         @Override
-        public <T> String on(IRLiteral<T> ir) {
-            return "literal_temp_" + ir.hashCode();
+        public String on(IRBoolLiteral ir) {
+            return "literal_temp_" + incrementCount(ir);
+        }
+
+        @Override
+        public String on(IRStringLiteral ir) {
+            return "literal_temp_" + incrementCount(ir);
+        }
+
+        @Override
+        public String on(IRIntLiteral ir) {
+            return "literal_temp_" + incrementCount(ir);
         }
 
     }
-
 }
