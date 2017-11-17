@@ -173,10 +173,10 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         for (CFGLine line: block.getLines()) {
             code += line.accept(this);
         }
-        if (! block.isEnd() && block.isBranch()) {
+        if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getTrueBranch()).equals("null")) {
             code += "mov $0, %r11\n";
             code += "cmp %r11, %r10\n";
-            code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
+            code += "je " + blockNames.get(block.getTrueBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
             code += childrenCode;
         }
         return code;
