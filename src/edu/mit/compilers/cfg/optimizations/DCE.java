@@ -24,6 +24,9 @@ public class DCE implements Optimization {
 
     // TODO (mayars) make sure use/assign sets interface correctly with array variables
 
+    // TODO (mayars) simplify if statements that have identically true or
+    // identically false conditions.
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
