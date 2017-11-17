@@ -151,7 +151,6 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         code += "mov %rax, %r10\n";
         return code;
     }
-
     @Override
     public String on(CFGBlock block) {
         if (blockNames.containsKey(block)) {
@@ -160,14 +159,21 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
+        
         String code = "\n" + blockNames.get(block) + ":\n";
+        String childrenCode = "";
+        
+        if (! block.isEnd()) {
+            childrenCode = block.getTrueBranch().accept(this);
+            if(block.isBranch()) {
+                childrenCode += block.getFalseBranch().accept(this);
+            }
+        }
+        
         for (CFGLine line: block.getLines()) {
             code += line.accept(this);
         }
-        if (! block.isEnd()) {
-            String childrenCode = block.getTrueBranch().accept(this);
-            childrenCode += block.getFalseBranch().accept(this);
-            // jump statement to false child
+        if (! block.isEnd() && block.isBranch()) {
             code += "mov $0, %r11\n";
             code += "cmp %r11, %r10\n";
             code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
@@ -175,6 +181,4 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         }
         return code;
     }
-
-
 }

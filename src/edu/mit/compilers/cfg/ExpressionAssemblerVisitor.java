@@ -152,7 +152,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 code += "mov $0, %rdx\n";
                 code += "mov %r10, %rax\n";
                 code += "idiv %r11\n";
-                code += "mov " + ((op == "/") ? "%rax" : "%rdx") + ", %r10\n";
+                code += "mov " + ((op.equals("/")) ? "%rax" : "%rdx") + ", %r10\n";
                 return code;
             case "&&":
                 code += "and %r11, %r10\n";
@@ -164,7 +164,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 code += "cmp %r11, %r10\n";
                 code += "mov $0, %r10\n";
                 code += "mov $1, %r11\n";
-                String dir = (op == "==") ? "e" : (op == "!=") ? "ne" : (op == "<") ? "l" : (op == "<=") ? "le" : (op == ">") ? "g" : "ge";
+                String dir = (op.equals("==")) ? "e" : (op.equals("!=")) ? "ne" : (op.equals("<")) ? "l" : (op.equals("<=")) ? "le" : (op.equals(">")) ? "g" : "ge";
                 code += "cmov" + dir + " %r11, %r10\n";  // cmove, cmovne, cmovl, cmovg, cmovle, cmovge
                 return code;
             default:
