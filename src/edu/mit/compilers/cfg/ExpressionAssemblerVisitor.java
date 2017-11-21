@@ -42,7 +42,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         IRExpression argExpr = ir.getArgument();
         String code = argExpr.accept(this); // value in %r10
         if (op.equals("!")){
-           code += "not %r10\n";
+            code += "mov $1, %r11\n";
+			code += "sub %r10, %r11\n";
+			code += "mov %r11, %r10\n";
         }
         else { // "-"
            code += "neg %r10\n";
