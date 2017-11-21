@@ -29,7 +29,7 @@ public class VariableDescriptor implements Named {
     
     public VariableDescriptor(String name, int length) {
         this.name = name;
-        this.type = TypeDescriptor.INT;
+        this.type = TypeDescriptor.array(TypeDescriptor.INT);
         this.length = length;
         this.decl = null;
     }
