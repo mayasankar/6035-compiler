@@ -69,4 +69,8 @@ public class CFGProgram {
     public List<IRMemberDecl> getAllParameters(String method) {
         return methodTable.get(method).getParameters().getVariableList();
     }
+
+    public IRMethodDecl getMethodParameters(String methodName) {
+    	return methodTable.get(methodName);
+    }
 }

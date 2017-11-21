@@ -61,7 +61,6 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                 continue; // TODO what is the correct behaviour?
             }
             CFG methodCFG = method.accept(creator);
-			System.out.println(methodCFG.toString());
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }

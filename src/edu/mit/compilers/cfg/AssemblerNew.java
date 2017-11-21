@@ -9,6 +9,7 @@ import java.util.List;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
+import edu.mit.compilers.ir.decl.IRMethodDecl;
 
 public class AssemblerNew {
 	private String code;
@@ -26,8 +27,9 @@ public class AssemblerNew {
 		for(String method: program.getMethodNames()) {
 			//System.out.println("Adding code for method: " + method.toString());
 		    int numParams = program.getNumParams(method);
-		    TypeDescriptor returnType = program.getMethodReturnType(method);
-		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType);
+		    IRMethodDecl decl = program.getMethodParameters(method);
+			TypeDescriptor returnType = program.getMethodReturnType(method);
+		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType, decl);
 			code += methodAssembler.assemble(program.getMethodCFG(method));
 		}
 

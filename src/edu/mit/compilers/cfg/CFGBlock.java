@@ -91,4 +91,8 @@ public class CFGBlock extends CFGLine {
         return false;
     }
 
+	@Override
+	public boolean isBranch() {
+		return lastLine.isBranch();
+	}
 }
