@@ -20,7 +20,7 @@ import edu.mit.compilers.cfg.lines.*;
 
 public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
-    private IRNode.IRNodeVisitor<Set<String>> USE = new USEVisitor();
+    private USEVisitor USE = new USEVisitor();
 
 	@Override
     public Set<String> on(CFGBlock line){

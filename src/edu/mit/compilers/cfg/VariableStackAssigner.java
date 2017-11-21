@@ -18,27 +18,18 @@ public class VariableStackAssigner {
 		for (VariableDescriptor var : program.getGlobalVariables()) {
 			globals.put(var.getName(), var);
 		}
-
-		CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 		Map<String, CFG> methodMap = program.getMethodToCFGMap();
 		for (String method : methodMap.keySet()) {
-			CFG methodCFG = methodMap.get(method);
-			Set<CFGLine> lines = methodCFG.getAllLines();
 			int stackPointer = 0;
-			for (CFGLine line : lines) {
-				Set<String> assignedVariables = line.accept(ASSIGN);
-				List<IRMemberDecl> params = program.getAllParameters(method);
-				for (IRMemberDecl param : params) {
-					assignedVariables.add(param.getName());
-				}
-				for (String varName : assignedVariables) {
-					if (! variables.containsKey(varName) && ! globals.containsKey(varName)){
-						// TODO I'm pretty sure this doesn't work for arrays but not sure how to fix. -jamb
-						VariableDescriptor newDescriptor = new VariableDescriptor(varName);
-						stackPointer = newDescriptor.pushOntoStack(stackPointer);
-						variables.put(varName, newDescriptor);
-					}
-				}
+			for(VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
+				stackPointer = desc.pushOntoStack(stackPointer);
+				variables.put(desc.getName(), desc);
+			}
+			List<IRMemberDecl> params = program.getAllParameters(method);
+			for (IRMemberDecl param : params) {
+				VariableDescriptor newDescriptor = new VariableDescriptor(param.getName());
+				stackPointer = newDescriptor.pushOntoStack(stackPointer);
+				variables.put(param.getName(), newDescriptor);
 			}
 		}
 	}
@@ -81,7 +72,7 @@ public class VariableStackAssigner {
                 code += "imul %r11, " + indexRegister + "\n"; // TODO do via shifting instead
                 code += "mov $" + variableName + ", %r11\n";
 				code += "add %r11, " + indexRegister + "\n";
-				code += "mov 0(" + indexRegister + "), %r11\n"
+				code += "mov 0(" + indexRegister + "), %r11\n";
 				code += "mov %r11, " + targetRegister + "\n";
 				code += "pop %r11\n";
 				return code;
