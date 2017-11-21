@@ -349,20 +349,20 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRAssignStatement stepFunction = ir.getStepFunction();
         IRBlock block = ir.getBlock();
 
-        CFGAssignStatement initLine = new CFGAssignStatement(canonicalizeAssignStatement(initializer));
-        CFGAssignStatement stepLine = new CFGAssignStatement(canonicalizeAssignStatement(stepFunction));
+        CFG initCFG = initializer.accept(this);
+        CFG stepCFG = stepFunction.accept(this);
         CFG blockGraph = block.accept(this);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
         CFGLine noOp = makeNoOp();
         CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
-        blockEnd.setNext(stepLine);
-        stepLine.setNext(condStart);
-        initLine.setNext(condStart);
-        continueNoOp.setNext(stepLine);
+        blockEnd.setNext(stepCFG.getStart());
+        stepCFG.getEnd().setNext(condStart);
+        initCFG.getEnd().setNext(condStart);
+        continueNoOp.setNext(stepCFG.getStart());
 
         envStack.remove(envStack.size()-1);
-        return new CFG(initLine, endNoOp);
+        return new CFG(initCFG.getStart(), endNoOp);
     }
 
     @Override
@@ -519,10 +519,10 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     }
 
     private class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
-        
+
         private int count = 0;
 		private Map<IRExpression, String> named = new HashMap<>();
-        
+
         private String incrementCount(IRExpression expr, String prefix) {
 
             if(named.containsKey(expr)) {
@@ -535,7 +535,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 				return name;
 			}
         }
-        
+
         @Override
         public String on(IRUnaryOpExpression ir) {
             return incrementCount(ir, "unary_temp_");
