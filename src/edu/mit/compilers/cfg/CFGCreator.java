@@ -44,8 +44,9 @@ import edu.mit.compilers.cfg.lines.*;
 public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
-    private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
+    private ExpressionTempNameAssigner namer = this.new ExpressionTempNameAssigner();
     private List<CFGLoopEnv> envStack = new ArrayList<>();
+    private String currentMethod;
 
 
     /**
@@ -60,12 +61,13 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             if (method.isImport()) {
                 continue; // TODO what is the correct behaviour?
             }
+            creator.currentMethod = method.getName();
             CFG methodCFG = method.accept(creator);
             String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
         for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
-            creator.program.addVariable(var);
+            creator.program.addGlobalVariable(var);
         }
         return creator.program;
     }
@@ -103,8 +105,10 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                         new IRIntLiteral(BigInteger.ZERO));
                 returnCFG.concat(new CFG(setZero));
             }
+            this.program.addLocalVariable(currentMethod, new VariableDescriptor(decl.getName(), decl.getLength()));
             return returnCFG;
         } else {
+        	this.program.addLocalVariable(currentMethod, new VariableDescriptor(decl.getName()));
             return new CFG(new CFGAssignStatement(decl.getName(), new IRIntLiteral(BigInteger.ZERO)));
         }
     }
@@ -514,64 +518,67 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         return beginNot;
     }
 
-    private static class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
+    private class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
         
         private int count = 0;
-		private Map<IRExpression, Integer> named = new HashMap<>();
+		private Map<IRExpression, String> named = new HashMap<>();
         
-        private int incrementCount(IRExpression expr) {
+        private String incrementCount(IRExpression expr, String prefix) {
+
             if(named.containsKey(expr)) {
 				return named.get(expr);
 			} else {
 				count += 1;
-            	named.put(expr, count);
-				return count;
+				String name = prefix + count;
+            	named.put(expr, name);
+            	program.addLocalVariable(currentMethod, new VariableDescriptor(name));
+				return name;
 			}
         }
         
         @Override
         public String on(IRUnaryOpExpression ir) {
-            return "unary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "unary_temp_");
         }
 
         @Override
         public String on(IRBinaryOpExpression ir) {
-            return "binary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "binary_temp_");
         }
 
         @Override
         public String on(IRTernaryOpExpression ir) {
-            return "ternary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "ternary_temp_");
         }
 
         @Override
         public String on(IRLenExpression ir) {
-            return "array_length_temp_" + incrementCount(ir);
+            return incrementCount(ir, "array_length_temp_");
         }
 
         @Override
         public String on(IRVariableExpression ir) {
-            return "variable_temp_" + incrementCount(ir);
+            return incrementCount(ir, "variable_temp_");
         }
 
         @Override
         public String on(IRMethodCallExpression ir) {
-            return "method_call_temp_" + incrementCount(ir);
+            return incrementCount(ir, "method_call_temp_");
         }
 
         @Override
         public String on(IRBoolLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir, "literal_temp_");
         }
 
         @Override
         public String on(IRStringLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir, "literal_temp_");
         }
 
         @Override
         public String on(IRIntLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir,"literal_temp_");
         }
 
     }

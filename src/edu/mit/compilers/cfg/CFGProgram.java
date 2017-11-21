@@ -18,6 +18,7 @@ public class CFGProgram {
     private final Map<String, CFG> methodCFGMap = new HashMap<>();
     private final MethodTable methodTable;
     private final List<VariableDescriptor> globalVariables = new ArrayList<>();
+    private final Map<String, List<VariableDescriptor>> localVariables = new HashMap<>();
 
     public CFGProgram(IRProgram program) {
     	methodTable = program.getMethodTable();
@@ -27,8 +28,18 @@ public class CFGProgram {
         methodCFGMap.put(name, methodCFG);
     }
 
-    public void addVariable(VariableDescriptor global) {
+    public void addGlobalVariable(VariableDescriptor global) {
         globalVariables.add(global);
+    }
+    
+    public void addLocalVariable(String methodName, VariableDescriptor local) {
+        if(localVariables.containsKey(methodName)) {
+        	localVariables.get(methodName).add(local);
+        } else {
+        	List<VariableDescriptor> list = new ArrayList<>();
+        	list.add(local);
+        	localVariables.put(methodName, list);
+        }
     }
 
     public Set<String> getMethodNames() {
@@ -39,6 +50,10 @@ public class CFGProgram {
         return globalVariables;
     }
 
+    public List<VariableDescriptor> getLocalVariablesForMethod(String method) {
+        return localVariables.get(method);
+    }
+    
     public Map<String, CFG> getMethodToCFGMap() {
         return methodCFGMap;
     }

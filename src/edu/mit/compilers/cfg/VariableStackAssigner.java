@@ -17,27 +17,12 @@ public class VariableStackAssigner {
 		for (VariableDescriptor var : program.getGlobalVariables()) {
 			variables.put(var.getName(), var);
 		}
-
-		CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 		Map<String, CFG> methodMap = program.getMethodToCFGMap();
 		for (String method : methodMap.keySet()) {
-			CFG methodCFG = methodMap.get(method);
-			Set<CFGLine> lines = methodCFG.getAllLines();
 			int stackPointer = 0;
-			for (CFGLine line : lines) {
-				Set<String> assignedVariables = line.accept(ASSIGN);
-				List<IRMemberDecl> params = program.getAllParameters(method);
-				for (IRMemberDecl param : params) {
-					assignedVariables.add(param.getName());
-				}
-				for (String varName : assignedVariables) {
-					if (! variables.containsKey(varName)){
-						// TODO I'm pretty sure this doesn't work for arrays but not sure how to fix. -jamb
-						VariableDescriptor newDescriptor = new VariableDescriptor(varName);
-						stackPointer = newDescriptor.pushOntoStack(stackPointer);
-						variables.put(varName, newDescriptor);
-					}
-				}
+			for(VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
+				stackPointer = desc.pushOntoStack(stackPointer);
+				variables.put(desc.getName(), desc);
 			}
 		}
 	}
