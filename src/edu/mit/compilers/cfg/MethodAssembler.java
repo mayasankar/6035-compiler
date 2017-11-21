@@ -75,13 +75,13 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
      	for(int i=0; i < parameters.size(); ++i) {
      		IRMemberDecl param = parameters.get(i);
-     		String paramStackLoc = stacker.getAddress(param.getName());
-     		String paramLoc = getParamLoc(i);
-     		if(i<=5) {
-     			code += String.format("mov %s, %s\n", paramLoc, paramStackLoc);
+            String paramLoc = getParamLoc(i);
+
+     		if (i<=5) {
+                code += stacker.moveFrom(param.getName(), paramLoc, "%r10");
      		} else {
      			code += String.format("mov %s, %%r10\n", paramLoc);
-     			code += String.format("mov %%r10, %s\n", paramStackLoc);
+     			code += stacker.moveFrom(param.getName(), "%r10", "%r10");
      		}
      	}
      	return code;
@@ -123,7 +123,6 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     public String on(CFGAssignStatement line) {
         String code = "";
         IRVariableExpression varAssigned = line.getVarAssigned();
-        String stackLocation = stacker.getAddress(varAssigned.getName());  // includes %r10 as offset if array
         code += onExpression(line.getExpression());  // value now in %r10
         code += "push %r10\n"; // will get it out right before the end and assign to %r11
 
@@ -140,7 +139,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         }
 
         code += "pop %r11\n"; // value now in %r11
-        code += "mov %r11, " + stackLocation + "\n";
+        code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
         return code;
     }
 
