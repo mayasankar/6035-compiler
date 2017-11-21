@@ -100,7 +100,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         }
 
         code += "pop %r11\n"; // value now in %r11
-        code += "mov %r11, " + stackLocation + "\n";
+        code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
         return code;
     }
 
@@ -159,17 +159,17 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
-        
+
         String code = "\n" + blockNames.get(block) + ":\n";
         String childrenCode = "";
-        
+
         if (! block.isEnd()) {
             childrenCode = block.getTrueBranch().accept(this);
             if(block.isBranch()) {
                 childrenCode += block.getFalseBranch().accept(this);
             }
         }
-        
+
         for (CFGLine line: block.getLines()) {
             code += line.accept(this);
         }

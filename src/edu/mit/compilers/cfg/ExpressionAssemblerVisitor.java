@@ -63,7 +63,6 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     @Override
     public String on(IRVariableExpression ir){ // uses only %r10 unlesss array
-        // TODO this doesn't handle global variables; maybe make it so stacker getAddress handles those?
         String code = "";
         if (ir.isArray()) {
             code += ir.getIndexExpression().accept(this);
@@ -73,7 +72,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             code += "cmp $0, %r10\n";
             code += "jl .out_of_bounds\n";
         }
-        code += "mov " + stacker.getAddress(ir.getName()) + ", %r10\n";
+        code += stacker.moveTo(ir.getName(), "%r10", "%r10");
         return code;
     }
 
