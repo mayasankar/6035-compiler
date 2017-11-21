@@ -51,8 +51,12 @@ public class CFGProgram {
     }
 
     public List<VariableDescriptor> getLocalVariablesForMethod(String method) {
-        return localVariables.get(method);
-    }
+		if(localVariables.containsKey(method)) {
+        	return localVariables.get(method);
+    	} else {
+			return new ArrayList<VariableDescriptor>();
+		}
+	}
     
     public Map<String, CFG> getMethodToCFGMap() {
         return methodCFGMap;

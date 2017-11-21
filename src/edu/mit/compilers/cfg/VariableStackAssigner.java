@@ -24,6 +24,12 @@ public class VariableStackAssigner {
 				stackPointer = desc.pushOntoStack(stackPointer);
 				variables.put(desc.getName(), desc);
 			}
+			List<IRMemberDecl> params = program.getAllParameters(method);
+			for (IRMemberDecl param : params) {
+				VariableDescriptor newDescriptor = new VariableDescriptor(param.getName());
+				stackPointer = newDescriptor.pushOntoStack(stackPointer);
+				variables.put(param.getName(), newDescriptor);
+			}
 		}
 	}
 
