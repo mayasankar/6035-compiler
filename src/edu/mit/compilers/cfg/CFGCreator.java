@@ -188,7 +188,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRBlock trueBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
         IRExpression falseExpression = ir.getFalseExpression();
         IRAssignStatement falseAssignment = new IRAssignStatement(new IRVariableExpression(tempName), falseExpression);
-        IRBlock falseBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
+        IRBlock falseBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(falseAssignment)), new VariableTable());
         IRIfStatement convertedTernary = new IRIfStatement(ifCondition, trueBlock, falseBlock);
         return convertedTernary.accept(this);
     }
