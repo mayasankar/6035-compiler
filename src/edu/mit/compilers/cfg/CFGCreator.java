@@ -63,7 +63,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             }
             creator.currentMethod = method.getName();
             CFG methodCFG = method.accept(creator);
-            String name = method.getName();
+			String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
         for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
@@ -263,33 +263,32 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
-        ir = canonicalizeAssignStatement(ir);
-        if (ir.getValue().getDepth() == 0  && ir.getVarAssigned().getDepth() <= 1) {
-    		return new CFG(new CFGAssignStatement(ir));
+        CFG answer = new CFG(makeNoOp());
+    	IRVariableExpression var = ir.getVarAssigned();
+    	// If the var being assigned to is an array, makew a temp var for it
+    	if(var.getDepth() > 0) {
+    		answer.concat(var.getIndexExpression().accept(this));
+    		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
+			answer.concat(var.accept(this));
     	}
-        else {
-    		CFG expandedExpr = ir.getValue().accept(this);
-            String lastVar = ir.getValue().accept(namer);
-            IRVariableExpression location = ir.getVarAssigned();
-            CFGLine assignLine;
-            if (location.isArray()) {
-                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
-                String locationLastVar = location.getIndexExpression().accept(namer);
-                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
-                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
-                expandedIndexExpr.getEnd().setNext(assignLine);
-            } else {
-        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
-        		expandedExpr.getEnd().setNext(assignLine);
-            }
-    		return new CFG(expandedExpr.getStart(), assignLine);
+    	// If the RHS is not a var or literal, make a temp
+    	IRExpression value = ir.getValue();
+    	if(value != null && value.getDepth() > 0) {
+    		answer.concat(value.accept(this));
+    		value = new IRVariableExpression(value.accept(namer));
     	}
+    	
+    	IRAssignStatement simpleStat = canonicalizeAssignStatement(new IRAssignStatement(var,ir.getOperator() , value));
+    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat))); 
     }
 
     // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements
     private IRAssignStatement canonicalizeAssignStatement(IRAssignStatement ir) {
         if (!ir.getOperator().equals("=")) {
             IRVariableExpression var = ir.getVarAssigned();
+			if(var.getDepth() > 0) {
+				var = new IRVariableExpression(var.accept(namer));
+			}
             IRBinaryOpExpression newExpr;
             switch (ir.getOperator()) {
                 case "+=":
@@ -307,7 +306,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                 default:
                     throw new RuntimeException("Invalid assign statement operator: " + ir.getOperator());
             }
-            ir = new IRAssignStatement(var, newExpr);
+            ir = new IRAssignStatement(ir.getVarAssigned(), newExpr);
         }
         return ir;
     }
