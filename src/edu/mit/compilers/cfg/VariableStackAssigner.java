@@ -77,10 +77,15 @@ public class VariableStackAssigner {
 				code += "pop %r11\n";
 				return code;
 			}
-			String code = "";
-			code += "mov $" + variableName + ", " + indexRegister + "\n";
-			code += "mov 0(" + indexRegister + "), " + targetRegister + "\n";
-			return code;
+			else {
+				String code = "";
+				code += "push %r11\n";
+				code += "mov $" + variableName + ", " + indexRegister + "\n";
+				code += "mov 0(" + indexRegister + "), %r11\n";
+				code += "mov %r11, " + targetRegister + "\n";
+				code += "pop %r11\n";
+				return code;
+			}
 		}
 		if (var.isArray()) {
 			return "mov -" + (new Integer(offset).toString()) + "(%rbp, " + indexRegister + ", 8), " + targetRegister + "\n";

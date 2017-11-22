@@ -264,7 +264,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     @Override
     public CFG on(IRAssignStatement ir) {
         ir = canonicalizeAssignStatement(ir);
-        if (ir.getValue().getDepth() == 0  && ir.getVarAssigned().getDepth() == 0) {
+        if (ir.getValue().getDepth() == 0  && ir.getVarAssigned().getDepth() <= 1) {
     		return new CFG(new CFGAssignStatement(ir));
     	}
         else {

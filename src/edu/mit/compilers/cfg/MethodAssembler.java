@@ -80,8 +80,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
      		if (i<=5) {
                 code += stacker.moveFrom(param.getName(), paramLoc, "%r10");
      		} else {
-     			code += String.format("mov %s, %%r10\n", paramLoc);
-     			code += stacker.moveFrom(param.getName(), "%r10", "%r10");
+     			code += String.format("mov %s, %%r11\n", paramLoc);
+     			code += stacker.moveFrom(param.getName(), "%r11", "%r10");
      		}
      	}
      	return code;
