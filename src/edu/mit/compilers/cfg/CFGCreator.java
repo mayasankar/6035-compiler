@@ -394,23 +394,11 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRLoopStatement ir) {
-        if (ir.getStatementType() == IRStatement.StatementType.BREAK) {
-            CFGLine noOp = makeNoOp();
-            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
-            CFGLine followingLine = containingLoop.getFollowingLine();
-            noOp.setNext(followingLine);
-            return new CFG(noOp);
-        }
-        else if (ir.getStatementType() == IRStatement.StatementType.CONTINUE) {
-            CFGLine noOp = makeNoOp();
-            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
-            CFGLine startLine = containingLoop.getStartLine();
-            noOp.setNext(startLine);
-            return new CFG(noOp);
-        }
-        else {
-            throw new RuntimeException("Invalid loop statement type: " + ir.getStatementType().toString());
-        }
+		CFGLine jumper = makeNoOp();
+		CFGLine unreachableEnd = makeNoOp();
+		CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+		jumper.setNext((ir.getStatementType() == IRStatement.StatementType.BREAK)? containingLoop.getFollowingLine(): containingLoop.getStartLine());
+		return new CFG(jumper, unreachableEnd);
     }
 
     @Override
