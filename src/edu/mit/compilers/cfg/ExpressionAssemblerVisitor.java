@@ -152,6 +152,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             case "/": case "%":
                 code += "mov $0, %rdx\n";
                 code += "mov %r10, %rax\n";
+                code += "cqto\n";
                 code += "idiv %r11\n";
                 code += "mov " + ((op.equals("/")) ? "%rax" : "%rdx") + ", %r10\n";
                 return code;
