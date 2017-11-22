@@ -44,7 +44,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 		code += cfg.getStart().getCorrespondingBlock().accept(this);
 
         // if it doesn't have anywhere returning, but should, have it jump to the runtime error
-        if (this.returnType != TypeDescriptor.VOID) {
+        if (this.returnType != TypeDescriptor.VOID && !label.equals("main")) {
             code += "jmp .nonreturning_method\n";
         }
 
@@ -217,10 +217,10 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             code += "cmp %r11, %r10\n";
             code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
         }
-		if(jumpToTrue) {
+		if (jumpToTrue) {
 			code += "jmp " + blockNames.get(block.getTrueBranch()) + "\n";
 		}
-		if(block.isEnd()) {
+		if (block.isEnd() && label.equals("main")) {
 			code += "jmp " + label + "_end\n";
 		}
         code += childrenCode;
