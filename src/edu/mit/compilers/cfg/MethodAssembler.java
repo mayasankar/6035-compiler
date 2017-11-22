@@ -220,9 +220,6 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
 		if(jumpToTrue) {
 			code += "jmp " + blockNames.get(block.getTrueBranch()) + "\n";
 		}
-		if(block.isEnd()) {
-			code += "jmp " + label + "_end\n";
-		}
         code += childrenCode;
         return code;
     }
