@@ -5,6 +5,7 @@ import java.util.Map;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
+import edu.mit.compilers.ir.decl.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +18,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     private int numAllocs;
     private VariableStackAssigner stacker;
     private TypeDescriptor returnType;
+	private IRMethodDecl decl;
 
     private Map<CFGBlock, String> blockNames;
     private int blockCount;
@@ -24,22 +26,25 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     private ExpressionAssemblerVisitor expressionAssembler;
 
 
-    public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType) {
+    public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType, IRMethodDecl decl) {
         this.label = method;
         this.numAllocs = stacker.getNumAllocs();
         this.stacker = stacker;
         this.returnType = returnType;
         this.blockNames = new HashMap<>();
         this.blockCount = 0;
+		this.decl = decl;
         this.expressionAssembler = new ExpressionAssemblerVisitor(label, stacker);
     }
 
     public String assemble(CFG cfg) {
         String prefix = label + ":\n";
-        String code = cfg.getStart().getCorrespondingBlock().accept(this);
+        String code = "";
+		code += pullInArguments();
+		code += cfg.getStart().getCorrespondingBlock().accept(this);
 
         // if it doesn't have anywhere returning, but should, have it jump to the runtime error
-        if (this.returnType != TypeDescriptor.VOID) {
+        if (this.returnType != TypeDescriptor.VOID && !label.equals("main")) {
             code += "jmp .nonreturning_method\n";
         }
 
@@ -65,6 +70,41 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         return prefix + code;
     }
 
+	private String pullInArguments() {
+        String code = "";
+        List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
+     	for(int i=0; i < parameters.size(); ++i) {
+     		IRMemberDecl param = parameters.get(i);
+            String paramLoc = getParamLoc(i);
+
+     		if (i<=5) {
+                code += stacker.moveFrom(param.getName(), paramLoc, "%r10");
+     		} else {
+     			code += String.format("mov %s, %%r11\n", paramLoc);
+     			code += stacker.moveFrom(param.getName(), "%r11", "%r10");
+     		}
+     	}
+     	return code;
+	}
+
+    private String getParamLoc(int i) {
+     	if(i==0) {
+     		return "%rdi";
+     	} else if (i==1) {
+     		return "%rsi";
+     	} else if (i==2) {
+     		return "%rdx";
+     	} else if (i==3) {
+     		return "%rcx";
+     	} else if (i==4) {
+     		return "%r8";
+     	} else if (i==5) {
+     		return "%r9";
+     	} else {
+     		return (i-4)*8 + "(%rbp)";
+     	}
+     }
+
     // NOTE: GUARANTEED TO ONLY USE %r10
     private String onDepthZeroExpression(IRExpression expr) {
         // TODO Arkadiy did you want to refactor this?
@@ -83,7 +123,6 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
     public String on(CFGAssignStatement line) {
         String code = "";
         IRVariableExpression varAssigned = line.getVarAssigned();
-        String stackLocation = stacker.getAddress(varAssigned.getName());  // includes %r10 as offset if array
         code += onExpression(line.getExpression());  // value now in %r10
         code += "push %r10\n"; // will get it out right before the end and assign to %r11
 
@@ -100,7 +139,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         }
 
         code += "pop %r11\n"; // value now in %r11
-        code += "mov %r11, " + stackLocation + "\n";
+        code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
         return code;
     }
 
@@ -159,26 +198,32 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
             blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
-        
+        boolean jumpToTrue = false;
         String code = "\n" + blockNames.get(block) + ":\n";
         String childrenCode = "";
-        
         if (! block.isEnd()) {
-            childrenCode = block.getTrueBranch().accept(this);
+			jumpToTrue = blockNames.containsKey(block.getTrueBranch());
+			childrenCode = block.getTrueBranch().accept(this);
             if(block.isBranch()) {
-                childrenCode += block.getFalseBranch().accept(this);
+            	String falseCode = block.getFalseBranch().accept(this);
+				childrenCode = childrenCode + falseCode;
             }
         }
-        
         for (CFGLine line: block.getLines()) {
             code += line.accept(this);
         }
-        if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getTrueBranch()).equals("null")) {
+        if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getFalseBranch()).equals("null")) {
             code += "mov $0, %r11\n";
             code += "cmp %r11, %r10\n";
-            code += "je " + blockNames.get(block.getTrueBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
-            code += childrenCode;
+            code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
         }
+		if (jumpToTrue) {
+			code += "jmp " + blockNames.get(block.getTrueBranch()) + "\n";
+		}
+		if (block.isEnd() && label.equals("main")) {
+			code += "jmp " + label + "_end\n";
+		}
+        code += childrenCode;
         return code;
     }
 }

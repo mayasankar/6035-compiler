@@ -197,11 +197,11 @@ public abstract class CFGLine {
 
     @Override
     public String toString() {
-        return stringHelper(0, 20);
+        return stringHelper(0, 40, new HashSet<CFGLine>());
     }
 
     // NOTE: it is bad at printing things that will infinite loop
-    public String stringHelper(int numIndents, int depthLimit) {
+    public String stringHelper(int numIndents, int depthLimit, Set<CFGLine> expandedLines) {
         if (depthLimit <= 0) {
             return "";
         }
@@ -214,14 +214,29 @@ public abstract class CFGLine {
             if (trueBranch == null || falseBranch == null) {
                 throw new RuntimeException("Branches should not be null: " + this.ownValue());
             }
-            str += trueBranch.stringHelper(numIndents+1, depthLimit-1);
-            str += falseBranch.stringHelper(numIndents+1, depthLimit-1);
+            if(!expandedLines.contains(trueBranch)) {
+            	expandedLines.add(trueBranch);
+            	str += trueBranch.stringHelper(numIndents+1, depthLimit-1, expandedLines);
+            } else {
+				str += "Tried duplicate here\n";
+			}
+            if(!expandedLines.contains(falseBranch)) {
+            	expandedLines.add(falseBranch);
+            	str += falseBranch.stringHelper(numIndents+1, depthLimit-1, expandedLines);
+            } else {
+				str += "Tried duplicate here\n";
+			}
         }
         else if (trueBranch != null) {
             // NOTE if you're getting a stack overflow error, your CFG has an
             // infinite loop and you want to change depthLimit to depthLimit-1
             // in this line for debug output
-            str += trueBranch.stringHelper(numIndents, depthLimit); // depthLimit-1
+        	if(!expandedLines.contains(trueBranch)) {
+            	expandedLines.add(trueBranch);
+            	str += trueBranch.stringHelper(numIndents, depthLimit, expandedLines);
+            } else {
+				str += "Tried duplicate here\n";
+			}
         }
         return str;
     }

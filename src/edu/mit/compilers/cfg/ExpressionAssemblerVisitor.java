@@ -42,7 +42,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         IRExpression argExpr = ir.getArgument();
         String code = argExpr.accept(this); // value in %r10
         if (op.equals("!")){
-           code += "not %r10\n";
+            code += "mov $1, %r11\n";
+			code += "sub %r10, %r11\n";
+			code += "mov %r11, %r10\n";
         }
         else { // "-"
            code += "neg %r10\n";
@@ -63,7 +65,6 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     @Override
     public String on(IRVariableExpression ir){ // uses only %r10 unlesss array
-        // TODO this doesn't handle global variables; maybe make it so stacker getAddress handles those?
         String code = "";
         if (ir.isArray()) {
             code += ir.getIndexExpression().accept(this);
@@ -73,7 +74,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             code += "cmp $0, %r10\n";
             code += "jl .out_of_bounds\n";
         }
-        code += "mov " + stacker.getAddress(ir.getName()) + ", %r10\n";
+        code += stacker.moveTo(ir.getName(), "%r10", "%r10");
         return code;
     }
 
@@ -151,6 +152,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             case "/": case "%":
                 code += "mov $0, %rdx\n";
                 code += "mov %r10, %rax\n";
+                code += "cqto\n";
                 code += "idiv %r11\n";
                 code += "mov " + ((op.equals("/")) ? "%rax" : "%rdx") + ", %r10\n";
                 return code;

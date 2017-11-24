@@ -44,8 +44,9 @@ import edu.mit.compilers.cfg.lines.*;
 public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     private CFGProgram program;
-    private ExpressionTempNameAssigner namer = new ExpressionTempNameAssigner();
+    private ExpressionTempNameAssigner namer = this.new ExpressionTempNameAssigner();
     private List<CFGLoopEnv> envStack = new ArrayList<>();
+    private String currentMethod;
 
 
     /**
@@ -60,13 +61,13 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             if (method.isImport()) {
                 continue; // TODO what is the correct behaviour?
             }
+            creator.currentMethod = method.getName();
             CFG methodCFG = method.accept(creator);
-			System.out.println(methodCFG.toString());
-            String name = method.getName();
+			String name = method.getName();
             creator.program.addMethod(name, methodCFG);
         }
         for (VariableDescriptor var : program.getVariableTable().getVariableDescriptorList()) {
-            creator.program.addVariable(var);
+            creator.program.addGlobalVariable(var);
         }
         return creator.program;
     }
@@ -104,8 +105,10 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                         new IRIntLiteral(BigInteger.ZERO));
                 returnCFG.concat(new CFG(setZero));
             }
+            this.program.addLocalVariable(currentMethod, new VariableDescriptor(decl.getName(), decl.getLength()));
             return returnCFG;
         } else {
+        	this.program.addLocalVariable(currentMethod, new VariableDescriptor(decl.getName()));
             return new CFG(new CFGAssignStatement(decl.getName(), new IRIntLiteral(BigInteger.ZERO)));
         }
     }
@@ -185,7 +188,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRBlock trueBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
         IRExpression falseExpression = ir.getFalseExpression();
         IRAssignStatement falseAssignment = new IRAssignStatement(new IRVariableExpression(tempName), falseExpression);
-        IRBlock falseBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(trueAssignment)), new VariableTable());
+        IRBlock falseBlock = new IRBlock(new ArrayList<IRFieldDecl>(), new ArrayList<IRStatement>(Arrays.asList(falseAssignment)), new VariableTable());
         IRIfStatement convertedTernary = new IRIfStatement(ifCondition, trueBlock, falseBlock);
         return convertedTernary.accept(this);
     }
@@ -260,33 +263,32 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRAssignStatement ir) {
-        ir = canonicalizeAssignStatement(ir);
-        if (ir.getValue().getDepth() == 0) {
-    		return new CFG(new CFGAssignStatement(ir));
+        CFG answer = new CFG(makeNoOp());
+    	IRVariableExpression var = ir.getVarAssigned();
+    	// If the var being assigned to is an array, makew a temp var for it
+    	if(var.getDepth() > 0) {
+    		answer.concat(var.getIndexExpression().accept(this));
+    		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
+			answer.concat(var.accept(this));
     	}
-        else {
-    		CFG expandedExpr = ir.getValue().accept(this);
-            String lastVar = ir.getValue().accept(namer);
-            IRVariableExpression location = ir.getVarAssigned();
-            CFGLine assignLine;
-            if (location.isArray()) {
-                CFG expandedIndexExpr = location.getIndexExpression().accept(this);
-                String locationLastVar = location.getIndexExpression().accept(namer);
-                expandedExpr.getEnd().setNext(expandedIndexExpr.getStart());
-                assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(locationLastVar), new IRVariableExpression(lastVar));
-                expandedIndexExpr.getEnd().setNext(assignLine);
-            } else {
-        		assignLine = new CFGAssignStatement(ir.getVariableName(), new IRVariableExpression(lastVar));
-        		expandedExpr.getEnd().setNext(assignLine);
-            }
-    		return new CFG(expandedExpr.getStart(), assignLine);
+    	// If the RHS is not a var or literal, make a temp
+    	IRExpression value = ir.getValue();
+    	if(value != null && value.getDepth() > 0) {
+    		answer.concat(value.accept(this));
+    		value = new IRVariableExpression(value.accept(namer));
     	}
+    	
+    	IRAssignStatement simpleStat = canonicalizeAssignStatement(new IRAssignStatement(var,ir.getOperator() , value));
+    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat))); 
     }
 
     // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements
     private IRAssignStatement canonicalizeAssignStatement(IRAssignStatement ir) {
         if (!ir.getOperator().equals("=")) {
             IRVariableExpression var = ir.getVarAssigned();
+			if(var.getDepth() > 0) {
+				var = new IRVariableExpression(var.accept(namer));
+			}
             IRBinaryOpExpression newExpr;
             switch (ir.getOperator()) {
                 case "+=":
@@ -304,7 +306,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
                 default:
                     throw new RuntimeException("Invalid assign statement operator: " + ir.getOperator());
             }
-            ir = new IRAssignStatement(var, newExpr);
+            ir = new IRAssignStatement(ir.getVarAssigned(), newExpr);
         }
         return ir;
     }
@@ -346,20 +348,20 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         IRAssignStatement stepFunction = ir.getStepFunction();
         IRBlock block = ir.getBlock();
 
-        CFGAssignStatement initLine = new CFGAssignStatement(canonicalizeAssignStatement(initializer));
-        CFGAssignStatement stepLine = new CFGAssignStatement(canonicalizeAssignStatement(stepFunction));
+        CFG initCFG = initializer.accept(this);
+        CFG stepCFG = stepFunction.accept(this);
         CFG blockGraph = block.accept(this);
         CFGLine blockStart = blockGraph.getStart();
         CFGLine blockEnd = blockGraph.getEnd();
         CFGLine noOp = makeNoOp();
         CFGLine condStart = shortcircuit(cond, blockStart, endNoOp);
-        blockEnd.setNext(stepLine);
-        stepLine.setNext(condStart);
-        initLine.setNext(condStart);
-        continueNoOp.setNext(stepLine);
+        blockEnd.setNext(stepCFG.getStart());
+        stepCFG.getEnd().setNext(condStart);
+        initCFG.getEnd().setNext(condStart);
+        continueNoOp.setNext(stepCFG.getStart());
 
         envStack.remove(envStack.size()-1);
-        return new CFG(initLine, endNoOp);
+        return new CFG(initCFG.getStart(), endNoOp);
     }
 
     @Override
@@ -392,23 +394,11 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRLoopStatement ir) {
-        if (ir.getStatementType() == IRStatement.StatementType.BREAK) {
-            CFGLine noOp = makeNoOp();
-            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
-            CFGLine followingLine = containingLoop.getFollowingLine();
-            noOp.setNext(followingLine);
-            return new CFG(noOp);
-        }
-        else if (ir.getStatementType() == IRStatement.StatementType.CONTINUE) {
-            CFGLine noOp = makeNoOp();
-            CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
-            CFGLine startLine = containingLoop.getStartLine();
-            noOp.setNext(startLine);
-            return new CFG(noOp);
-        }
-        else {
-            throw new RuntimeException("Invalid loop statement type: " + ir.getStatementType().toString());
-        }
+		CFGLine jumper = makeNoOp();
+		CFGLine unreachableEnd = makeNoOp();
+		CFGLoopEnv containingLoop = envStack.get(envStack.size()-1);
+		jumper.setNext((ir.getStatementType() == IRStatement.StatementType.BREAK)? containingLoop.getFollowingLine(): containingLoop.getStartLine());
+		return new CFG(jumper, unreachableEnd);
     }
 
     @Override
@@ -515,64 +505,67 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
         return beginNot;
     }
 
-    private static class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
-        
+    private class ExpressionTempNameAssigner implements IRExpression.IRExpressionVisitor<String> {
+
         private int count = 0;
-		private Map<IRExpression, Integer> named = new HashMap<>();
-        
-        private int incrementCount(IRExpression expr) {
+		private Map<IRExpression, String> named = new HashMap<>();
+
+        private String incrementCount(IRExpression expr, String prefix) {
+
             if(named.containsKey(expr)) {
 				return named.get(expr);
 			} else {
 				count += 1;
-            	named.put(expr, count);
-				return count;
+				String name = prefix + count;
+            	named.put(expr, name);
+            	program.addLocalVariable(currentMethod, new VariableDescriptor(name));
+				return name;
 			}
         }
-        
+
         @Override
         public String on(IRUnaryOpExpression ir) {
-            return "unary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "unary_temp_");
         }
 
         @Override
         public String on(IRBinaryOpExpression ir) {
-            return "binary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "binary_temp_");
         }
 
         @Override
         public String on(IRTernaryOpExpression ir) {
-            return "ternary_temp_" + incrementCount(ir);
+            return incrementCount(ir, "ternary_temp_");
         }
 
         @Override
         public String on(IRLenExpression ir) {
-            return "array_length_temp_" + incrementCount(ir);
+            return incrementCount(ir, "array_length_temp_");
         }
 
         @Override
         public String on(IRVariableExpression ir) {
-            return "variable_temp_" + incrementCount(ir);
+            return incrementCount(ir, "variable_temp_");
         }
 
         @Override
         public String on(IRMethodCallExpression ir) {
-            return "method_call_temp_" + incrementCount(ir);
+            return incrementCount(ir, "method_call_temp_");
         }
 
         @Override
         public String on(IRBoolLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir, "literal_temp_");
         }
 
         @Override
         public String on(IRStringLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir, "literal_temp_");
         }
 
         @Override
         public String on(IRIntLiteral ir) {
-            return "literal_temp_" + incrementCount(ir);
+            return incrementCount(ir,"literal_temp_");
         }
 
     }
