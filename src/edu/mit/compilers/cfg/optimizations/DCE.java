@@ -27,6 +27,8 @@ public class DCE implements Optimization {
     // TODO (mayars) simplify if statements that have identically true or
     // identically false conditions.
 
+    // TODO (mayars) delete statements of the form x = x;
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 

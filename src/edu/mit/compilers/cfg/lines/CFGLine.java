@@ -106,6 +106,10 @@ public abstract class CFGLine {
     public void setLivenessIn(Set<String> newSet) { this.livenessIN = newSet; }
     public Set<String> getLivenessOut() { return this.livenessOUT; }
     public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
+    public Map<String, Set<IRExpression>> getReachingDefinitionsIn() { return this.reachingDefinitionsIN; }
+    public void setReachingDefinitionsIn(Map<String, Set<IRExpression>> newSet) { this.reachingDefinitionsIN = newSet; }
+    public Map<String, Set<IRExpression>> getReachingDefinitionsOut() { return this.reachingDefinitionsOUT; }
+    public void setReachingDefinitionsOut(Map<String, Set<IRExpression>> newSet) { this.reachingDefinitionsOUT = newSet; }
 
     public CFGLine getTrueBranch() {
         return trueBranch;
