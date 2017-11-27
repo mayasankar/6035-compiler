@@ -32,7 +32,12 @@ public class CfgUseVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
     @Override
     public Set<String> on(CFGAssignStatement line){
-        return line.getExpression().accept(USE);
+        Set<String> used = new HashSet<>(line.getExpression().accept(USE));
+        IRVariableExpression var = line.getVarAssigned();
+        if (var.isArray()) {
+            used.addAll(var.getIndexExpression().accept(USE));
+        }
+        return used;
     }
 
     @Override
