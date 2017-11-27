@@ -133,6 +133,11 @@ public class VariableStackAssigner {
         }
 	}
 
-	public int getNumAllocs() { return this.variables.keySet().size(); }
-
+	public int getNumAllocs() {
+		int allocs = 0;
+		for(VariableDescriptor desc: variables.values()) {
+			allocs += desc.getSpaceRequired();
+		}
+		return allocs;
+	}
 }
