@@ -24,6 +24,7 @@ public class CFGMethodCall extends CFGLine {
     }
 
     public IRMethodCallExpression getExpression() { return expression; }
+    public void setExpression(IRMethodCallExpression expression) { this.expression = expression; }
 
     @Override
     public boolean isNoOp() { return false; }

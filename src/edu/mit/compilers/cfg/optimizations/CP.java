@@ -1,5 +1,7 @@
 package edu.mit.compilers.cfg.optimizations;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +17,29 @@ import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
+
+/*
+This class implements both copy and constant propagation. Examples:
+Copy: b = a; c = b; -> b = a; c = a;
+Constant: b = 1 * 2; -> b = 2;
+
+First call doReachingDefinitionsAnalysis. Then call propagate.
+
+LineOptimizer takes in the replacement map and (1) copy-propagates (2) constant-propagates
+
+CopyPropagator does copy propagation with the replacement map. It then does constant
+propagation, using constantPropagate().
+IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respectively.
+*/
+
+
+// TODO optimize the following code
+// a[0] = c;
+// d = a[0];
+// to
+// d = c;
+
+// TODO if name = main, can add definitions of globals to 0 to beginning reaching definitions
 
 public class CP implements Optimization {
     private CfgGenExpressionVisitor GEN = new CfgGenExpressionVisitor();
@@ -121,11 +146,251 @@ public class CP implements Optimization {
     }
 
     private boolean propagate(CFG cfg) {
-        // for an assign statement that uses a variable that has a single reaching definition
-        // replace with that reaching definition
+        boolean isChanged = false;
 
+        for (CFGLine line : cfg.getAllLines()) {
+            Map<String, Set<IRExpression>> reachingDefinitionsIn = line.getReachingDefinitionsIn();
+            Map<String, IRExpression> replacementMap = new HashMap<>();
+            for (Map.Entry<String, Set<IRExpression>> kv : reachingDefinitionsIn.entrySet()) {
+                if (kv.getValue().size() != 1) { continue; }
+                IRExpression expr = kv.getValue().iterator().next();
+                if (expr.getDepth() == 0) {
+                    replacementMap.put(kv.getKey(), expr);
+                }
+            }
+
+            LineOptimizer optimizer = new LineOptimizer(replacementMap);
+            isChanged = line.accept(optimizer) || isChanged;
+        }
+        return isChanged;
+    }
+
+    // returns whether or not the line is changed
+    // runs both copy propagation and constant propagation optimization on the line
+    public class LineOptimizer implements CFGLine.CFGVisitor<Boolean> {
+        Propagator propagator;
+
+        public LineOptimizer(Map<String, IRExpression> map) {
+            propagator = new Propagator(map);
+        }
+
+        public Boolean on(CFGAssignStatement line) {
+            IRExpression expr = line.getExpression();
+            IRExpression newExpr = expr.accept(propagator);
+            line.setExpression(newExpr);
+            return !(expr.equals(newExpr));
+        }
+
+        public Boolean on(CFGConditional line) {
+            IRExpression expr = line.getExpression();
+            IRExpression newExpr = expr.accept(propagator);
+            line.setExpression(newExpr);
+            return !(expr.equals(newExpr));
+        }
+
+        public Boolean on(CFGNoOp line) {
+            return false;
+        }
+
+        public Boolean on(CFGReturn line) {
+            if (line.isVoid()) { return false; }
+            IRExpression expr = line.getExpression();
+            IRExpression newExpr = expr.accept(propagator);
+            line.setExpression(newExpr);
+            return !(expr.equals(newExpr));
+        }
+
+        public Boolean on(CFGMethodCall line) {
+            IRMethodCallExpression expr = line.getExpression();
+            IRMethodCallExpression newExpr = propagator.onMethodCall(expr);
+            line.setExpression(newExpr);
+            return !(expr.equals(newExpr));
+        }
+
+        public Boolean on(CFGBlock line) {
+            throw new RuntimeException("Should not be called");
+        }
+    }
+
+    private static class Propagator implements IRExpression.IRExpressionVisitor<IRExpression> {
+        // for an assign statement that uses a variable that has a single reaching definition
+        // and the reaching definition has depth 0
+        // replace with that reaching definition
         // else if the assign statement evaluates to a constant, evaluate that constant
-        return false;
+
+        Map<String, IRExpression> replacementMap;
+
+        IntEvaluator intEvaluator = new IntEvaluator();
+        BoolEvaluator boolEvaluator = new BoolEvaluator();
+
+        public Propagator(Map<String, IRExpression> replacementMap) {
+            this.replacementMap = replacementMap;
+        }
+
+        private IRExpression constantPropagate(IRExpression expr) {
+            if (expr.isConstant()) {
+                TypeDescriptor type = expr.getType();
+                if (type == TypeDescriptor.INT) { return new IRIntLiteral(expr.accept(intEvaluator)); }
+                else if (type == TypeDescriptor.BOOL) { return new IRBoolLiteral(expr.accept(boolEvaluator)); }
+                else { throw new RuntimeException("IRExpression of non int or bool type"); }
+            }
+            return expr;
+        }
+
+        public IRExpression on(IRVariableExpression ir) {
+            if (ir.isArray()) {
+                IRExpression indexExpression = ir.getIndexExpression().accept(this);
+                IRVariableExpression answer = new IRVariableExpression(ir.getName(), indexExpression);
+                answer.setType(ir.getType());
+                return answer;
+            } else {
+                IRExpression replacement = replacementMap.get(ir.getName());
+                return replacement == null ? ir : replacement;
+            }
+        }
+
+        public IRExpression on(IRUnaryOpExpression ir) {
+            IRExpression newExpr = ir.getArgument().accept(this);
+            return constantPropagate(new IRUnaryOpExpression(ir.getOperator(), newExpr));
+        }
+        public IRExpression on(IRBinaryOpExpression ir) {
+            IRExpression leftExpr = ir.getLeftExpr().accept(this);
+            IRExpression rightExpr = ir.getRightExpr().accept(this);
+            return constantPropagate(new IRBinaryOpExpression(leftExpr, ir.getOperator(), rightExpr));
+        }
+        public IRExpression on(IRTernaryOpExpression ir) {
+            IRExpression condition = ir.getCondition().accept(this);
+            IRExpression trueExpression = ir.getTrueExpression().accept(this);
+            IRExpression falseExpression = ir.getFalseExpression().accept(this);
+            return constantPropagate(new IRTernaryOpExpression(condition, trueExpression, falseExpression));
+        }
+        public IRExpression on(IRLenExpression ir) {
+            throw new RuntimeException("Aah len expressions should have been removed by now");
+        }
+        public IRMethodCallExpression onMethodCall(IRMethodCallExpression ir) {
+            List<IRExpression> args = new ArrayList<>();
+            for (IRExpression arg : ir.getArguments()) {
+                args.add(arg.accept(this));
+            }
+            IRMethodCallExpression answer = new IRMethodCallExpression(ir.getName(), args);
+            answer.setType(ir.getType());
+            return answer;
+        }
+        public IRExpression on(IRMethodCallExpression ir) {
+            return constantPropagate(onMethodCall(ir));
+        }
+        public IRExpression on(IRBoolLiteral ir) { return ir; }
+        public IRExpression on(IRIntLiteral ir) { return ir; }
+        public IRExpression on(IRStringLiteral ir) { return ir; }
+    }
+
+    private static class BoolEvaluator implements IRExpression.IRExpressionVisitor<Boolean> {
+        public Boolean on(IRUnaryOpExpression ir) {
+            switch (ir.getOperator()) {
+                case "!": return ! ir.getArgument().accept(this);
+                default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
+            }
+        }
+        public Boolean on(IRBinaryOpExpression ir) {
+            IntEvaluator intEvaluator = new IntEvaluator();
+            switch (ir.getOperator()) {
+                case "==": {
+                    TypeDescriptor type = ir.getLeftExpr().getType();
+                    if (type == TypeDescriptor.INT) {
+                        return ir.getLeftExpr().accept(intEvaluator).equals(ir.getRightExpr().accept(intEvaluator));
+                    } else if (type == TypeDescriptor.BOOL) {
+                        return ir.getLeftExpr().accept(this).equals(ir.getRightExpr().accept(this));
+                    } else {
+                        throw new RuntimeException("Bad expression type");
+                    }
+                }
+                case "!=": {
+                    TypeDescriptor type = ir.getLeftExpr().getType();
+                    if (type == TypeDescriptor.INT) {
+                        return !(ir.getLeftExpr().accept(intEvaluator).equals(ir.getRightExpr().accept(intEvaluator)));
+                    } else if (type == TypeDescriptor.BOOL) {
+                        return !(ir.getLeftExpr().accept(this).equals(ir.getRightExpr().accept(this)));
+                    } else { throw new RuntimeException("Bad expression type"); }
+                }
+                case "&&": return ir.getLeftExpr().accept(this) && ir.getRightExpr().accept(this);
+                case "||": return ir.getLeftExpr().accept(this) || ir.getRightExpr().accept(this);
+                case "<": return ir.getLeftExpr().accept(intEvaluator).compareTo(ir.getRightExpr().accept(intEvaluator)) < 0;
+                case "<=": return ir.getLeftExpr().accept(intEvaluator).compareTo(ir.getRightExpr().accept(intEvaluator)) <= 0;
+                case ">": return ir.getLeftExpr().accept(intEvaluator).compareTo(ir.getRightExpr().accept(intEvaluator)) > 0;
+                case ">=": return ir.getLeftExpr().accept(intEvaluator).compareTo(ir.getRightExpr().accept(intEvaluator)) >= 0;
+                default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
+            }
+        }
+        public Boolean on(IRTernaryOpExpression ir) {
+            if (ir.getCondition().accept(this)) {
+                return ir.getTrueExpression().accept(this);
+            } else {
+                return ir.getFalseExpression().accept(this);
+            }
+        }
+        public Boolean on(IRLenExpression ir) {
+            throw new RuntimeException("Len expressions do not return booleans ever");
+        }
+        public Boolean on(IRVariableExpression ir) {
+            throw new RuntimeException("Bool evaluator called on non-constant expression: " + ir.toString());
+        }
+        public Boolean on(IRMethodCallExpression ir) {
+            throw new RuntimeException("Int evaluator called on not-necessarily constant expression: " + ir.toString());
+        }
+        public Boolean on(IRBoolLiteral ir) {
+            return ir.getValue();
+        }
+        public Boolean on(IRIntLiteral ir) {
+            throw new RuntimeException("Bool evaluator called on int literal");
+        }
+        public Boolean on(IRStringLiteral ir) {
+            throw new RuntimeException("Bool evaluator called on string literal");
+        }
+    }
+
+    private static class IntEvaluator implements IRExpression.IRExpressionVisitor<BigInteger> {
+        public BigInteger on(IRUnaryOpExpression ir) {
+            switch (ir.getOperator()) {
+                case "-": return ir.getArgument().accept(this).negate();
+                default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
+            }
+        }
+        public BigInteger on(IRBinaryOpExpression ir) {
+            switch (ir.getOperator()) {
+                case "+": return ir.getLeftExpr().accept(this).add(ir.getRightExpr().accept(this));
+                case "-": return ir.getLeftExpr().accept(this).subtract(ir.getRightExpr().accept(this));
+                case "*": return ir.getLeftExpr().accept(this).multiply(ir.getRightExpr().accept(this));
+                case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this));
+                // TODO could use mod instead of remainder, depending on behavior of negative numbers
+                case "%": return ir.getLeftExpr().accept(this).remainder(ir.getRightExpr().accept(this));
+                default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
+            }
+        }
+        public BigInteger on(IRTernaryOpExpression ir) {
+            if (ir.getCondition().accept(new BoolEvaluator())) {
+                return ir.getTrueExpression().accept(this);
+            } else {
+                return ir.getFalseExpression().accept(this);
+            }
+        }
+        public BigInteger on(IRLenExpression ir) {
+            throw new RuntimeException("Can't be implemented without a symbol table");
+        }
+        public BigInteger on(IRVariableExpression ir) {
+            throw new RuntimeException("Int evaluator called on non-constant expression: " + ir.toString());
+        }
+        public BigInteger on(IRMethodCallExpression ir) {
+            throw new RuntimeException("Int evaluator called on not-necessarily constant expression: " + ir.toString());
+        }
+        public BigInteger on(IRBoolLiteral ir) {
+            throw new RuntimeException("Int evaluator called on bool literal");
+        }
+        public BigInteger on(IRIntLiteral ir) {
+            return ir.getValue();
+        }
+        public BigInteger on(IRStringLiteral ir) {
+            throw new RuntimeException("Int evaluator called on string literal");
+        }
     }
 
 }

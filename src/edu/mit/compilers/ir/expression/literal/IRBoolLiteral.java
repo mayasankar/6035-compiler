@@ -4,6 +4,8 @@ import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRBoolLiteral extends IRLiteral<Boolean> {
+    public static final IRBoolLiteral TRUE = new IRBoolLiteral(true);
+    public static final IRBoolLiteral FALSE = new IRBoolLiteral(false);
 
 	public IRBoolLiteral(Boolean value) {
 		super(value);

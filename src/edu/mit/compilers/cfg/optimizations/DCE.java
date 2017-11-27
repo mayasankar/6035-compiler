@@ -51,6 +51,7 @@ public class DCE implements Optimization {
         }
     }
 
+    // TODO make sure that the initial values of everything are valid.
     private void doLivenessAnalysis(CFG cfg, Set<String> globals) {
         CFGLine end = cfg.getEnd();
         end.setLivenessOut(new HashSet<String>(globals));
@@ -128,6 +129,12 @@ public class DCE implements Optimization {
             if (! line.isBranch()) {
                 cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
                 return true;
+            } else if (line.getExpression().equals(IRBoolLiteral.TRUE)) {
+                // TODO this case
+                return false;
+            } else if (line.getExpression().equals(IRBoolLiteral.FALSE)) {
+                // TODO this case
+                return false;
             } else {
                 return false;
             }

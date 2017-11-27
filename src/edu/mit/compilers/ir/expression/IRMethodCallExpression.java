@@ -34,6 +34,9 @@ public class IRMethodCallExpression extends IRExpression {
     // this allows DCE to delete calls to this method.
     public boolean affectsGlobals() { return true; }
 
+    // TODO for CP optimization, improve this
+    public boolean isConstant() { return false; }
+
 	@Override
 	public List<IRExpression> getChildren() {
 		return arguments;
