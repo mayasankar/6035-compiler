@@ -209,7 +209,7 @@ public abstract class CFGLine {
         for (int i=0; i<numIndents; i++){
             prefix += "-";
         }
-        String str = prefix + ownValue() + /*"\n\tIN: " + livenessIN + "\n\tOUT: " + livenessOUT + */"\n";
+        String str = prefix + ownValue() + /*"\n\tIN: " + reachingDefinitionsIN + "\n\tOUT: " + reachingDefinitionsOUT + */"\n";
         if (isBranch()) {
             if (trueBranch == null || falseBranch == null) {
                 throw new RuntimeException("Branches should not be null: " + this.ownValue());

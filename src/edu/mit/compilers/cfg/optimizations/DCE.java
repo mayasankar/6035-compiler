@@ -32,7 +32,7 @@ public class DCE implements Optimization {
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
-    public void optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram) {
         Set<String> globals = new HashSet<>();
         for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
             globals.add(var.getName());
@@ -49,6 +49,7 @@ public class DCE implements Optimization {
             System.out.println("DCE-Optimized CFG:");
             System.out.println(cfg);
         }
+        return false; // TODO FIX!!
     }
 
     // TODO make sure that the initial values of everything are valid.

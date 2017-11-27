@@ -48,11 +48,48 @@ public class CP implements Optimization {
 
     // TODO decide when splitting is a good idea
 
-    public void optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram) {
+        boolean anyCfgChanged = false;
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
-            doReachingDefinitionsAnalysis(cfg);
-            propagate(cfg);
+            // System.out.println("Original CFG:");
+            // System.out.println(cfg);
+            boolean changed = false;
+            do {
+                doReachingDefinitionsAnalysis(cfg);
+                changed = propagate(cfg);
+                System.out.println("CP-Optimized CFG:");
+                System.out.println(cfg);
+                anyCfgChanged = anyCfgChanged || changed;
+            } while (changed);
+            // System.out.println("CP-Optimized CFG:");
+            // System.out.println(cfg);
+        }
+        return anyCfgChanged;
+    }
+
+    public static class CPDefinition {
+        IRVariableExpression varDefined;
+        IRExpression definition;
+        boolean isValidDefinition = true;
+
+        public CPDefinition(IRVariableExpression vd, IRExpression def) {
+            varDefined = vd;
+            definition = def;
+        }
+
+        public void invalidate() { isValidDefinition = false; }
+        public boolean assignsVariable(IRVariableExpression otherVar) {
+            // TODO deal with the array case
+            return varDefined.equals(otherVar);
+        }
+        public List<IRVariableExpression> getVariablesUsed() {
+            return new ArrayList<>(); // TODO fix
+        }
+
+        @Override
+        public String toString() {
+            return (isValidDefinition ? "VALID " : "INVALID ") + varDefined.toString() + " = " + definition.toString();
         }
     }
 
@@ -155,6 +192,10 @@ public class CP implements Optimization {
                 if (kv.getValue().size() != 1) { continue; }
                 IRExpression expr = kv.getValue().iterator().next();
                 if (expr.getDepth() == 0) {
+                    // BUG but what if the expression has been redefined since then?
+                    // e.g. c = a; a = 2; d = c;. Then, we can't replace c with a.
+                    // http://www.csd.uwo.ca/~moreno/CS447/Lectures/CodeOptimization.html/node8.html
+                    // we also want to mark a reaching definition as invalid in some way
                     replacementMap.put(kv.getKey(), expr);
                 }
             }
