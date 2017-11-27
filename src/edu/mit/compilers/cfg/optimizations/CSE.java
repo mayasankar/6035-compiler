@@ -81,7 +81,7 @@ public class CSE implements Optimization {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map1.keySet()) {
             if (map2.containsKey(key)) {
-                Set<String> vars = map1.get(key);
+                Set<String> vars = new HashSet<>(map1.get(key));
                 vars.retainAll(map2.get(key));
                 returnMap.put(key, vars);
             }
@@ -92,11 +92,11 @@ public class CSE implements Optimization {
     // helper for doAvailableExpressionAnalysis
     private Map<IRExpression, Set<String>> unionMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
-        Set<IRExpression> keySetUnion = map1.keySet();
+        Set<IRExpression> keySetUnion = new HashSet<>(map1.keySet());
         keySetUnion.addAll(map2.keySet());
         for (IRExpression key : keySetUnion) {
             if (map1.containsKey(key) && map2.containsKey(key)) {
-                Set<String> vars = map1.get(key);
+                Set<String> vars = new HashSet<>(map1.get(key));
                 vars.addAll(map2.get(key));
                 returnMap.put(key, vars);
             }
@@ -116,7 +116,7 @@ public class CSE implements Optimization {
     private Map<IRExpression, Set<String>> killVariablesFromMap(Set<String> vars, Map<IRExpression, Set<String>> map) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map.keySet()) {
-            Set<String> usedVariables = key.accept(IRNodeUSE);
+            Set<String> usedVariables = new HashSet<>(key.accept(IRNodeUSE));
             usedVariables.retainAll(vars);
             if (usedVariables.isEmpty()) {
                 // the expression does not use any variables getting killed, so we can add it
