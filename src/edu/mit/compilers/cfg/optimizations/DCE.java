@@ -35,7 +35,7 @@ public class DCE implements Optimization {
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
     private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
 
-    public boolean optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         boolean anythingChanged = false;
         Set<String> globals = new HashSet<>();
         for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
@@ -43,16 +43,20 @@ public class DCE implements Optimization {
         }
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
-//            System.out.println("Original CFG:");
-//            System.out.println(cfg);
+            if (debug) {
+                System.out.println("Original CFG:");
+                System.out.println(cfg);
+            }
             boolean changed = true;
             while (changed) {
                 doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
                 changed = removeDeadCode(cfg, globals);
                 anythingChanged = anythingChanged || changed;
             }
-//            System.out.println("DCE-Optimized CFG:");
-//            System.out.println(cfg);
+            if (debug) {
+                System.out.println("DCE-Optimized CFG:");
+                System.out.println(cfg);
+            }
         }
         return anythingChanged;
     }

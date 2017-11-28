@@ -48,12 +48,14 @@ public class CP implements Optimization {
 
     // TODO decide when splitting is a good idea
 
-    public boolean optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         boolean anyCfgChanged = false;
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
-            // System.out.println("Original CFG:");
-            // System.out.println(cfg);
+            if (debug) {
+                System.out.println("Original CFG:");
+                System.out.println(cfg);
+            }
             boolean changed = false;
             do {
                 doReachingDefinitionsAnalysis(cfg);
@@ -62,8 +64,10 @@ public class CP implements Optimization {
                 System.out.println(cfg);
                 anyCfgChanged = anyCfgChanged || changed;
             } while (changed);
-            // System.out.println("CP-Optimized CFG:");
-            // System.out.println(cfg);
+            if (debug) {
+                System.out.println("CP-Optimized CFG:");
+                System.out.println(cfg);
+            }
         }
         return anyCfgChanged;
     }

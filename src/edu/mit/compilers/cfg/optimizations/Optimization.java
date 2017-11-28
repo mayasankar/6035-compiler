@@ -4,5 +4,5 @@ import edu.mit.compilers.cfg.CFGProgram;
 
 public interface Optimization {
     // returns whether or not the CFGProgram is changed
-    public boolean optimize(CFGProgram cp);
+    public boolean optimize(CFGProgram cp, boolean debug);
 }

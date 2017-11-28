@@ -27,7 +27,7 @@ public class CSE implements Optimization {
     // mapping an available expression to the variables that it is assigned to
     // then to merge two branches into a child, we have Map<IRExpression, Union of its Sets>
 
-    public boolean optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             doAvailableExpressionAnalysis(cfg);
