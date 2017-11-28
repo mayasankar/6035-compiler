@@ -35,7 +35,7 @@ public class CFGBoundsCheck extends CFGLine {
 
     @Override
     public String ownValue() {
-        return this.arrayVariable.toString();
+        return "Bounds check on " + this.arrayVariable.toString();
     }
 
 	@Override

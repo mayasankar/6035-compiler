@@ -212,6 +212,11 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             CFGLine varExpr = new CFGAssignStatement(ir.accept(namer), simplerExpr);
 
             return returnCFG.concat(new CFG(boundsCheck)).concat(new CFG(varExpr));
+        } else if (ir.isArray()) {
+            CFGLine boundsCheck = new CFGBoundsCheck(ir);
+            CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
+            CFG returnCFG = new CFG(boundsCheck);
+            return returnCFG.concat(new CFG(lenLine));
         } else {
             CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
             return new CFG(lenLine);
@@ -266,7 +271,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     public CFG on(IRAssignStatement ir) {
         CFG answer = new CFG(makeNoOp());
     	IRVariableExpression var = ir.getVarAssigned();
-    	// If the var being assigned to is an array, makew a temp var for it
+    	// If the var being assigned to is an array, make a temp var for it
     	if(var.getDepth() > 0) {
     		answer.concat(var.getIndexExpression().accept(this));
     		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
