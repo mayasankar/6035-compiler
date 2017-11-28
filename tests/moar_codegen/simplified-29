@@ -1,0 +1,15 @@
+import printf;
+
+void test(int d)
+{
+  int A[10];
+  printf ( "%d ", d );
+  if (d == 4) { return ; }
+  test(d + 1);
+}
+
+void main () {
+  test(4);
+}
+
+

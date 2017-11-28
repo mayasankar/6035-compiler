@@ -1,0 +1,28 @@
+import printf;
+
+void test(int d)
+{
+  int A[10];
+//  int i;
+
+  printf ( "%d ", d );
+
+  if (d == 4) { return ; }
+/*  for (i = 0; i < 10; i += 1)
+  {
+    A[i] = i % d;  
+  }
+*/
+  test(d + 1);
+/*  printf("result should be: ");
+  for(i = 0; i < 10; i += 1 ) {
+    printf ( "%d ", A[i] );
+  }
+  printf("\n");*/
+}
+
+void main () {
+  test(4);
+}
+
+

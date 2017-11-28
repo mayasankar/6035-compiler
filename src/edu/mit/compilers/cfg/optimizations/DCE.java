@@ -39,15 +39,15 @@ public class DCE implements Optimization {
         }
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
-            System.out.println("Original CFG:");
-            System.out.println(cfg);
+//            System.out.println("Original CFG:");
+//            System.out.println(cfg);
             boolean changed = true;
             while (changed) {
                 doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
                 changed = removeDeadCode(cfg, globals);
             }
-            System.out.println("DCE-Optimized CFG:");
-            System.out.println(cfg);
+//            System.out.println("DCE-Optimized CFG:");
+//            System.out.println(cfg);
         }
         return false; // TODO FIX!!
     }
