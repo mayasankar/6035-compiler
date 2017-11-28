@@ -40,6 +40,11 @@ public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
     }
 
     @Override
+    public Set<String> on(CFGBoundsCheck line){
+        return new HashSet<>();
+    }
+
+    @Override
     public Set<String> on(CFGConditional line){
         return new HashSet<>();
     }

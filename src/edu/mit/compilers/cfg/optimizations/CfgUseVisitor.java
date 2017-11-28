@@ -41,6 +41,12 @@ public class CfgUseVisitor implements CFGLine.CFGVisitor<Set<String>> {
     }
 
     @Override
+    public Set<String> on(CFGBoundsCheck line){
+        IRExpression expr = line.getExpression();
+        return expr.accept(USE);
+    }
+
+    @Override
     public Set<String> on(CFGConditional line){
         IRExpression expr = line.getExpression();
         return expr.accept(USE);

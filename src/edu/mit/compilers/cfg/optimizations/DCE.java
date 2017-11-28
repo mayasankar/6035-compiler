@@ -107,17 +107,12 @@ public class DCE implements Optimization {
     // returns true if gen/kill sets might change, i.e. usually when we have removed a line
     private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
         private CFG cfg;
-        private ArrayChecker ac = new ArrayChecker();
         private Set<String> globals;
 
         public DeadCodeEliminator(CFG cfg, Set<String> globals) { this.cfg = cfg; this.globals = globals; }
 
         @Override
         public Boolean on(CFGAssignStatement line) {
-            // array assignments require bounds checking and have other weird bugs
-            if (line.getVarAssigned().accept(ac) || line.getExpression().accept(ac)) {
-                return false;
-            }
             // assigning to global variables shouldn't be eliminated since there are side effects
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
@@ -132,11 +127,13 @@ public class DCE implements Optimization {
         }
 
         @Override
+        public Boolean on(CFGBoundsCheck line) {
+            // never dead code, because it might throw a bounds check error
+            return false;
+        }
+
+        @Override
         public Boolean on(CFGConditional line) {
-            // arrays might require bounds checking and can't be eliminated
-            if (line.getExpression().accept(ac)) {
-                return false;
-            }
             // remove it if it is not a branch
             if (! line.isBranch()) {
                 cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
@@ -172,10 +169,6 @@ public class DCE implements Optimization {
             if (line.getExpression().affectsGlobals()) {
                 return false;
             }
-            // arrays might require bounds checking and can't be eliminated
-            if (line.getExpression().accept(ac)) {
-                return false;
-            }
             cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
             return true;
         }
@@ -186,31 +179,6 @@ public class DCE implements Optimization {
         }
     }
 
-
-
-    // check whether you are accessing an array variable in this expression
-    // TODO only care about ones where you might be concerned about DCE removing bounds checks and changing behaviour
-    // TODO assumes things are all depth <=1 already, is this reasonable?
-    private static class ArrayChecker implements IRExpression.IRExpressionVisitor<Boolean> {
-        @Override
-        public Boolean on(IRMethodCallExpression ir) { return false; }
-        @Override
-        public Boolean on(IRUnaryOpExpression ir) { return false; }
-        @Override
-        public Boolean on(IRBinaryOpExpression ir) { return false; }
-        @Override
-        public Boolean on(IRTernaryOpExpression ir) { return false; }
-        @Override
-        public Boolean on(IRLenExpression ir) { return false; }
-        @Override
-        public Boolean on(IRVariableExpression ir) { return ir.isArray(); }
-        @Override
-        public Boolean on(IRBoolLiteral ir) { return false; }
-        @Override
-        public Boolean on(IRIntLiteral ir) { return false; }
-        @Override
-        public Boolean on(IRStringLiteral ir) { return false; }
-    }
 
 
     // if you are deleting a line which evaluates this expression it returns the CFGLine

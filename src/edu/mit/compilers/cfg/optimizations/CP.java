@@ -222,6 +222,10 @@ public class CP implements Optimization {
             return !(expr.equals(newExpr));
         }
 
+        public Boolean on(CFGBoundsCheck line) {
+            return false; // TODO
+        }
+
         public Boolean on(CFGConditional line) {
             IRExpression expr = line.getExpression();
             IRExpression newExpr = expr.accept(propagator);

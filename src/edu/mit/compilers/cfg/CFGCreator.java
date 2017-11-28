@@ -208,9 +208,10 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
             IRVariableExpression indexTempExpr = new IRVariableExpression(varIndex.accept(namer));
             IRVariableExpression simplerExpr = new IRVariableExpression(ir.getName(), indexTempExpr);
+            CFGLine boundsCheck = new CFGBoundsCheck(simplerExpr);
             CFGLine varExpr = new CFGAssignStatement(ir.accept(namer), simplerExpr);
 
-            return returnCFG.concat(new CFG(varExpr));
+            return returnCFG.concat(new CFG(boundsCheck)).concat(new CFG(varExpr));
         } else {
             CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
             return new CFG(lenLine);
@@ -277,9 +278,9 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     		answer.concat(value.accept(this));
     		value = new IRVariableExpression(value.accept(namer));
     	}
-    	
+
     	IRAssignStatement simpleStat = canonicalizeAssignStatement(new IRAssignStatement(var,ir.getOperator() , value));
-    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat))); 
+    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat)));
     }
 
     // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements

@@ -125,21 +125,25 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         IRVariableExpression varAssigned = line.getVarAssigned();
         code += onExpression(line.getExpression());  // value now in %r10
         code += "push %r10\n"; // will get it out right before the end and assign to %r11
-
-        if (varAssigned.isArray()) {
+        if (varAssigned.isArray()){
             code += onExpression(varAssigned.getIndexExpression()); // array index now in %r10
-            // bounds checking
-            code += "mov " + stacker.getMaxSize(varAssigned.getName()) + ", %r11\n";
-            code += "cmp %r11, %r10\n";
-            code += "jge .out_of_bounds\n";
-            code += "cmp $0, %r10\n";
-            code += "jl .out_of_bounds\n";
-
-            // TODO whatever Maya was doing with global things in getCodeForIndexExpr in BlockAssembler
         }
-
         code += "pop %r11\n"; // value now in %r11
         code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
+        return code;
+    }
+
+    @Override
+    public String on(CFGBoundsCheck line) {
+        IRVariableExpression variable = line.getExpression();
+        String code = "";
+        code += onExpression(variable.getIndexExpression()); // array index now in %r10
+        code += "mov " + stacker.getMaxSize(variable.getName()) + ", %r11\n";
+        code += "cmp %r11, %r10\n";
+        code += "jge .out_of_bounds\n";
+        code += "cmp $0, %r10\n";
+        code += "jl .out_of_bounds\n";
+        // TODO whatever Maya was doing with global things in getCodeForIndexExpr in BlockAssembler
         return code;
     }
 

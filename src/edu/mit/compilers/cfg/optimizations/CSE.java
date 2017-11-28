@@ -156,6 +156,12 @@ public class CSE implements Optimization {
         }
 
         @Override
+        public Boolean on(CFGBoundsCheck line) {
+            // TODO should we be reducing?
+            return false;
+        }
+
+        @Override
         public Boolean on(CFGConditional line) {
             // depth 0 so doesn't make sense to reduce
             return false;
