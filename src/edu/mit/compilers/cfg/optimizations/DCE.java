@@ -112,6 +112,11 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGAssignStatement line) {
+            // array assignments require bounds checking and have other weird bugs
+            if (line.getVarAssigned().isArray()) {
+                return false;
+            }
+            // TODO also avoid DCE on things that access arrays in the statement
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
             Set<String> assigned = line.accept(ASSIGN);
