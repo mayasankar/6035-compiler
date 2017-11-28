@@ -32,7 +32,8 @@ public class DCE implements Optimization {
     // TODO (mayars) check CFGConditional always true/false (see below)
 
     private CfgUseVisitor USE = new CfgUseVisitor();
-    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
+    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
+    private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
 
     public boolean optimize(CFGProgram cfgProgram) {
         boolean anythingChanged = false;
@@ -80,7 +81,7 @@ public class DCE implements Optimization {
             Set<String> newIn = new HashSet<>();
             newIn.addAll(line.accept(USE));
             Set<String> newOutDuplicate = new HashSet<>(newOut);
-            newOutDuplicate.removeAll(line.accept(ASSIGN));
+            newOutDuplicate.removeAll(line.accept(ASSIGN_NONARRAY));  // don't want to remove arrays since might be assigning to different index
             newIn.addAll(newOutDuplicate);
             if (! newIn.equals(line.getLivenessIn())) {
                 changed.addAll(line.getParents());

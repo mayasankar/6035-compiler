@@ -124,11 +124,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         String code = "";
         IRVariableExpression varAssigned = line.getVarAssigned();
         code += onExpression(line.getExpression());  // value now in %r10
-        code += "push %r10\n"; // will get it out right before the end and assign to %r11
         if (varAssigned.isArray()){
+            code += "push %r10\n"; // will get it out right before the end and assign to %r11
             code += onExpression(varAssigned.getIndexExpression()); // array index now in %r10
+            code += "pop %r11\n"; // value now in %r11
         }
-        code += "pop %r11\n"; // value now in %r11
+        else {
+            code += "mov %r10, %r11\n";
+        }
         code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
         return code;
     }
