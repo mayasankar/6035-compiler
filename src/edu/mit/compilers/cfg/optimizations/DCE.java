@@ -107,16 +107,16 @@ public class DCE implements Optimization {
     // returns true if gen/kill sets might change, i.e. usually when we have removed a line
     private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
         private CFG cfg;
+        private ArrayChecker ac = new ArrayChecker();
 
         public DeadCodeEliminator(CFG cfg) { this.cfg = cfg; }
 
         @Override
         public Boolean on(CFGAssignStatement line) {
             // array assignments require bounds checking and have other weird bugs
-            if (line.getVarAssigned().isArray()) {
+            if (line.getVarAssigned().accept(ac) || line.getExpression().accept(ac)) {
                 return false;
             }
-            // TODO also avoid DCE on things that access arrays in the statement
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
             Set<String> assigned = line.accept(ASSIGN);
@@ -131,6 +131,10 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGConditional line) {
+            // arrays might require bounds checking and can't be eliminated
+            if (line.getExpression().accept(ac)) {
+                return false;
+            }
             // remove it if it is not a branch
             if (! line.isBranch()) {
                 cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
@@ -157,6 +161,10 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGReturn line) {
+            // arrays might require bounds checking and can't be eliminated
+            if (!line.isVoid() && line.getExpression().accept(ac)) {
+                return false;
+            }
             // TODO is there any case where it could be deleted?
             return false;
         }
@@ -166,16 +174,45 @@ public class DCE implements Optimization {
             // TODO remove it if the method doesn't call any globals
             if (line.getExpression().affectsGlobals()) {
                 return false;
-            } else {
-                cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
-                return true;
             }
+            // arrays might require bounds checking and can't be eliminated
+            if (line.getExpression().accept(ac)) {
+                return false;
+            }
+            cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
+            return true;
         }
 
         @Override
         public Boolean on(CFGBlock line) {
             throw new RuntimeException("Eliminating blocks is hard");
         }
+    }
+
+
+
+    // check whether you are accessing an array variable in this expression
+    // TODO only care about ones where you might be concerned about DCE removing bounds checks and changing behaviour
+    // TODO assumes things are all depth <=1 already, is this reasonable?
+    private static class ArrayChecker implements IRExpression.IRExpressionVisitor<Boolean> {
+        @Override
+        public Boolean on(IRMethodCallExpression ir) { return false; }
+        @Override
+        public Boolean on(IRUnaryOpExpression ir) { return false; }
+        @Override
+        public Boolean on(IRBinaryOpExpression ir) { return false; }
+        @Override
+        public Boolean on(IRTernaryOpExpression ir) { return false; }
+        @Override
+        public Boolean on(IRLenExpression ir) { return false; }
+        @Override
+        public Boolean on(IRVariableExpression ir) { return ir.isArray(); }
+        @Override
+        public Boolean on(IRBoolLiteral ir) { return false; }
+        @Override
+        public Boolean on(IRIntLiteral ir) { return false; }
+        @Override
+        public Boolean on(IRStringLiteral ir) { return false; }
     }
 
 
