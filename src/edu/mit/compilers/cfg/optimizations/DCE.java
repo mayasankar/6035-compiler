@@ -44,7 +44,7 @@ public class DCE implements Optimization {
             boolean changed = true;
             while (changed) {
                 doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
-                changed = removeDeadCode(cfg);
+                changed = removeDeadCode(cfg, globals);
             }
             System.out.println("DCE-Optimized CFG:");
             System.out.println(cfg);
@@ -89,8 +89,8 @@ public class DCE implements Optimization {
     /**
      * returns whether or not dead code has been removed this iteration
      */
-    private boolean removeDeadCode(CFG cfg) {
-        DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg);
+    private boolean removeDeadCode(CFG cfg, Set<String> globals) {
+        DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg, globals);
         Set<CFGLine> toPossiblyRemove = cfg.getAllLines();
         boolean changed = false;
 
@@ -108,8 +108,9 @@ public class DCE implements Optimization {
     private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
         private CFG cfg;
         private ArrayChecker ac = new ArrayChecker();
+        private Set<String> globals;
 
-        public DeadCodeEliminator(CFG cfg) { this.cfg = cfg; }
+        public DeadCodeEliminator(CFG cfg, Set<String> globals) { this.cfg = cfg; this.globals = globals; }
 
         @Override
         public Boolean on(CFGAssignStatement line) {
@@ -117,11 +118,12 @@ public class DCE implements Optimization {
             if (line.getVarAssigned().accept(ac) || line.getExpression().accept(ac)) {
                 return false;
             }
+            // assigning to global variables shouldn't be eliminated since there are side effects
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
             Set<String> assigned = line.accept(ASSIGN);
             for (String var : assigned) {
-                if (aliveAtEnd.contains(var)) {
+                if (aliveAtEnd.contains(var) || globals.contains(var)) {
                     return false;
                 }
             }
