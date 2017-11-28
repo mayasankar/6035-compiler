@@ -28,12 +28,13 @@ public class CSE implements Optimization {
     // then to merge two branches into a child, we have Map<IRExpression, Union of its Sets>
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
+        boolean changed = false;
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             doAvailableExpressionAnalysis(cfg);
-            reduceCommonSubexpressions(cfg);
+            changed = changed || reduceCommonSubexpressions(cfg);
         }
-        return false; // TODO
+        return changed;
     }
 
     private void doAvailableExpressionAnalysis(CFG cfg) {
@@ -127,7 +128,6 @@ public class CSE implements Optimization {
     }
 
     // returns true if some expressions have been reduced, false if not
-    // NOTE we probably don't actually do anything with the return value, but may as well keep it in case future useful
     private boolean reduceCommonSubexpressions(CFG cfg) {
         SubexpressionReducer reducer = new SubexpressionReducer();
         Set<CFGLine> toPossiblyReduce = cfg.getAllLines();
@@ -157,7 +157,12 @@ public class CSE implements Optimization {
 
         @Override
         public Boolean on(CFGBoundsCheck line) {
-            // TODO should we be reducing?
+            IRExpression oldExpr = line.getExpression().getIndexExpression();
+            IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
+            if (!oldExpr.equals(newExpr)) {
+                line.getExpression().setIndexExpression(newExpr);
+                return true;
+            }
             return false;
         }
 
