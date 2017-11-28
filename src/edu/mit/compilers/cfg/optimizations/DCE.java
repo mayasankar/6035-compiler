@@ -29,10 +29,13 @@ public class DCE implements Optimization {
 
     // TODO (mayars) delete statements of the form x = x;
 
+    // TODO (mayars) check CFGConditional always true/false (see below)
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
     public boolean optimize(CFGProgram cfgProgram) {
+        boolean anythingChanged = false;
         Set<String> globals = new HashSet<>();
         for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
             globals.add(var.getName());
@@ -45,11 +48,12 @@ public class DCE implements Optimization {
             while (changed) {
                 doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
                 changed = removeDeadCode(cfg, globals);
+                anythingChanged = anythingChanged || changed;
             }
             System.out.println("DCE-Optimized CFG:");
             System.out.println(cfg);
         }
-        return false; // TODO FIX!!
+        return anythingChanged;
     }
 
     // TODO make sure that the initial values of everything are valid.
@@ -96,10 +100,6 @@ public class DCE implements Optimization {
 
         for (CFGLine line : toPossiblyRemove) {
             changed = changed || line.accept(eliminator);
-            // if (line.accept(eliminator)) {
-            //     System.out.println("Removed: " + line.ownValue());
-            //     changed = true;
-            // }
         }
         return changed;
     }
@@ -163,17 +163,12 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGReturn line) {
-            // arrays might require bounds checking and can't be eliminated
-            if (!line.isVoid() && line.getExpression().accept(ac)) {
-                return false;
-            }
-            // TODO is there any case where it could be deleted?
             return false;
         }
 
         @Override
         public Boolean on(CFGMethodCall line) {
-            // TODO remove it if the method doesn't call any globals
+            // remove it if the method doesn't call any globals
             if (line.getExpression().affectsGlobals()) {
                 return false;
             }
