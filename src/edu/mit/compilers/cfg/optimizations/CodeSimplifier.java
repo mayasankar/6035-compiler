@@ -21,7 +21,7 @@ public class CodeSimplifier {
     private static String concat(List<String> codeList) {
         String code = "";
         for (String s : codeList) {
-            code += s;
+            code += s + "\n";
         }
         return code;
     }
