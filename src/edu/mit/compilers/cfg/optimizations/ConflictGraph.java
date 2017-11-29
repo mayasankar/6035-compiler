@@ -21,6 +21,18 @@ import edu.mit.compilers.cfg.lines.*;
 public class ConflictGraph {
     private Map<String, Set<String>> variableConflicts = new HashMap<>();
 
+    public void addVariable(String var) {
+        variableConflicts.put(var, new HashSet<String>());
+    }
+
+    public void removeVariable(String var) {
+        Set<String> varConflicts = getConflictingVariables(var);
+        for (String conf : varConflicts) {
+            removeConflict(var, conf);
+        }
+        variableConflicts.remove(var);
+    }
+
     public void addConflict(String var1, String var2) {
         Set<String> var1Conflicts = getConflictingVariables(var1);
         Set<String> var2Conflicts = getConflictingVariables(var2);
@@ -36,7 +48,16 @@ public class ConflictGraph {
     }
 
     public Set<String> getConflictingVariables(String variable) {
-        return variableConflicts.get(variable);
+        Set<String> result = variableConflicts.get(variable);
+        if (result == null) {
+            throw new RuntimeException("Attempted to get conflicting variables for a variable not in the set.");
+        }
+        return result;
+    }
+
+    // assigns an integer to each variable such that there are minimal distinct integers; returns this mapping
+    public Map<String, Integer> colorGraph() {
+        throw new RuntimeException("Unimplemented.");
     }
 
 }
