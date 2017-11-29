@@ -21,7 +21,9 @@ public class CodeSimplifier {
     private static String concat(List<String> codeList) {
         String code = "";
         for (String s : codeList) {
-            code += s + "\n";
+            if (!s.equals("")){
+                code += s + "\n";
+            }
         }
         return code;
     }
@@ -69,8 +71,10 @@ public class CodeSimplifier {
                 reg2 = matcher.group(2);
                 // if we had a move on the last line, and the register
                 // moved into is the same as the first one we move now,
+                // and the middle thing being simplified out is a register
                 // and not both others were on the stack, simplify
-                if (!lastReg1.equals("") && lastReg2.equals(reg1) && (lastReg1.startsWith("%") || reg2.startsWith("%"))) {
+                if (!lastReg1.equals("") && lastReg2.equals(reg1) && lastReg2.startsWith("%")
+                    && (lastReg1.startsWith("%") || reg2.startsWith("%"))) {
                     // useless mov from a thing to itself; delete the line
                     codeList.set(i-1, "");
                     codeList.set(i, "mov " + lastReg1 + ", " + reg2);
