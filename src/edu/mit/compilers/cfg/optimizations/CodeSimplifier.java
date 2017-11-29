@@ -18,21 +18,27 @@ import java.util.regex.Matcher;
 
 public class CodeSimplifier {
 
+    private static String concat(List<String> codeList) {
+        return String.join("", codeList);
+    }
+
     // return a simplified version of codeList
     public static String simplifyMovs(String code) {
         List<String> codeList = Arrays.asList(code.split("\\n"));
         Pattern pattern = Pattern.compile("mov (.+?), (.+)");
 
-        for (int i=0; i<10; i++) {
+        for (int i=0; i<codeList.size(); i++) {
             Matcher matcher = pattern.matcher(codeList.get(i));
             if (matcher.find()) {
                 String reg1 = matcher.group(1);
                 String reg2 = matcher.group(2);
-                System.out.println(codeList.get(i));
-                System.out.println("Regs: " + reg1 + ", " + reg2 + "\n");
+                if (reg1.equals(reg2)) {
+                    // useless mov from a thing to itself; delete the line
+                    codeList.set(i, "");
+                }
             }
         }
-        return codeList.get(0); // TODO
+        return concat(codeList);
     }
 
 }

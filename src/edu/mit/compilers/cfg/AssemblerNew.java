@@ -44,7 +44,7 @@ public class AssemblerNew {
         code += "mov $-2, %ebx\n";
         code += "int $0x80\n";
 
-		CodeSimplifier.simplifyMovs(code);
+		code = CodeSimplifier.simplifyMovs(code);
 	}
 
 	public void printToStream(PrintStream os) throws IOException {
