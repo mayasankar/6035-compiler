@@ -8,6 +8,7 @@ import java.util.List;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
 
@@ -43,6 +44,7 @@ public class AssemblerNew {
         code += "mov $-2, %ebx\n";
         code += "int $0x80\n";
 
+		CodeSimplifier.simplifyMovs(code);
 	}
 
 	public void printToStream(PrintStream os) throws IOException {
