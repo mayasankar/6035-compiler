@@ -1,7 +1,7 @@
 #!/bin/sh
 
 runcompiler_opt() {
-  $(git rev-parse --show-toplevel)/run.sh --opt=dce --target=assembly -o $2 $1
+  $(git rev-parse --show-toplevel)/run.sh --opt=dce,cse --target=assembly -o $2 $1
 }
 
 runcompiler_unopt() {

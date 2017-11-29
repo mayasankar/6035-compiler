@@ -21,7 +21,7 @@ public class CodeSimplifier {
     // return a simplified version of codeList
     public static String simplifyMovs(String code) {
         List<String> codeList = Arrays.asList(code.split("\\n"));
-        Pattern pattern = Pattern.compile("mov (.+?), (.+?)\n");
+        Pattern pattern = Pattern.compile("mov (.+?), (.+)");
 
         for (int i=0; i<10; i++) {
             Matcher matcher = pattern.matcher(codeList.get(i));
