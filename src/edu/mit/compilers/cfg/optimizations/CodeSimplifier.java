@@ -19,7 +19,11 @@ import java.util.regex.Matcher;
 public class CodeSimplifier {
 
     private static String concat(List<String> codeList) {
-        return String.join("", codeList);
+        String code = "";
+        for (String s : codeList) {
+            code += s;
+        }
+        return code;
     }
 
     // return a simplified version of codeList
