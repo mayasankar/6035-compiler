@@ -60,6 +60,7 @@ public class ConflictGraph {
     }
 
     // assigns an integer to each variable such that there are minimal distinct integers; returns this mapping
+    // TODO destroys the graph, maybe we should make a copy instead?
     public Map<String, Integer> colorGraph() {
         Set<String> variables = getVariables();
         List<String> varStack = new ArrayList<>();

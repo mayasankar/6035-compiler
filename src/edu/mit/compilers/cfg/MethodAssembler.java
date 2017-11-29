@@ -141,12 +141,12 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         IRVariableExpression variable = line.getExpression();
         String code = "";
         code += onExpression(variable.getIndexExpression()); // array index now in %r10
+        String indexRegister = "%r10";
         code += "mov " + stacker.getMaxSize(variable.getName()) + ", %r11\n";
-        code += "cmp %r11, %r10\n";
+        code += "cmp %r11, " + indexRegister + "\n";
         code += "jge .out_of_bounds\n";
-        code += "cmp $0, %r10\n";
+        code += "cmp $0, " + indexRegister + "\n";
         code += "jl .out_of_bounds\n";
-        // TODO whatever Maya was doing with global things in getCodeForIndexExpr in BlockAssembler
         return code;
     }
 
