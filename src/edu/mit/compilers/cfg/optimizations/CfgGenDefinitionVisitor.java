@@ -52,4 +52,9 @@ public class CfgGenDefinitionVisitor implements CFGLine.CFGVisitor<Set<CP.CPDefi
     public Set<CP.CPDefinition> on(CFGNoOp line){
         return new HashSet<>();
     }
+
+    @Override
+    public Set<CP.CPDefinition> on(CFGBoundsCheck line){
+        return new HashSet<>();
+    }
 }
