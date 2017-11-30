@@ -19,6 +19,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
+import edu.mit.compilers.cfg.optimizations.*;
 
 
 public abstract class CFGLine {
@@ -33,9 +34,9 @@ public abstract class CFGLine {
     // for DCE
     protected Set<String> livenessIN = new HashSet<>();
     protected Set<String> livenessOUT = new HashSet<>();
-    // for CP
-    protected Map<String, Set<IRExpression>> reachingDefinitionsIN = new HashMap<>();
-    protected Map<String, Set<IRExpression>> reachingDefinitionsOUT = new HashMap<>();
+    // for CP, tells you whether the reaching definition is still alive
+    protected Map<CP.CPDefinition, Boolean> reachingDefinitionsIN = new HashMap<>();
+    protected Map<CP.CPDefinition, Boolean> reachingDefinitionsOUT = new HashMap<>();
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -106,10 +107,10 @@ public abstract class CFGLine {
     public void setLivenessIn(Set<String> newSet) { this.livenessIN = newSet; }
     public Set<String> getLivenessOut() { return this.livenessOUT; }
     public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
-    public Map<String, Set<IRExpression>> getReachingDefinitionsIn() { return this.reachingDefinitionsIN; }
-    public void setReachingDefinitionsIn(Map<String, Set<IRExpression>> newSet) { this.reachingDefinitionsIN = newSet; }
-    public Map<String, Set<IRExpression>> getReachingDefinitionsOut() { return this.reachingDefinitionsOUT; }
-    public void setReachingDefinitionsOut(Map<String, Set<IRExpression>> newSet) { this.reachingDefinitionsOUT = newSet; }
+    public Map<CP.CPDefinition, Boolean> getReachingDefinitionsIn() { return this.reachingDefinitionsIN; }
+    public void setReachingDefinitionsIn(Map<CP.CPDefinition, Boolean> newSet) { this.reachingDefinitionsIN = newSet; }
+    public Map<CP.CPDefinition, Boolean> getReachingDefinitionsOut() { return this.reachingDefinitionsOUT; }
+    public void setReachingDefinitionsOut(Map<CP.CPDefinition, Boolean> newSet) { this.reachingDefinitionsOUT = newSet; }
 
     public CFGLine getTrueBranch() {
         return trueBranch;
