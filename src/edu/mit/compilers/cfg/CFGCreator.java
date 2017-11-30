@@ -40,6 +40,7 @@ import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.cfg.optimizations.*;
 
 public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
@@ -134,6 +135,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRBinaryOpExpression ir) {// TODO fix this
+        ir.accept(new StrengthReductionVisitor());
         String tempName = ir.accept(namer);
         if(Arrays.asList("&&","||").contains(ir.getOperator().toString())) {
             CFGLine noOp = new CFGNoOp();
