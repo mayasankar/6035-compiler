@@ -50,22 +50,27 @@ public class CP implements Optimization {
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         boolean anyCfgChanged = false;
+        Set<String> globals = new HashSet<>();
+        for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
+            globals.add(var.getName());
+        }
+
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             if (debug) {
                 System.out.println("Original CFG:");
                 System.out.println(cfg);
             }
-            boolean changed = false;
-            do {
+            boolean changed = true;
+            while (changed) {
                 doReachingDefinitionsAnalysis(cfg);
-                changed = propagate(cfg);
+                changed = propagate(cfg, globals);
                 // if (debug) {
                 //     System.out.println("CP-Optimized CFG:");
                 //     System.out.println(cfg);
                 // }
                 anyCfgChanged = anyCfgChanged || changed;
-            } while (changed);
+            }
             if (debug) {
                 System.out.println("CP-Optimized CFG:");
                 System.out.println(cfg);
@@ -157,7 +162,7 @@ public class CP implements Optimization {
         }
     }
 
-    private boolean propagate(CFG cfg) {
+    private boolean propagate(CFG cfg, Set<String> globals) {
         boolean isChanged = false;
 
         for (CFGLine line : cfg.getAllLines()) {
@@ -175,9 +180,21 @@ public class CP implements Optimization {
                     replacementMap.put(var, definition);
                 }
             }
-            // for (Map.Entry<String, IRExpression> kv : replacementMap.entrySet()) {
-            //     if (kv.getValue() == null) { replacementMap.remove(kv.getKey()); }
-            // }
+            for (String global : globals) { replacementMap.remove(global); }
+            // NOTE this section can be removed if we add globals to usevisitors
+            USEVisitor USE = new USEVisitor();
+            Set<Map.Entry<String, IRExpression>> kvs = new HashSet<>(replacementMap.entrySet());
+            for (Map.Entry<String, IRExpression> kv : kvs) {
+                if (kv.getValue() == null) {
+                    replacementMap.remove(kv.getKey());
+                    continue;
+                }
+                Set<String> globalVarsUsed = kv.getValue().accept(USE);
+                globalVarsUsed.retainAll(globals);
+                if (!globalVarsUsed.isEmpty()) {
+                    replacementMap.remove(kv.getKey());
+                }
+            }
             LineOptimizer optimizer = new LineOptimizer(replacementMap);
             isChanged = line.accept(optimizer) || isChanged;
         }
