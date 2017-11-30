@@ -48,6 +48,7 @@ public class StrengthReductionVisitor implements IRNode.IRNodeVisitor<Boolean> {
     }
     @Override
     public Boolean on(IRBinaryOpExpression ir){
+        // TODO also the case with multiplication where the left term is power of two
         if (ir.getOperator().equals("*") || ir.getOperator().equals("/")) {
             IRExpression rightExpr = ir.getRightExpr();
             if (rightExpr instanceof IRIntLiteral) {
