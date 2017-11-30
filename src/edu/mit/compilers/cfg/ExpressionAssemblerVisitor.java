@@ -170,12 +170,12 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 code += "mov " + ((op.equals("/")) ? "%rax" : "%rdx") + ", " + register + "\n";
                 return code;
             case ">>":
-                code += "mov " + rightReg + ", %cl\n";  // TODO this creates a problem of overwriting %rcx, how do we fix?
+                code += "mov " + rightReg + ", %rcx\n";  // TODO this creates a problem of overwriting %rcx, how do we fix?
                 code += "shr %cl," + leftReg + "\n";
                 code += "mov " + leftReg + ", " + register + "\n";
                 return code;
             case "<<":
-                code += "mov " + rightReg + ", %cl\n";  // TODO this creates a problem of overwriting %rcx, how do we fix?
+                code += "mov " + rightReg + ", %rcx\n";  // TODO this creates a problem of overwriting %rcx, how do we fix?
                 code += "shl %cl, " + leftReg + "\n";
                 code += "mov " + leftReg + ", " + register + "\n";
                 return code;
