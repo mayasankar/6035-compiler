@@ -79,7 +79,7 @@ public class USEVisitor implements IRNode.IRNodeVisitor<Set<String>> {
         }
         return ret;
     }
-    @Override
+    @Override // TODO (mayars) -- life will be easier if this includes globals
     public Set<String> on(IRMethodCallExpression ir){
         Set<String> ret = new HashSet<>();
         for (IRExpression arg: ir.getArguments()) {

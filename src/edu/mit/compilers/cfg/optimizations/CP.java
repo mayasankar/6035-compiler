@@ -32,38 +32,45 @@ propagation, using constantPropagate().
 IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respectively.
 */
 
-
-// TODO optimize the following code
+// TODO how should this interface with arrays?
+// could optimize the following code
 // a[0] = c;
 // d = a[0];
 // to
 // d = c;
 
-// TODO if name = main, can add definitions of globals to 0 to beginning reaching definitions
+// if name = main, can add definitions of globals to 0 to beginning reaching definitions,
+// but then they would have to be added to the use set.
 
 public class CP implements Optimization {
-    private CfgGenExpressionVisitor GEN = new CfgGenExpressionVisitor();
+    private CfgGenDefinitionVisitor GEN = new CfgGenDefinitionVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
-    private USEVisitor IRNodeUSE = new USEVisitor();
 
     // TODO decide when splitting is a good idea
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         boolean anyCfgChanged = false;
+        Set<String> globals = new HashSet<>();
+        for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
+            globals.add(var.getName());
+        }
+
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             if (debug) {
                 System.out.println("Original CFG:");
                 System.out.println(cfg);
             }
-            boolean changed = false;
-            do {
+            boolean changed = true;
+            while (changed) {
                 doReachingDefinitionsAnalysis(cfg);
-                changed = propagate(cfg);
-                System.out.println("CP-Optimized CFG:");
-                System.out.println(cfg);
+                changed = propagate(cfg, globals);
+                // if (debug) {
+                //     System.out.println("CP-Optimized CFG:");
+                //     System.out.println(cfg);
+                // }
                 anyCfgChanged = anyCfgChanged || changed;
-            } while (changed);
+            }
             if (debug) {
                 System.out.println("CP-Optimized CFG:");
                 System.out.println(cfg);
@@ -73,137 +80,121 @@ public class CP implements Optimization {
     }
 
     public static class CPDefinition {
-        IRVariableExpression varDefined;
+        String varDefined; // TODO make IRVariableExpression and deal with array case
         IRExpression definition;
-        boolean isValidDefinition = true;
+        Set<String> variablesUsed;
 
-        public CPDefinition(IRVariableExpression vd, IRExpression def) {
-            varDefined = vd;
+        public CPDefinition(IRVariableExpression varExpr, IRExpression def) {
+            varDefined = varExpr.getName();
             definition = def;
+            variablesUsed = definition.accept(new USEVisitor());
         }
 
-        public void invalidate() { isValidDefinition = false; }
-        public boolean assignsVariable(IRVariableExpression otherVar) {
-            // TODO deal with the array case
+        public boolean assignsVariable(String otherVar) {
             return varDefined.equals(otherVar);
         }
-        public List<IRVariableExpression> getVariablesUsed() {
-            return new ArrayList<>(); // TODO fix
+
+        public boolean usesVariable(String var) {
+            return variablesUsed.contains(var);
         }
+
+        public String getVarDefined() { return varDefined; }
+        public IRExpression getDefinition() { return definition; }
 
         @Override
         public String toString() {
-            return (isValidDefinition ? "VALID " : "INVALID ") + varDefined.toString() + " = " + definition.toString();
+            return varDefined + " = " + definition.toString();
         }
     }
 
     private void doReachingDefinitionsAnalysis(CFG cfg) {
         for (CFGLine line : cfg.getAllLines()) {
-            line.setReachingDefinitionsOut(new HashMap<String, Set<IRExpression>>());
+            line.setReachingDefinitionsOut(new HashMap<CPDefinition,Boolean>());
         }
 
         CFGLine start = cfg.getStart();
-        if (start instanceof CFGBlock) { // TODO fix this line
+        if (start instanceof CFGBlock) { // TODO refactor so this check is unnecessary
             throw new RuntimeException("This should not happen. Blockify prematurely called.");
         }
-        // in[start] = emptyset
-        start.setReachingDefinitionsIn(new HashMap<String, Set<IRExpression>>());
-        // out[start] = gen(start)
-        Map<String, Set<IRExpression>> startOut = new HashMap<>();
-        for (Map.Entry<IRExpression, Set<String>> kv : start.accept(GEN).entrySet()) {
-            for (String varName : kv.getValue()) {
-                Set<IRExpression> expressions = startOut.get(varName);
-                if (expressions == null) {
-                    expressions = new HashSet<>();
-                    expressions.add(kv.getKey());
-                    startOut.put(varName, expressions);
-                } else {
-                    expressions.add(kv.getKey());
-                }
-            }
-        }
+        start.setReachingDefinitionsIn(new HashMap<CPDefinition,Boolean>());
+        Map<CPDefinition, Boolean> startOut = new HashMap<>();
+        for (CPDefinition def : start.accept(GEN)) { startOut.put(def, true); }
         start.setReachingDefinitionsOut(startOut);
 
-        // changed = getAllLines() - start
         Set<CFGLine> changed = cfg.getAllLines();
         changed.remove(start);
 
-        // while changed != emptyset {
         while (! changed.isEmpty()) {
-            // pop n from changed
             CFGLine line = changed.iterator().next();
             changed.remove(line);
 
-            // in[n] = emptyset
-            Map<String, Set<IRExpression>> newIn = new HashMap<>();
-            // for all p in parents(n) {
-            //     in[n].addAll(out[p])
-            // }
-            for (CFGLine parent : line.getParents()) { // TODO test
-                for (Map.Entry<String, Set<IRExpression>> kv : parent.getReachingDefinitionsOut().entrySet()) {
-                    String varName = kv.getKey();
-                    Set<IRExpression> expressions = newIn.get(varName);
-                    if (expressions == null) {
-                        expressions = new HashSet<>();
-                        expressions.addAll(kv.getValue());
-                        newIn.put(varName, expressions);
-                    } else {
-                        expressions.addAll(kv.getValue());
+            Map<CPDefinition, Boolean> newIn = new HashMap<>();
+            // to newIn, add reaching definitions from all parents
+            for (CFGLine parent : line.getParents()) {
+                for (Map.Entry<CPDefinition, Boolean> kv : parent.getReachingDefinitionsOut().entrySet()) {
+                    if (!kv.getValue() || (kv.getValue() && ! newIn.containsKey(kv.getKey()))) {
+                        newIn.put(kv.getKey(), kv.getValue());
                     }
                 }
             }
 
-            // newout[n] = gen[n] U (in[n] - kill[n])
-            Map<String, Set<IRExpression>> newOut = new HashMap<>();
-            for (Map.Entry<String, Set<IRExpression>> kv : newIn.entrySet()) {
-                newOut.put(kv.getKey(), new HashSet<IRExpression>(kv.getValue()));
-            }
+            // newout[n] = (in[n] - kill[n]) U gen[n]
+            Map<CPDefinition, Boolean> newOut = new HashMap<>(newIn);
             for (String varKilled : line.accept(ASSIGN)) {
-                newOut.remove(varKilled);
-            }
-            for (Map.Entry<IRExpression, Set<String>> kv : line.accept(GEN).entrySet()) {
-                for (String varName : kv.getValue()) {
-                    Set<IRExpression> expressions = newOut.get(varName);
-                    if (expressions == null) {
-                        expressions = new HashSet<>();
-                        expressions.add(kv.getKey());
-                        newOut.put(varName, expressions);
-                    } else {
-                        expressions.add(kv.getKey());
+                Set<CPDefinition> defs = new HashSet<>(newOut.keySet());
+                for (CPDefinition def : defs) {
+                    if (def.assignsVariable(varKilled)) {
+                        newOut.remove(def);
+                    } else if (def.usesVariable(varKilled)) {
+                        newOut.put(def, false);
                     }
                 }
             }
+            for (CPDefinition def : line.accept(GEN)) {
+                newOut.put(def, true);
+            }
 
-            // if newout[n] != out[n] {
-            //     changed.addAll(children(n))
-            // }
-            if (! newOut.equals(line.getReachingDefinitionsOut())) { // TODO make sure the sets just have to be .equal, not ==
+            if (! newOut.equals(line.getReachingDefinitionsOut())) {
                 changed.addAll(line.getChildren());
             }
-            // out[n] = newout[n]
             line.setReachingDefinitionsIn(newIn);
             line.setReachingDefinitionsOut(newOut);
         }
     }
 
-    private boolean propagate(CFG cfg) {
+    private boolean propagate(CFG cfg, Set<String> globals) {
         boolean isChanged = false;
 
         for (CFGLine line : cfg.getAllLines()) {
-            Map<String, Set<IRExpression>> reachingDefinitionsIn = line.getReachingDefinitionsIn();
+            Map<CPDefinition, Boolean> reachingDefinitionsIn = line.getReachingDefinitionsIn();
             Map<String, IRExpression> replacementMap = new HashMap<>();
-            for (Map.Entry<String, Set<IRExpression>> kv : reachingDefinitionsIn.entrySet()) {
-                if (kv.getValue().size() != 1) { continue; }
-                IRExpression expr = kv.getValue().iterator().next();
-                if (expr.getDepth() == 0) {
-                    // BUG but what if the expression has been redefined since then?
-                    // e.g. c = a; a = 2; d = c;. Then, we can't replace c with a.
-                    // http://www.csd.uwo.ca/~moreno/CS447/Lectures/CodeOptimization.html/node8.html
-                    // we also want to mark a reaching definition as invalid in some way
-                    replacementMap.put(kv.getKey(), expr);
+            // replacementMap[var] = null -> don't replace that var
+            for (Map.Entry<CPDefinition, Boolean> kv : reachingDefinitionsIn.entrySet()) {
+                // should not replace if (1) some replacement is invalid
+                // (2) any replacement has depth >= 1 (3) there are multiple replacements
+                String var = kv.getKey().getVarDefined();
+                IRExpression definition = kv.getKey().getDefinition();
+                if (!kv.getValue() || definition.getDepth() != 0 || replacementMap.containsKey(var)) {
+                    replacementMap.put(var, null);
+                } else {
+                    replacementMap.put(var, definition);
                 }
             }
-
+            for (String global : globals) { replacementMap.remove(global); }
+            // NOTE this section can be removed if we add globals to usevisitors
+            USEVisitor USE = new USEVisitor();
+            Set<Map.Entry<String, IRExpression>> kvs = new HashSet<>(replacementMap.entrySet());
+            for (Map.Entry<String, IRExpression> kv : kvs) {
+                if (kv.getValue() == null) {
+                    replacementMap.remove(kv.getKey());
+                    continue;
+                }
+                Set<String> globalVarsUsed = kv.getValue().accept(USE);
+                globalVarsUsed.retainAll(globals);
+                if (!globalVarsUsed.isEmpty()) {
+                    replacementMap.remove(kv.getKey());
+                }
+            }
             LineOptimizer optimizer = new LineOptimizer(replacementMap);
             isChanged = line.accept(optimizer) || isChanged;
         }
