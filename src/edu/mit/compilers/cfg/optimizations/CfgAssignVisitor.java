@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import antlr.Token;
 import edu.mit.compilers.ir.*;
@@ -20,7 +21,15 @@ import edu.mit.compilers.cfg.lines.*;
 
 public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
-    private USEVisitor USE = new USEVisitor();
+    private boolean includeArrays;
+
+    public CfgAssignVisitor (boolean includeArrays) {
+        this.includeArrays = includeArrays;
+    }
+
+    public CfgAssignVisitor () {
+        this.includeArrays = true;
+    }
 
 	@Override
     public Set<String> on(CFGBlock line){
@@ -36,7 +45,15 @@ public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
     @Override
     public Set<String> on(CFGAssignStatement line){
-        return line.getVarAssigned().accept(USE);
+        if (!includeArrays && line.getVarAssigned().isArray()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(Arrays.asList(line.getVarAssigned().getName()));
+    }
+
+    @Override
+    public Set<String> on(CFGBoundsCheck line){
+        return new HashSet<>();
     }
 
     @Override

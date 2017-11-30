@@ -45,6 +45,9 @@ public class CFGReturn extends CFGLine {
 
     @Override
     public String ownValue() {
+        if (expression == null) {
+            return "";
+        }
         return expression.toString();
     }
 

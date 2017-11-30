@@ -33,6 +33,7 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 
 	public String getName() { return variableName; }
 	public IRExpression getIndexExpression() { return arrayIndex; }
+	public void setIndexExpression(IRExpression expr) { arrayIndex = expr;}
 
     @Override
 	public void resetName(String newName) { variableName = newName; }

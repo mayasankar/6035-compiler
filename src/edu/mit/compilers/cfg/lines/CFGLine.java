@@ -66,6 +66,7 @@ public abstract class CFGLine {
 
     public interface CFGVisitor<R> {
     	public R on(CFGAssignStatement line);
+        public R on(CFGBoundsCheck line);
     	public R on(CFGConditional line);
     	public R on(CFGNoOp line);
     	public R on(CFGReturn line);

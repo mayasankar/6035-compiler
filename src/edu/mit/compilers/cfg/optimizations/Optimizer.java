@@ -12,7 +12,7 @@ public class Optimizer {
     public static void optimize(CFGProgram cfgProgram, boolean[] opts, boolean debug) {
         for (int i = 0; i < opts.length; ++i) {
             if (! opts[i]) { continue; }
-            optimizations[i].optimize(cfgProgram);
+            optimizations[i].optimize(cfgProgram, debug);
         }
     }
 }

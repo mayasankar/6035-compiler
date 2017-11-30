@@ -29,27 +29,36 @@ public class DCE implements Optimization {
 
     // TODO (mayars) delete statements of the form x = x;
 
-    private CfgUseVisitor USE = new CfgUseVisitor();
-    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
+    // TODO (mayars) check CFGConditional always true/false (see below)
 
-    public boolean optimize(CFGProgram cfgProgram) {
+    private CfgUseVisitor USE = new CfgUseVisitor();
+    private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
+    private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
+
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
+        boolean anythingChanged = false;
         Set<String> globals = new HashSet<>();
         for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
             globals.add(var.getName());
         }
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
-            System.out.println("Original CFG:");
-            System.out.println(cfg);
+            if (debug) {
+                System.out.println("Original CFG:");
+                System.out.println(cfg);
+            }
             boolean changed = true;
             while (changed) {
                 doLivenessAnalysis(cfg, method.getKey().equals("main") ? new HashSet<String>() : globals);
-                changed = removeDeadCode(cfg);
+                changed = removeDeadCode(cfg, globals);
+                anythingChanged = anythingChanged || changed;
             }
-            System.out.println("DCE-Optimized CFG:");
-            System.out.println(cfg);
+            if (debug) {
+                System.out.println("DCE-Optimized CFG:");
+                System.out.println(cfg);
+            }
         }
-        return false; // TODO FIX!!
+        return anythingChanged;
     }
 
     // TODO make sure that the initial values of everything are valid.
@@ -76,7 +85,7 @@ public class DCE implements Optimization {
             Set<String> newIn = new HashSet<>();
             newIn.addAll(line.accept(USE));
             Set<String> newOutDuplicate = new HashSet<>(newOut);
-            newOutDuplicate.removeAll(line.accept(ASSIGN));
+            newOutDuplicate.removeAll(line.accept(ASSIGN_NONARRAY));  // don't want to remove arrays since might be assigning to different index
             newIn.addAll(newOutDuplicate);
             if (! newIn.equals(line.getLivenessIn())) {
                 changed.addAll(line.getParents());
@@ -89,17 +98,13 @@ public class DCE implements Optimization {
     /**
      * returns whether or not dead code has been removed this iteration
      */
-    private boolean removeDeadCode(CFG cfg) {
-        DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg);
+    private boolean removeDeadCode(CFG cfg, Set<String> globals) {
+        DeadCodeEliminator eliminator = new DeadCodeEliminator(cfg, globals);
         Set<CFGLine> toPossiblyRemove = cfg.getAllLines();
         boolean changed = false;
 
         for (CFGLine line : toPossiblyRemove) {
             changed = changed || line.accept(eliminator);
-            // if (line.accept(eliminator)) {
-            //     System.out.println("Removed: " + line.ownValue());
-            //     changed = true;
-            // }
         }
         return changed;
     }
@@ -107,21 +112,29 @@ public class DCE implements Optimization {
     // returns true if gen/kill sets might change, i.e. usually when we have removed a line
     private class DeadCodeEliminator implements CFGLine.CFGVisitor<Boolean> {
         private CFG cfg;
+        private Set<String> globals;
 
-        public DeadCodeEliminator(CFG cfg) { this.cfg = cfg; }
+        public DeadCodeEliminator(CFG cfg, Set<String> globals) { this.cfg = cfg; this.globals = globals; }
 
         @Override
         public Boolean on(CFGAssignStatement line) {
+            // assigning to global variables shouldn't be eliminated since there are side effects
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
             Set<String> assigned = line.accept(ASSIGN);
             for (String var : assigned) {
-                if (aliveAtEnd.contains(var)) {
+                if (aliveAtEnd.contains(var) || globals.contains(var)) {
                     return false;
                 }
             }
             cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
             return true;
+        }
+
+        @Override
+        public Boolean on(CFGBoundsCheck line) {
+            // never dead code, because it might throw a bounds check error
+            return false;
         }
 
         @Override
@@ -152,19 +165,17 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGReturn line) {
-            // TODO is there any case where it could be deleted?
             return false;
         }
 
         @Override
         public Boolean on(CFGMethodCall line) {
-            // TODO remove it if the method doesn't call any globals
+            // remove it if the method doesn't call any globals
             if (line.getExpression().affectsGlobals()) {
                 return false;
-            } else {
-                cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
-                return true;
             }
+            cfg.replaceLine(line, LineReplacer.getReplacementLine(line));
+            return true;
         }
 
         @Override
@@ -172,6 +183,7 @@ public class DCE implements Optimization {
             throw new RuntimeException("Eliminating blocks is hard");
         }
     }
+
 
 
     // if you are deleting a line which evaluates this expression it returns the CFGLine

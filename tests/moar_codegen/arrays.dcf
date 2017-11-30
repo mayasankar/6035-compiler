@@ -1,0 +1,13 @@
+import printf;
+
+void test(int d)
+{
+  int A[3];
+  printf ( "%d", d );
+  if (d == 3) { return ; }
+  test(d + 1);
+}
+
+void main () {
+  test(3);
+}
