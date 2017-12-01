@@ -63,7 +63,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     public List<AssemblyLine> on(IRLenExpression ir){ // uses only %r10
         String arg = ir.getArgument();
         String register = "%r10";
-        return Arrays.asList(new AMov(stacker.getMaxSize(arg), register));
+        List<AssemblyLine> lines = new ArrayList<>();
+        lines.add(new AMov(stacker.getMaxSize(arg), register));
+        return lines;
     }
 
     @Override
@@ -106,14 +108,18 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     public List<AssemblyLine> on(IRIntLiteral ir){  // uses %r10 only
         String valueAsStr = "$" + ir.toString();
         String register = "%r10";
-        return Arrays.asList(new AMov(valueAsStr, register));
+        List<AssemblyLine> lines = new ArrayList<>();
+        lines.add(new AMov(valueAsStr, register));
+        return lines;
     }
 
     @Override
     public List<AssemblyLine> on(IRBoolLiteral ir){  // uses %r10 only
         Boolean booleanValue = ir.getValue();
         String register = "%r10";
-        return Arrays.asList(new AMov(booleanValue ? "$1" : "$0", register));
+        List<AssemblyLine> lines = new ArrayList<>();
+        lines.add(new AMov(booleanValue ? "$1" : "$0", register));
+        return lines;
     }
 
     @Override
@@ -129,7 +135,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         else {
             label = "$" + stringLabels.get(stringValue);
         }
-        return Arrays.asList(new AMov(label, register));
+        List<AssemblyLine> lines = new ArrayList<>();
+        lines.add(new AMov(label, register));
+        return lines;
     }
 
     @Override
