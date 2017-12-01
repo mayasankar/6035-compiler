@@ -435,8 +435,8 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
             return new CFG(new CFGReturn());
         }
         IRExpression returnExpr = ir.getReturnExpr();
-        String name = returnExpr.accept(namer);
         CFG returnCFG = returnExpr.accept(this);
+        String name = returnExpr.accept(namer);
         IRVariableExpression returnVar = new IRVariableExpression(name);
         CFG returnStat = new CFG(new CFGReturn(returnVar));
         return returnCFG.concat(returnStat);
