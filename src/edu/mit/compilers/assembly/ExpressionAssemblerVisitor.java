@@ -129,14 +129,14 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         String label;
         if (! stringLabels.containsKey(stringValue)) {
             stringCount += 1;
-            label = "$."+methodLabel+"_string_"+new Integer(stringCount).toString();
+            label = "."+methodLabel+"_string_"+new Integer(stringCount).toString();
             stringLabels.put(stringValue, label);
         }
         else {
-            label = "$" + stringLabels.get(stringValue);
+            label = stringLabels.get(stringValue);
         }
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov(label, register));
+        lines.add(new AMov("$" + label, register));
         return lines;
     }
 
