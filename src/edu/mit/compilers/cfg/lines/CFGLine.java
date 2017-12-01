@@ -197,7 +197,7 @@ public abstract class CFGLine {
     }
 
     // NOTE: it is bad at printing things that will infinite loop
-    public String stringHelper(int numIndents, int depthLimit, Set<CFGLine> expandedLines) {
+    private String stringHelper(int numIndents, int depthLimit, Set<CFGLine> expandedLines) {
         if (depthLimit <= 0) {
             return "";
         }
