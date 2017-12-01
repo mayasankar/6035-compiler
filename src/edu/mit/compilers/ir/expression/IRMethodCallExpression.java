@@ -34,6 +34,9 @@ public class IRMethodCallExpression extends IRExpression {
     // this allows DCE to delete calls to this method.
     public boolean affectsGlobals() { return true; }
 
+    // TODO for CP optimization, improve this
+    public boolean isConstant() { return false; }
+
 	@Override
 	public List<IRExpression> getChildren() {
 		return arguments;
@@ -67,5 +70,15 @@ public class IRMethodCallExpression extends IRExpression {
 	public <R> R accept(IRNodeVisitor<R> visitor) {
 		return visitor.on(this);
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IRMethodCallExpression) {
+            IRMethodCallExpression expr = (IRMethodCallExpression) obj;
+            return (expr.functionName.equals(this.functionName)) && (expr.type == this.type)
+                    && (expr.arguments.equals(this.arguments));
+        }
+        return false;
+    }
 
 }

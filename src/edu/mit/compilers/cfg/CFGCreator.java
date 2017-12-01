@@ -40,6 +40,7 @@ import edu.mit.compilers.ir.statement.IRReturnStatement;
 import edu.mit.compilers.ir.statement.IRWhileStatement;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.cfg.optimizations.*;
 
 public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
@@ -134,6 +135,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
     @Override
     public CFG on(IRBinaryOpExpression ir) {// TODO fix this
+        ir.accept(new StrengthReductionVisitor());
         String tempName = ir.accept(namer);
         if(Arrays.asList("&&","||").contains(ir.getOperator().toString())) {
             CFGLine noOp = new CFGNoOp();
@@ -208,9 +210,15 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
 
             IRVariableExpression indexTempExpr = new IRVariableExpression(varIndex.accept(namer));
             IRVariableExpression simplerExpr = new IRVariableExpression(ir.getName(), indexTempExpr);
+            CFGLine boundsCheck = new CFGBoundsCheck(simplerExpr);
             CFGLine varExpr = new CFGAssignStatement(ir.accept(namer), simplerExpr);
 
-            return returnCFG.concat(new CFG(varExpr));
+            return returnCFG.concat(new CFG(boundsCheck)).concat(new CFG(varExpr));
+        } else if (ir.isArray()) {
+            CFGLine boundsCheck = new CFGBoundsCheck(ir);
+            CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
+            CFG returnCFG = new CFG(boundsCheck);
+            return returnCFG.concat(new CFG(lenLine));
         } else {
             CFGLine lenLine = new CFGAssignStatement(ir.accept(namer), ir);
             return new CFG(lenLine);
@@ -265,7 +273,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     public CFG on(IRAssignStatement ir) {
         CFG answer = new CFG(makeNoOp());
     	IRVariableExpression var = ir.getVarAssigned();
-    	// If the var being assigned to is an array, makew a temp var for it
+    	// If the var being assigned to is an array, make a temp var for it
     	if(var.getDepth() > 0) {
     		answer.concat(var.getIndexExpression().accept(this));
     		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
@@ -277,9 +285,9 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     		answer.concat(value.accept(this));
     		value = new IRVariableExpression(value.accept(namer));
     	}
-    	
+
     	IRAssignStatement simpleStat = canonicalizeAssignStatement(new IRAssignStatement(var,ir.getOperator() , value));
-    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat))); 
+    	return answer.concat(new CFG(new CFGAssignStatement(simpleStat)));
     }
 
     // helper: converts assign statements possibly with +=, ++, -=, -- to = IRStatements

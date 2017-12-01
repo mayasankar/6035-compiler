@@ -20,12 +20,13 @@ import edu.mit.compilers.cfg.lines.*;
 // NOTE this is a template class of how to write an optimization
 // Also add your optimization to Optimizer.java.
 public class ExampleOptimization implements Optimization {
-    public void optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             doAnalysis(cfg);
             simplify(cfg);
         }
+        return false;
     }
 
     private void doAnalysis(CFG cfg) {

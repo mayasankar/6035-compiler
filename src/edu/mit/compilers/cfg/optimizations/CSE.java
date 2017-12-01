@@ -27,12 +27,14 @@ public class CSE implements Optimization {
     // mapping an available expression to the variables that it is assigned to
     // then to merge two branches into a child, we have Map<IRExpression, Union of its Sets>
 
-    public void optimize(CFGProgram cfgProgram) {
+    public boolean optimize(CFGProgram cfgProgram, boolean debug) {
+        boolean changed = false;
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             doAvailableExpressionAnalysis(cfg);
-            reduceCommonSubexpressions(cfg);
+            changed = changed || reduceCommonSubexpressions(cfg);
         }
+        return changed;
     }
 
     private void doAvailableExpressionAnalysis(CFG cfg) {
@@ -80,7 +82,7 @@ public class CSE implements Optimization {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map1.keySet()) {
             if (map2.containsKey(key)) {
-                Set<String> vars = map1.get(key);
+                Set<String> vars = new HashSet<>(map1.get(key));
                 vars.retainAll(map2.get(key));
                 returnMap.put(key, vars);
             }
@@ -91,11 +93,11 @@ public class CSE implements Optimization {
     // helper for doAvailableExpressionAnalysis
     private Map<IRExpression, Set<String>> unionMaps(Map<IRExpression, Set<String>> map1, Map<IRExpression, Set<String>> map2) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
-        Set<IRExpression> keySetUnion = map1.keySet();
+        Set<IRExpression> keySetUnion = new HashSet<>(map1.keySet());
         keySetUnion.addAll(map2.keySet());
         for (IRExpression key : keySetUnion) {
             if (map1.containsKey(key) && map2.containsKey(key)) {
-                Set<String> vars = map1.get(key);
+                Set<String> vars = new HashSet<>(map1.get(key));
                 vars.addAll(map2.get(key));
                 returnMap.put(key, vars);
             }
@@ -115,7 +117,7 @@ public class CSE implements Optimization {
     private Map<IRExpression, Set<String>> killVariablesFromMap(Set<String> vars, Map<IRExpression, Set<String>> map) {
         Map<IRExpression, Set<String>> returnMap = new HashMap<>();
         for (IRExpression key : map.keySet()) {
-            Set<String> usedVariables = key.accept(IRNodeUSE);
+            Set<String> usedVariables = new HashSet<>(key.accept(IRNodeUSE));
             usedVariables.retainAll(vars);
             if (usedVariables.isEmpty()) {
                 // the expression does not use any variables getting killed, so we can add it
@@ -126,7 +128,6 @@ public class CSE implements Optimization {
     }
 
     // returns true if some expressions have been reduced, false if not
-    // NOTE we probably don't actually do anything with the return value, but may as well keep it in case future useful
     private boolean reduceCommonSubexpressions(CFG cfg) {
         SubexpressionReducer reducer = new SubexpressionReducer();
         Set<CFGLine> toPossiblyReduce = cfg.getAllLines();
@@ -149,6 +150,17 @@ public class CSE implements Optimization {
             IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
             if (!oldExpr.equals(newExpr)) {
                 line.setExpression(newExpr);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Boolean on(CFGBoundsCheck line) {
+            IRExpression oldExpr = line.getExpression().getIndexExpression();
+            IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
+            if (!oldExpr.equals(newExpr)) {
+                line.getExpression().setIndexExpression(newExpr);
                 return true;
             }
             return false;

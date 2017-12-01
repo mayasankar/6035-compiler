@@ -44,4 +44,7 @@ public abstract class IRLiteral<T> extends IRExpression {
 	public int hashCode() {
 		return this.value.hashCode() + 17*this.getType().hashCode();
 	}
+
+    @Override
+    public boolean isConstant() { return true; }
 }

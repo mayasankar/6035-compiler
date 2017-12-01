@@ -65,4 +65,7 @@ public class IRLenExpression extends IRExpression implements IRExpression.Rename
     public int hashCode() {
         return this.variableName.hashCode();
     }
+
+    @Override
+    public boolean isConstant() { return true; }
 }

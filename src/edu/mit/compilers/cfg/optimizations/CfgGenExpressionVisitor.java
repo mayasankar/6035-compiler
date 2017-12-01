@@ -33,6 +33,11 @@ public class CfgGenExpressionVisitor implements CFGLine.CFGVisitor<Map<IRExpress
 		return retMap;
     }
 
+	@Override
+	public Map<IRExpression, Set<String>> on(CFGBoundsCheck line){
+		return new HashMap<>();
+	}
+
     @Override
     public Map<IRExpression, Set<String>> on(CFGConditional line){
         return new HashMap<>();

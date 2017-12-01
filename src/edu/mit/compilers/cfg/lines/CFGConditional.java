@@ -24,6 +24,7 @@ public class CFGConditional extends CFGLine {
     }
 
     public IRExpression getExpression() { return expression; }
+    public void setExpression(IRExpression expression) { this.expression = expression; }
 
     @Override
     public boolean isNoOp() { return false; }

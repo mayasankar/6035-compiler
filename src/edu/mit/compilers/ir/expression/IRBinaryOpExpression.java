@@ -34,12 +34,15 @@ public class IRBinaryOpExpression extends IRExpression{
 	public IRExpression getLeftExpr() { return leftExpr; }
 	public IRExpression getRightExpr() { return rightExpr; }
 	public String getOperator() { return operator; }
+	public void setOperator(String op) { this.operator = op; }
+	public void setRightExpr(IRExpression expr) { this.rightExpr = expr; }
+	public void setLeftExpr(IRExpression expr) { this.leftExpr = expr; }
 
 	private boolean isCommutative() {
 		switch (operator) {
 			case "==": case "!=": case "&&": case "||": case "+":case "*":
 				return true;
-			case "<": case "<=": case ">": case ">=": case "-": case "/": case "%":
+			case "<": case "<=": case ">": case ">=": case "-": case "/": case "%": case ">>": case "<<":
 				return false;
 			default:
 				throw new RuntimeException("Undefined operator " + operator + ".");
@@ -51,7 +54,7 @@ public class IRBinaryOpExpression extends IRExpression{
 		switch (operator) {
 			case "==": case "!=": case "&&": case "||": case "<": case "<=": case ">": case ">=":
 				return TypeDescriptor.BOOL;
-			case "+": case "-": case "*": case "/": case "%":
+			case "+": case "-": case "*": case "/": case "%": case ">>": case "<<":
 				return TypeDescriptor.INT;
 			default:
 				throw new RuntimeException("Undefined operator " + operator + ".");

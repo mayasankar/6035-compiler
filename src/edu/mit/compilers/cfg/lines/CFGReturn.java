@@ -34,6 +34,7 @@ public class CFGReturn extends CFGLine {
         }
         return expression;
     }
+    public void setExpression(IRExpression expression) { this.expression = expression; }
 
     public boolean isVoid() { return expression == null; }
 
@@ -44,6 +45,9 @@ public class CFGReturn extends CFGLine {
 
     @Override
     public String ownValue() {
+        if (expression == null) {
+            return "";
+        }
         return expression.toString();
     }
 

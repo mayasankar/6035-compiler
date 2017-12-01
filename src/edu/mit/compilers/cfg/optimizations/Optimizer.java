@@ -9,10 +9,10 @@ public class Optimizer {
     public final static String[] optimizationNames = new String[] { "cse", "cp", "dce" };
     public final static Optimization[] optimizations = new Optimization[] { new CSE(), new CP(), new DCE() };
 
-    public static void optimize(CFGProgram cfgProgram, boolean[] opts) {
+    public static void optimize(CFGProgram cfgProgram, boolean[] opts, boolean debug) {
         for (int i = 0; i < opts.length; ++i) {
             if (! opts[i]) { continue; }
-            optimizations[i].optimize(cfgProgram);
+            optimizations[i].optimize(cfgProgram, debug);
         }
     }
 }

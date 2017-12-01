@@ -60,7 +60,7 @@ class Main {
         if (CLI.target == Action.ASSEMBLY){
             CFGCreator creator = new CFGCreator();
             CFGProgram program = creator.destruct(ir);
-            //Optimizer.optimize(program, CLI.opts);
+            Optimizer.optimize(program, CLI.opts, CLI.debug);
             program.blockify();
             AssemblerNew assembler = new AssemblerNew(program);
             assembler.printToStream(outputStream);

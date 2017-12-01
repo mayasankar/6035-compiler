@@ -19,6 +19,7 @@ import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.trees.EnvStack;
 import edu.mit.compilers.cfg.*;
+import edu.mit.compilers.cfg.optimizations.*;
 
 
 public abstract class CFGLine {
@@ -33,9 +34,9 @@ public abstract class CFGLine {
     // for DCE
     protected Set<String> livenessIN = new HashSet<>();
     protected Set<String> livenessOUT = new HashSet<>();
-    // for CP
-    protected Map<String, Set<IRExpression>> reachingDefinitionsIN = new HashMap<>();
-    protected Map<String, Set<IRExpression>> reachingDefinitionsOUT = new HashMap<>();
+    // for CP, tells you whether the reaching definition is still alive
+    protected Map<CP.CPDefinition, Boolean> reachingDefinitionsIN = new HashMap<>();
+    protected Map<CP.CPDefinition, Boolean> reachingDefinitionsOUT = new HashMap<>();
 
     protected CFGLine(CFGLine trueBranch, CFGLine falseBranch) {
         this.trueBranch = trueBranch;
@@ -65,6 +66,7 @@ public abstract class CFGLine {
 
     public interface CFGVisitor<R> {
     	public R on(CFGAssignStatement line);
+        public R on(CFGBoundsCheck line);
     	public R on(CFGConditional line);
     	public R on(CFGNoOp line);
     	public R on(CFGReturn line);
@@ -106,6 +108,10 @@ public abstract class CFGLine {
     public void setLivenessIn(Set<String> newSet) { this.livenessIN = newSet; }
     public Set<String> getLivenessOut() { return this.livenessOUT; }
     public void setLivenessOut(Set<String> newSet) { this.livenessOUT = newSet; }
+    public Map<CP.CPDefinition, Boolean> getReachingDefinitionsIn() { return this.reachingDefinitionsIN; }
+    public void setReachingDefinitionsIn(Map<CP.CPDefinition, Boolean> newSet) { this.reachingDefinitionsIN = newSet; }
+    public Map<CP.CPDefinition, Boolean> getReachingDefinitionsOut() { return this.reachingDefinitionsOUT; }
+    public void setReachingDefinitionsOut(Map<CP.CPDefinition, Boolean> newSet) { this.reachingDefinitionsOUT = newSet; }
 
     public CFGLine getTrueBranch() {
         return trueBranch;
@@ -205,7 +211,7 @@ public abstract class CFGLine {
         for (int i=0; i<numIndents; i++){
             prefix += "-";
         }
-        String str = prefix + ownValue() + /*"\n\tIN: " + livenessIN + "\n\tOUT: " + livenessOUT + */"\n";
+        String str = prefix + ownValue() + /*"\n\tIN: " + reachingDefinitionsIN + "\n\tOUT: " + reachingDefinitionsOUT + */"\n";
         if (isBranch()) {
             if (trueBranch == null || falseBranch == null) {
                 throw new RuntimeException("Branches should not be null: " + this.ownValue());

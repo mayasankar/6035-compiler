@@ -33,6 +33,7 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 
 	public String getName() { return variableName; }
 	public IRExpression getIndexExpression() { return arrayIndex; }
+	public void setIndexExpression(IRExpression expr) { arrayIndex = expr;}
 
     @Override
 	public void resetName(String newName) { variableName = newName; }
@@ -84,13 +85,13 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 		if (obj instanceof IRVariableExpression) {
 			IRVariableExpression expr = (IRVariableExpression)obj;
 			if (this.variableName.equals(expr.variableName)) {
-				if (this.isArray()) {
+				if (this.isArray() && expr.isArray()) {
 					if (this.arrayIndex.equals(expr.arrayIndex)) {
 						return true;
 					}
 				}
 				else {
-					return true;
+					return this.isArray() == expr.isArray();
 				}
 			}
 		}
@@ -104,5 +105,7 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 		}
 		return this.variableName.hashCode();
 	}
+
+    public boolean isConstant() { return false; }
 
 }
