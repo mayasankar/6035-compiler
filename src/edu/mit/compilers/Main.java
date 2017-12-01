@@ -17,6 +17,7 @@ import edu.mit.compilers.trees.ASTCreator;
 import edu.mit.compilers.trees.ConcreteTree;
 import edu.mit.compilers.ir.*;
 import edu.mit.compilers.trees.SemanticCheckerVisitor;
+import edu.mit.compilers.assembly.AssemblerNew;
 import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.optimizations.Optimizer;
 

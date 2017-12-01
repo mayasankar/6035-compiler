@@ -1,10 +1,13 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.assembly;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+
+import edu.mit.compilers.cfg.CFG;
+import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.*;

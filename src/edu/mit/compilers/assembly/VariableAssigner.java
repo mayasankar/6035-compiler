@@ -1,4 +1,4 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.assembly;
 
 import edu.mit.compilers.cfg.lines.CFGLine;
 

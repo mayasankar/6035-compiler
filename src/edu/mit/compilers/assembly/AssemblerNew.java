@@ -1,4 +1,4 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.assembly;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
+import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;

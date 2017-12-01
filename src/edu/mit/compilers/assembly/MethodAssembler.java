@@ -1,7 +1,9 @@
-package edu.mit.compilers.cfg;
+package edu.mit.compilers.assembly;
 
 import java.util.Map;
 
+import edu.mit.compilers.cfg.CFG;
+import edu.mit.compilers.cfg.CFGBlock;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
