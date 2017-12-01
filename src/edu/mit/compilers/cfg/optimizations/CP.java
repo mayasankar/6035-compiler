@@ -105,6 +105,20 @@ public class CP implements Optimization {
         public String toString() {
             return varDefined + " = " + definition.toString();
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof CPDefinition) {
+                CPDefinition other = (CPDefinition) obj;
+                return varDefined.equals(other.varDefined) && definition.equals(other.definition);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return varDefined.hashCode() + 17 * definition.hashCode();
+        }
     }
 
     private void doReachingDefinitionsAnalysis(CFG cfg) {
