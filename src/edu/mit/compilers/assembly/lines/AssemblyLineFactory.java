@@ -12,6 +12,21 @@ public class AssemblyLineFactory {
                 throw new RuntimeException(operation + " takes 2 arguments.");
             }
             return new AOps(operation, args[0], args[1]);
+        case "mov":
+            if(args.length != 2) {
+                throw new RuntimeException(operation + " takes 2 arguments.");
+            }
+            return new AMov(args[0], args[1]);
+        case "cmove":
+        case "cmovne":
+        case "cmovl":
+        case "cmovle":
+        case "cmovg":
+        case "cmovge":
+            if(args.length != 2) {
+                throw new RuntimeException(operation + " takes 2 arguments.");
+            }
+            return new ACmov(operation, args[0], args[1]);
         case "neg":
         case "idiv":
             if(args.length != 1) {
@@ -23,12 +38,21 @@ public class AssemblyLineFactory {
         case "jne":
         case "jl":
         case "jg":
-        case "jle": 
+        case "jle":
         case "jge":
             if(args.length != 1) {
                 throw new RuntimeException(operation + " takes 1 argument.");
             }
             return new AJmp(operation, args[0]);
+        case "cqto":
+        case ".globl main":
+        case "leave":
+        case "ret":
+        case "int $0x80":
+            if(args.length != 0) {
+                throw new RuntimeException(operation + " takes 0 arguments.");
+            }
+            return new ACommand(operation);
         default:
             throw new RuntimeException("The operation " + operation + " was not recognized.");
         }
