@@ -171,7 +171,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 return code;
             case ">>":
                 code += "mov " + rightReg + ", %rcx\n";  // TODO this creates a problem of overwriting %rcx, how do we fix?
-                code += "shr %cl," + leftReg + "\n";
+                code += "shr %cl, " + leftReg + "\n";
                 code += "mov " + leftReg + ", " + register + "\n";
                 return code;
             case "<<":

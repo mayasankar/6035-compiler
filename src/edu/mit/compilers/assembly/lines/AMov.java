@@ -2,22 +2,22 @@ package edu.mit.compilers.assembly.lines;
 
 public class AMov extends AssemblyLine {
 
-    private String rreg;
-    private String lreg;
+    private String right;
+    private String left;
 
-    public AMov(String lreg, String rreg) {
-        this.lreg = lreg;
-        this.rreg = rreg;
+    public AMov(String left, String right) {
+        this.left = left;
+        this.right = right;
     }
 
-    public Boolean leftIsRegister() { return lreg.startsWith("%"); }
-    public Boolean rightIsRegister() { return rreg.startsWith("%"); }
-    public Boolean getLeft() { return lreg; }
-    public Boolean getRight() { return rreg; }
+    public Boolean leftIsRegister() { return left.startsWith("%"); }
+    public Boolean rightIsRegister() { return right.startsWith("%"); }
+    public String getLeft() { return left; }
+    public String getRight() { return right; }
 
     @Override
     public String getString() {
-        return "mov " + lreg + ", " + rreg + "\n";
+        return "mov " + left + ", " + right + "\n";
     }
 
 }
