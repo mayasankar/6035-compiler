@@ -53,6 +53,26 @@ public class AssemblyLineFactory {
                 throw new RuntimeException(operation + " takes 0 arguments.");
             }
             return new ACommand(operation);
+        case ".string":
+            if(args.length != 1) {
+                throw new RuntimeException(operation + " takes 1 argument.");
+            }
+            return new AString(args[0]);
+        case "call":
+            if(args.length != 1) {
+                throw new RuntimeException(operation + " takes 1 argument.");
+            }
+            return new ACall(args[0]);
+        case "enter":
+            if(args.length != 1) {
+                throw new RuntimeException(operation + " takes 1 argument.");
+            }
+            return new AEnter(args[0]);
+        case ".comm":
+            if(args.length != 2) {
+                throw new RuntimeException(operation + " takes 2 arguments.");
+            }
+            return new AComm(args[0], args[1]);
         default:
             throw new RuntimeException("The operation " + operation + " was not recognized.");
         }
