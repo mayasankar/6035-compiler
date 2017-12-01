@@ -26,7 +26,7 @@ public class VariableDescriptor implements Named {
         this.length = 0;
         this.decl = null;
     }
-    
+
     public VariableDescriptor(String name, int length) {
         this.name = name;
         this.type = TypeDescriptor.array(TypeDescriptor.INT);
@@ -53,9 +53,5 @@ public class VariableDescriptor implements Named {
     @Override
     public String toString() {
         return name + " (rsp: " + stackOffset + ")";
-    }
-
-    public String toGlobalAssembly() {
-        return ".comm " + name + ", " + getSpaceRequired() + ", 8\n";
     }
 }

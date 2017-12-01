@@ -4,11 +4,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import edu.mit.compilers.cfg.CFG;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.ir.decl.*;
@@ -64,66 +66,74 @@ public class VariableStackAssigner {
 
 	// move variable to targetRegister from stack
 	// usually both registers should be %r10; don't use %r11; if not an array nor global, indexRegister doesn't matter
-	public String moveTo(String variableName, String targetRegister, String indexRegister) {
+	public List<AssemblyLine> moveTo(String variableName, String targetRegister, String indexRegister) {
 		VariableDescriptor var = getVar(variableName);
 		int offset = var.getStackOffset();
+		List<AssemblyLine> lines = new ArrayList<>();
 		if (! variables.containsKey(variableName)) {
 			// it's a global variable
 			if (var.isArray()) {
-				String code = "push %r11\n";
-				code += "mov $8, %r11\n";
-                code += "imul %r11, " + indexRegister + "\n"; // TODO do via shifting instead
-                code += "mov $" + variableName + ", %r11\n";
-				code += "add %r11, " + indexRegister + "\n";
-				code += "mov 0(" + indexRegister + "), %r11\n";
-				code += "mov %r11, " + targetRegister + "\n";
-				code += "pop %r11\n";
-				return code;
+				lines.add(new APush("%r11"));
+				lines.add(new AMov("$3", "%rcx"));  // shift to multiply by 8
+                lines.add(new AShift("shl", indexRegister));
+				lines.add(new AMov("$" + variableName, "%r11"));
+				lines.add(new AOps("add", "%r11", indexRegister));
+				lines.add(new AMov("0(" + indexRegister + ")", "%r11"));
+				lines.add(new AMov("%r11", targetRegister));
+				lines.add(new APop("%r11"));
+				return lines;
 			}
 			else {
-				String code = "";
-				code += "push %r11\n";
-				code += "mov $" + variableName + ", " + indexRegister + "\n";
-				code += "mov 0(" + indexRegister + "), %r11\n";
-				code += "mov %r11, " + targetRegister + "\n";
-				code += "pop %r11\n";
-				return code;
+				lines.add(new APush("%r11"));
+				lines.add(new AMov("$" + variableName, indexRegister));
+				lines.add(new AMov("0(" + indexRegister + ")", "%r11")); // TODO can we remove the %r11 (and thus the pushes) to simplify this?
+				lines.add(new AMov("%r11", targetRegister));
+				lines.add(new APop("%r11"));
+				return lines;
 			}
 		}
+		String strLoc = "-" + new Integer(offset).toString();
 		if (var.isArray()) {
-			return "mov -" + (new Integer(offset).toString()) + "(%rbp, " + indexRegister + ", 8), " + targetRegister + "\n";
-        } else {
-			return "mov -" + (new Integer(offset).toString()) + "(%rbp), " + targetRegister + "\n";
+			strLoc += "(%rbp, " + indexRegister + ", 8)";
+		} else {
+			strLoc += "(%rbp)";
         }
+		lines.add(new AMov(strLoc, targetRegister));
+		return lines;
 	}
 
 	// move variable from sourceRegister to the stack
 	// usually should be %r11 and %r10; source and index should not be same register and index shouldn't be %r11; if not an array nor global, indexRegister doesn't matter
-	public String moveFrom(String variableName, String sourceRegister, String indexRegister) {
+	public List<AssemblyLine> moveFrom(String variableName, String sourceRegister, String indexRegister) {
 		VariableDescriptor var = getVar(variableName);
 		int offset = var.getStackOffset();
+		List<AssemblyLine> lines = new ArrayList<>();
 		if (! variables.containsKey(variableName)) {
 			// it's a global variable
 			if (var.isArray()) {
-				String code = "push %r11\n";
-				code += "mov $8, %r11\n";
-				code += "imul %r11, " + indexRegister + "\n"; // TODO do via shifting instead
-				code += "mov $" + variableName + ", %r11\n";
-				code += "add %r11, " + indexRegister + "\n";
-				code += "pop %r11\n";
-				code += "mov " + sourceRegister + ", 0(" + indexRegister + ")\n";
-				return code;
+				lines.add(new APush("%r11"));
+				lines.add(new AMov("$3", "%rcx"));  // shift to multiply by 8
+                lines.add(new AShift("shl", indexRegister));
+				lines.add(new AMov("$" + variableName, "%r11"));
+				lines.add(new AOps("add", "%r11", indexRegister));
+				lines.add(new APop("%r11"));
+				lines.add(new AMov(sourceRegister, "0(" + indexRegister + ")"));
+				return lines;
 			}
-			String code = "";
-			code += "mov $" + variableName + ", " + indexRegister + "\n";
-			code += "mov " + sourceRegister + ", 0(" + indexRegister + ")\n";
-			return code;
+			else {
+				lines.add(new AMov("$" + variableName, indexRegister));
+				lines.add(new AMov(sourceRegister, "0(" + indexRegister + ")"));
+				return lines;
+			}
 		}
+		String strLoc = "-" + new Integer(offset).toString();
 		if (var.isArray()) {
-			return "mov " + sourceRegister + ", -" + (new Integer(offset).toString()) + "(%rbp, " + indexRegister + ", 8)\n";
+			strLoc += "(%rbp, " + indexRegister + ", 8)";
 		} else {
-			return "mov " + sourceRegister + ", -" + (new Integer(offset).toString()) + "(%rbp)\n";
+			strLoc += "(%rbp)";
 		}
+		lines.add(new AMov(sourceRegister, strLoc));
+		return lines;
 	}
 
 	public String getMaxSize(String variableName) {

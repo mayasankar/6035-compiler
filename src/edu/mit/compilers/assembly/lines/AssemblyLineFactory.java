@@ -73,6 +73,8 @@ public class AssemblyLineFactory {
                 throw new RuntimeException(operation + " takes 2 arguments.");
             }
             return new AComm(args[0], args[1]);
+        case "":
+            return new AWhitespace();
         default:
             throw new RuntimeException("The operation " + operation + " was not recognized.");
         }

@@ -4,6 +4,7 @@ public class AOps extends AssemblyLine {
 
     private String rreg;
     private String lreg;
+    private String command;
 
     public AOps(String operation, String lreg, String rreg) {
         command = operation;

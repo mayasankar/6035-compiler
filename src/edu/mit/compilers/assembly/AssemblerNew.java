@@ -5,11 +5,13 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
+import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
 
@@ -18,12 +20,13 @@ public class AssemblerNew {
 	private VariableStackAssigner stacker;
 
 	public AssemblerNew(CFGProgram program) {
+		List<AssemblyLine> lines = new ArrayList<>();
 		stacker = new VariableStackAssigner(program);
-		code = ".globl main\n\n";
+		lines.add(new ACommand(".globl main"));
+		lines.add(new AWhitespace());
 
 		for (VariableDescriptor var : program.getGlobalVariables()) {
-			//System.out.println("Adding global variable: " + var.toString());
-            code += var.toGlobalAssembly();
+            lines.add(new AComm(var.getName(), Integer.toString(var.getSpaceRequired())));
         }
 
 		for(String method: program.getMethodNames()) {
@@ -32,18 +35,25 @@ public class AssemblerNew {
 		    IRMethodDecl decl = program.getMethodParameters(method);
 			TypeDescriptor returnType = program.getMethodReturnType(method);
 		    MethodAssembler methodAssembler = new MethodAssembler(method, numParams, stacker, returnType, decl);
-			code += methodAssembler.assemble(program.getMethodCFG(method));
+			lines.addAll(methodAssembler.assemble(program.getMethodCFG(method)));
 		}
 
-        code += "\n.out_of_bounds:\n";
-        code += "mov $1, %eax\n";
-        code += "mov $-1, %ebx\n";
-        code += "int $0x80\n";
+		lines.add(new AWhitespace());
+		lines.add(new ALabel(".out_of_bounds"));
+		lines.add(new AMov("$1", "%eax"));
+		lines.add(new AMov("$-1", "%ebx"));
+		lines.add(new ACommand("int $0x80"));
 
-        code += "\n.nonreturning_method:\n";
-        code += "mov $1, %eax\n";
-        code += "mov $-2, %ebx\n";
-        code += "int $0x80\n";
+		lines.add(new AWhitespace());
+		lines.add(new ALabel(".nonreturning_method"));
+		lines.add(new AMov("$1", "%eax"));
+		lines.add(new AMov("$-2", "%ebx"));
+		lines.add(new ACommand("int $0x80"));
+
+		code = "";
+		for (AssemblyLine line : lines) {
+			code += line.getString();
+		}
 
 		code = CodeSimplifier.simplifyMovs(code);
 	}

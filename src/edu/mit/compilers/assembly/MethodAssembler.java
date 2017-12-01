@@ -5,6 +5,7 @@ import java.util.Map;
 import edu.mit.compilers.cfg.CFG;
 import edu.mit.compilers.cfg.CFGBlock;
 import edu.mit.compilers.cfg.lines.*;
+import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
 import edu.mit.compilers.ir.decl.*;
@@ -14,7 +15,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
-public class MethodAssembler implements CFGLine.CFGVisitor<String> {
+public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
 
     private String label;
     private int numAllocs;
@@ -39,54 +40,60 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
         this.expressionAssembler = new ExpressionAssemblerVisitor(label, stacker);
     }
 
-    public String assemble(CFG cfg) {
-        String prefix = label + ":\n";
-        String code = "";
-		code += pullInArguments();
-		code += cfg.getStart().getCorrespondingBlock().accept(this);
+    public List<AssemblyLine> assemble(CFG cfg) {
+        List<AssemblyLine> prefixLines = new ArrayList<>();
+        prefixLines.add(new ALabel(label));
+
+        List<AssemblyLine> lines = pullInArguments();
+
+		lines.addAll(cfg.getStart().getCorrespondingBlock().accept(this));
 
         // if it doesn't have anywhere returning, but should, have it jump to the runtime error
         if (this.returnType != TypeDescriptor.VOID && !label.equals("main")) {
-            code += "jmp .nonreturning_method\n";
+            lines.add(new AJmp("jmp", ".nonreturning_method"));
         }
 
         // if it has void return, or if a return statement tells it to jump here, leave
-        code += "\n"+ label + "_end:\n";
+        lines.add(new AWhitespace());
+        lines.add(new ALabel(label + "_end"));
+
         if (label.equals("main")) { // makes sure exit code is 0
-            code += "mov $0, %rax\n";
+            lines.add(new AMov("$0", "%rax"));
         }
-        code += "leave\n" + "ret\n\n";
+        lines.add(new ACommand("leave"));
+        lines.add(new ACommand("ret"));
 
         // String literals
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();
         for (String stringValue : stringLabels.keySet()){
             String label = stringLabels.get(stringValue);
-            code += "\n" + label + ":\n";
-            code += ".string " + stringValue + "\n";
+            lines.add(new ALabel(label));
+            lines.add(new AString(stringValue));
         }
 
         // figure out how many allocations we did
         String allocSpace = new Integer(8*numAllocs).toString();  // TODO is this the right number? it's # variables in stacker
-        prefix += "enter $" + allocSpace + ", $0\n";
+        lines.add(new AEnter(allocSpace));
 
-        return prefix + code;
+        prefixLines.addAll(lines);
+        return prefixLines;
     }
 
-	private String pullInArguments() {
-        String code = "";
+	private List<AssemblyLine> pullInArguments() {
+        List<AssemblyLine> lines = new ArrayList<>();
         List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
      	for(int i=0; i < parameters.size(); ++i) {
      		IRMemberDecl param = parameters.get(i);
             String paramLoc = getParamLoc(i);
 
      		if (i<=5) {
-                code += stacker.moveFrom(param.getName(), paramLoc, "%r10");
+                lines.addAll(stacker.moveFrom(param.getName(), paramLoc, "%r10"));
      		} else {
-     			code += String.format("mov %s, %%r11\n", paramLoc);
-     			code += stacker.moveFrom(param.getName(), "%r11", "%r10");
+                lines.add(new AMov(paramLoc, "%r11"));
+     			lines.addAll(stacker.moveFrom(param.getName(), "%r11", "%r10"));
      		}
      	}
-     	return code;
+     	return lines;
 	}
 
     private String getParamLoc(int i) {
@@ -108,131 +115,131 @@ public class MethodAssembler implements CFGLine.CFGVisitor<String> {
      }
 
     // NOTE: GUARANTEED TO ONLY USE %r10
-    private String onDepthZeroExpression(IRExpression expr) {
-        // TODO Arkadiy did you want to refactor this?
+    private List<AssemblyLine> onDepthZeroExpression(IRExpression expr) {
         if (expr.getDepth() > 0) {
             throw new RuntimeException("Called onDepthZeroExpression on expression of non-zero depth.");
         }
         return expr.accept(expressionAssembler);
     }
 
-    private String onExpression(IRExpression expr) {
-        // TODO Arkadiy did you want to refactor this?
+    private List<AssemblyLine> onExpression(IRExpression expr) {
         return expr.accept(expressionAssembler);
     }
 
     @Override
-    public String on(CFGAssignStatement line) {
-        String code = "";
+    public List<AssemblyLine> on(CFGAssignStatement line) {
         IRVariableExpression varAssigned = line.getVarAssigned();
-        code += onExpression(line.getExpression());  // value now in %r10
+        List<AssemblyLine> lines = onExpression(line.getExpression());  // value now in %r10
         if (varAssigned.isArray()){
-            code += "push %r10\n"; // will get it out right before the end and assign to %r11
-            code += onExpression(varAssigned.getIndexExpression()); // array index now in %r10
-            code += "pop %r11\n"; // value now in %r11
+            lines.add(new APush("%r10")); // will get it out right before the end and assign to %r11
+            lines.addAll(onExpression(varAssigned.getIndexExpression())); // array index now in %r10
+            lines.add(new APop("%r11"));
         }
         else {
-            code += "mov %r10, %r11\n";
+            lines.add(new AMov("%r10", "%r11"));
         }
-        code += stacker.moveFrom(varAssigned.getName(), "%r11", "%r10");
-        return code;
+        lines.addAll(stacker.moveFrom(varAssigned.getName(), "%r11", "%r10"));
+        return lines;
     }
 
     @Override
-    public String on(CFGBoundsCheck line) {
+    public List<AssemblyLine> on(CFGBoundsCheck line) {
         IRVariableExpression variable = line.getExpression();
-        String code = "";
-        code += onExpression(variable.getIndexExpression()); // array index now in %r10
+        List<AssemblyLine> lines = onExpression(variable.getIndexExpression()); // array index now in %r10
         String indexRegister = "%r10";
-        code += "mov " + stacker.getMaxSize(variable.getName()) + ", %r11\n";
-        code += "cmp %r11, " + indexRegister + "\n";
-        code += "jge .out_of_bounds\n";
-        code += "cmp $0, " + indexRegister + "\n";
-        code += "jl .out_of_bounds\n";
-        return code;
+        lines.add(new AMov(stacker.getMaxSize(variable.getName()), "%r11"));
+        lines.add(new ACmp("%r11", indexRegister));
+        lines.add(new AJmp("jge", ".out_of_bounds"));
+        lines.add(new ACmp("$0", indexRegister));
+        lines.add(new AJmp("jl", ".out_of_bounds"));
+        return lines;
     }
 
     @Override
-    public String on(CFGConditional line) {
+    public List<AssemblyLine> on(CFGConditional line) {
         return onDepthZeroExpression(line.getExpression());
     }
 
     @Override
-    public String on(CFGNoOp line) {
-        return "";
+    public List<AssemblyLine> on(CFGNoOp line) {
+        return new ArrayList<AssemblyLine>();
     }
 
     @Override
-    public String on(CFGReturn line) {
-        String code = "";
+    public List<AssemblyLine> on(CFGReturn line) {
+        List<AssemblyLine> lines = new ArrayList<>();
         if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
-            code += onDepthZeroExpression(returnExpr);  // return value now in %r10
-            code += "mov %r10, %rax\n";
+            lines.addAll(onDepthZeroExpression(returnExpr));  // return value now in %r10
+            lines.add(new AMov("%r10", "%rax"));
         }
-        code += "jmp " + label + "_end\n"; // jump to end of method where we return
-        return code;
+        lines.add(new AJmp("jmp", label + "_end")); // jump to end of method where we return
+        return lines;
     }
 
     @Override
-    public String on(CFGMethodCall line) {
-        String code = "";
+    public List<AssemblyLine> on(CFGMethodCall line) {
+        List<AssemblyLine> lines = new ArrayList<>();
         IRMethodCallExpression methodCall = line.getExpression();
         List<IRExpression> arguments = methodCall.getArguments();
         List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            code += onDepthZeroExpression(arg);
-            code += "push %r10\n";
+            lines.addAll(onDepthZeroExpression(arg));
+            lines.add(new APush("%r10"));
         }
         for (int i=0; i<arguments.size() && i < 6; i++) {
             IRExpression arg = arguments.get(i);
-            code += onDepthZeroExpression(arg);
-            code += "mov %r10, " + registers.get(i) + "\n";
+            lines.addAll(onDepthZeroExpression(arg));
+            lines.add(new AMov("%r10", registers.get(i)));
         }
-        code += "mov $0, %rax\n";
-        code += "call " + methodCall.getName() + "\n";
+        lines.add(new AMov("$0", "%rax"));
+        lines.add(new ACall(methodCall.getName()));
         for (int i=arguments.size()-1; i>=6; i--) {
-            code += "pop %r10\n";
+            lines.add(new APop("%r10"));
         }
-        code += "mov %rax, %r10\n";
-        return code;
+        lines.add(new AMov("%rax", "%r10"));
+        return lines;
     }
+
     @Override
-    public String on(CFGBlock block) {
+    public List<AssemblyLine> on(CFGBlock block) {
         if (blockNames.containsKey(block)) {
-            return "";
+            return new ArrayList<>();
         } else {
             blockNames.put(block, "." + label + "_" + blockCount);
             blockCount += 1;
         }
         boolean jumpToTrue = false;
-        String code = "\n" + blockNames.get(block) + ":\n";
-        String childrenCode = "";
+
+        List<AssemblyLine> lines = new ArrayList<>();
+        lines.add(new AWhitespace());
+        lines.add(new ALabel(blockNames.get(block)));
+
+        List<AssemblyLine> childrenLines = new ArrayList<>();
         if (! block.isEnd()) {
 			jumpToTrue = blockNames.containsKey(block.getTrueBranch());
-			childrenCode = block.getTrueBranch().accept(this);
-            if(block.isBranch()) {
-            	String falseCode = block.getFalseBranch().accept(this);
-				childrenCode = childrenCode + falseCode;
+			childrenLines = block.getTrueBranch().accept(this);
+            if (block.isBranch()) {
+            	childrenLines.addAll(block.getFalseBranch().accept(this));
             }
         }
         for (CFGLine line: block.getLines()) {
-            code += line.accept(this);
+            lines.addAll(line.accept(this));
         }
         if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getFalseBranch()).equals("null")) {
-            code += "mov $0, %r11\n";
-            code += "cmp %r11, %r10\n";
-            code += "je " + blockNames.get(block.getFalseBranch()) + "\n"; // this line needs to go after the visitor on the falseBranch so the label has been generated
+            lines.add(new AMov("$0", "%r11"));
+            lines.add(new ACmp("%r11", "%r10"));
+            lines.add(new AJmp("je", blockNames.get(block.getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
         }
 		if (jumpToTrue) {
-			code += "jmp " + blockNames.get(block.getTrueBranch()) + "\n";
+            lines.add(new AJmp("jmp", blockNames.get(block.getTrueBranch())));
 		}
 		if (block.isEnd() && label.equals("main")) {
-			code += "jmp " + label + "_end\n";
+            lines.add(new AJmp("jmp", label + "_end"));
 		}
-        code += childrenCode;
-        return code;
+        lines.addAll(childrenLines);
+        return lines;
     }
 }
