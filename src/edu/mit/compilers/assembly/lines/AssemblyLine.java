@@ -12,7 +12,6 @@ public abstract class AssemblyLine {
         public R on(ACmp line);
         public R on(AComm line);
         public R on(ACommand line);
-        public R on(AEnter line);
         public R on(AJmp line);
         public R on(ALabel line);
         public R on(AMov line);

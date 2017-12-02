@@ -4,7 +4,7 @@ public class ACommand extends AssemblyLine {
 
     private String command;
 
-    //cqto, .globl main, leave, ret, int $0x80
+    //cqto, .globl main, leave, ret, int $0x80, enter, .comm
     public ACommand(String command) {
         this.command = command;
     }

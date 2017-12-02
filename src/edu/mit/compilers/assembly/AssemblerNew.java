@@ -26,7 +26,8 @@ public class AssemblerNew {
 		lines.add(new AWhitespace());
 
 		for (VariableDescriptor var : program.getGlobalVariables()) {
-            lines.add(new AComm(var.getName(), Integer.toString(var.getSpaceRequired())));
+			String size = Integer.toString(var.getSpaceRequired());
+            lines.add(new ACommand(".comm " + var.getName() + ", " + size + ", 8"));
         }
 
 		for(String method: program.getMethodNames()) {
