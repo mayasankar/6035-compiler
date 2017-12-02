@@ -10,7 +10,6 @@ public abstract class AssemblyLine {
         public R on(ACall line);
         public R on(ACmov line);
         public R on(ACmp line);
-        public R on(AComm line);
         public R on(ACommand line);
         public R on(AJmp line);
         public R on(ALabel line);
