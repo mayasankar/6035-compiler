@@ -10,6 +10,9 @@ public class ACmp extends AssemblyLine {
         this.rreg = rreg;
     }
 
+    public String getLeft() { return lreg; }
+    public String getRight() { return rreg; }
+
     @Override
     public String getString() {
         return "cmp " + lreg + ", " + rreg + "\n";

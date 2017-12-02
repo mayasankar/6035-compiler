@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -76,6 +78,140 @@ public class CodeSimplifier {
             lastReg2 = reg2;
         }
         return codeList;
+    }
+
+    // return the set of registers that MIGHT have something written to them
+    private static class WritesToRegisters implements AssemblyLine.AssemblyLineVisitor<Set<String>> {
+        @Override
+        public Set<String> on(ACall line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ACmov line) {
+            if (!line.rightIsRegister()) {
+                return new HashSet<String>();
+            }
+            return new HashSet<String>(Arrays.asList(line.getRight()));
+        }
+
+        @Override
+        public Set<String> on(ACmp line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ACommand line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AJmp line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ALabel line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AMov line) {
+            if (!line.rightIsRegister()) {
+                return new HashSet<String>();
+            }
+            return new HashSet<String>(Arrays.asList(line.getRight()));
+        }
+
+        @Override
+        public Set<String> on(AOps line) {
+            return new HashSet<String>(Arrays.asList(line.getRight()));
+        }
+
+        @Override
+        public Set<String> on(APop line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(APush line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AShift line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(AString line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ATrivial line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AUnaryOp line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(AWhitespace line) { return new HashSet<String>(); }
+    }
+
+    // return the set of registers that MIGHT be read
+    private static class ReadsFromRegisters implements AssemblyLine.AssemblyLineVisitor<Set<String>> {
+        @Override
+        public Set<String> on(ACall line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ACmov line) {
+            if (!line.leftIsRegister()) {
+                return new HashSet<String>();
+            }
+            return new HashSet<String>(Arrays.asList(line.getLeft()));
+        }
+
+        @Override
+        public Set<String> on(ACmp line) {
+            return new HashSet<String>(Arrays.asList(line.getLeft(), line.getRight()));
+        }
+
+        @Override
+        public Set<String> on(ACommand line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AJmp line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ALabel line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AMov line) {
+            if (!line.leftIsRegister()) {
+                return new HashSet<String>();
+            }
+            return new HashSet<String>(Arrays.asList(line.getLeft()));
+        }
+
+        @Override
+        public Set<String> on(AOps line) {
+            return new HashSet<String>(Arrays.asList(line.getLeft()));
+        }
+
+        @Override
+        public Set<String> on(APush line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(APop line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AShift line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(AString line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(ATrivial line) { return new HashSet<String>(); }
+
+        @Override
+        public Set<String> on(AUnaryOp line) {
+            return new HashSet<String>(Arrays.asList(line.getReg()));
+        }
+
+        @Override
+        public Set<String> on(AWhitespace line) { return new HashSet<String>(); }
     }
 
 

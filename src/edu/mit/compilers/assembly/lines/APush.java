@@ -9,6 +9,8 @@ public class APush extends AssemblyLine {
         this.reg = reg;
     }
 
+    public String getReg() { return reg; }
+
     @Override
     public String getString() {
         return "push " + reg + "\n";

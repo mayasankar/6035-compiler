@@ -10,6 +10,8 @@ public class AUnaryOp extends AssemblyLine {
         this.reg = reg;
     }
 
+    public String getReg() { return this.reg; }
+
     @Override
     public String getString() {
         return command + " " + reg + "\n";

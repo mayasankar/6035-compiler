@@ -11,6 +11,8 @@ public class AShift extends AssemblyLine {
         this.reg = reg;
     }
 
+    public String getReg() { return this.reg; }
+
     @Override
     public String getString() {
         return command + " %cl, " + reg + "\n";

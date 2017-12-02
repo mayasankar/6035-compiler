@@ -9,6 +9,8 @@ public class APop extends AssemblyLine {
         this.reg = reg;
     }
 
+    public String getReg() { return reg; }
+
     @Override
     public String getString() {
         return "pop " + reg + "\n";

@@ -17,6 +17,9 @@ public class AOps extends AssemblyLine {
         return command + " " + lreg + ", " + rreg + "\n";
     }
 
+    public String getLeft() { return lreg; }
+    public String getRight() { return rreg; }
+
     @Override
     public <R> R accept(AssemblyLineVisitor<R> visitor) {
         return visitor.on(this);

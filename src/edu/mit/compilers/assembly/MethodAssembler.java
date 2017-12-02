@@ -72,7 +72,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         }
 
         // figure out how many allocations we did
-        String allocSpace = new Integer(8*numAllocs).toString();  // TODO is this the right number? it's # variables in stacker
+        String allocSpace = new Integer(8*numAllocs).toString();
         prefixLines.add(new ACommand("enter $" + allocSpace + ", $0"));
 
         prefixLines.addAll(lines);
