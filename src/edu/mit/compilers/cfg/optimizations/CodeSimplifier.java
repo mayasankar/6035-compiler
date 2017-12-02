@@ -5,6 +5,7 @@ import java.util.Map;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
+import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.ir.decl.*;
 
 import java.util.List;
@@ -18,44 +19,32 @@ import java.util.regex.Matcher;
 
 public class CodeSimplifier {
 
-    private static String concat(List<String> codeList) {
-        String code = "";
-        for (String s : codeList) {
-            code += s + "\n";
-        }
-        return code;
-    }
-
     // return a simplified version of codeList
-    public static String simplifyMovs(String code) {
-        List<String> codeList = Arrays.asList(code.split("\\n"));
+    public static List<AssemblyLine> simplifyMovs(List<AssemblyLine> codeList) {
         codeList = removeTrivialMovs(codeList);
         codeList = simplifyPairMovs(codeList);
         codeList = removeTrivialMovs(codeList);
-        return concat(codeList);
+        return codeList;
     }
 
-    public static List<String> removeTrivialMovs(List<String> l) {
-        List<String> codeList = new ArrayList<>(l);
-        Pattern pattern = Pattern.compile("mov (.+?), (.+)");
+    public static List<AssemblyLine> removeTrivialMovs(List<AssemblyLine> l) {
+        List<AssemblyLine> codeList = new ArrayList<>(l);
 
         for (int i=0; i<codeList.size(); i++) {
-            Matcher matcher = pattern.matcher(codeList.get(i));
-            if (matcher.find()) {
-                String reg1 = matcher.group(1);
-                String reg2 = matcher.group(2);
-                if (reg1.equals(reg2)) {
+            if (codeList.get(i) instanceof AMov) {
+                AMov mov = (AMov) codeList.get(i);
+                String reg1 = mov.getLeft();
+                if (mov.getLeft().equals(mov.getRight())) {
                     // useless mov from a thing to itself; delete the line
-                    codeList.set(i, "");
+                    codeList.set(i, new ATrivial());
                 }
             }
         }
         return codeList;
     }
 
-    public static List<String> simplifyPairMovs(List<String> l) {
-        List<String> codeList = new ArrayList<>(l);
-        Pattern pattern = Pattern.compile("mov (.+?), (.+)");
+    public static List<AssemblyLine> simplifyPairMovs(List<AssemblyLine> l) {
+        List<AssemblyLine> codeList = new ArrayList<>(l);
 
         String lastReg1 = "";
         String lastReg2 = "";
@@ -63,10 +52,10 @@ public class CodeSimplifier {
         String reg2 = "";
 
         for (int i=0; i<codeList.size(); i++) {
-            Matcher matcher = pattern.matcher(codeList.get(i));
-            if (matcher.find()) {
-                reg1 = matcher.group(1);
-                reg2 = matcher.group(2);
+            if (l.get(i) instanceof AMov) {
+                AMov mov = (AMov) codeList.get(i);
+                reg1 = mov.getLeft();
+                reg2 = mov.getRight();
                 // if we had a move on the last line, and the register
                 // moved into is the same as the first one we move now,
                 // and the middle thing being simplified out is a register
@@ -74,8 +63,8 @@ public class CodeSimplifier {
                 if (!lastReg1.equals("") && lastReg2.equals(reg1) && lastReg2.startsWith("%")
                     && (lastReg1.startsWith("%") || reg2.startsWith("%"))) {
                     // useless mov from a thing to itself; delete the line
-                    codeList.set(i-1, "");
-                    codeList.set(i, "mov " + lastReg1 + ", " + reg2);
+                    codeList.set(i-1, new AWhitespace());
+                    codeList.set(i, new AMov(lastReg1, reg2));
                     reg1 = lastReg1;
                 }
             }

@@ -50,12 +50,13 @@ public class AssemblerNew {
 		lines.add(new AMov("$-2", "%ebx"));
 		lines.add(new ACommand("int $0x80"));
 
+		lines = CodeSimplifier.simplifyMovs(lines);
+
 		code = "";
 		for (AssemblyLine line : lines) {
 			code += line.getString();
 		}
 
-		code = CodeSimplifier.simplifyMovs(code);
 	}
 
 	public void printToStream(PrintStream os) throws IOException {
