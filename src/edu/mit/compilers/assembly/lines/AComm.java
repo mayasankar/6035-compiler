@@ -15,4 +15,9 @@ public class AComm extends AssemblyLine {
         return ".comm " + name + ", " + size + ", 8\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

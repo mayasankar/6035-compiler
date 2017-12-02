@@ -15,4 +15,9 @@ public class AUnaryOp extends AssemblyLine {
         return command + " " + reg + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

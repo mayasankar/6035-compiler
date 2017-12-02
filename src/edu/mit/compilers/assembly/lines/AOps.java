@@ -17,4 +17,9 @@ public class AOps extends AssemblyLine {
         return command + " " + lreg + ", " + rreg + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

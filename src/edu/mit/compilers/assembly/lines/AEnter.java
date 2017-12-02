@@ -13,4 +13,9 @@ public class AEnter extends AssemblyLine {
         return "enter $" + size + ", $0\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

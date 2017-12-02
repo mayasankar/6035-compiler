@@ -7,4 +7,9 @@ public class ATrivial extends AssemblyLine {
         return "";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

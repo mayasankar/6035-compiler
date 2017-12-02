@@ -20,4 +20,9 @@ public class AMov extends AssemblyLine {
         return "mov " + left + ", " + right + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

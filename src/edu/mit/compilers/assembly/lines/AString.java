@@ -13,4 +13,9 @@ public class AString extends AssemblyLine {
         return ".string " + string + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

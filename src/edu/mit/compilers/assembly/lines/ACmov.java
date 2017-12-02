@@ -23,4 +23,9 @@ public class ACmov extends AssemblyLine {
         return command + " " + left + ", " + right + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

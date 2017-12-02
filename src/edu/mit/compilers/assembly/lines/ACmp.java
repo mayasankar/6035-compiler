@@ -15,4 +15,9 @@ public class ACmp extends AssemblyLine {
         return "cmp " + lreg + ", " + rreg + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return visitor.on(this);
+    }
+
 }

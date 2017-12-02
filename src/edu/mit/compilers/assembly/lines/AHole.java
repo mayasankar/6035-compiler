@@ -17,4 +17,9 @@ public class AHole extends AssemblyLine {
         return "hole " + lreg + ", " + rreg + "\n";
     }
 
+    @Override
+    public <R> R accept(AssemblyLineVisitor<R> visitor) {
+        return null;
+    }
+
 }
