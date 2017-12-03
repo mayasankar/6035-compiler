@@ -145,7 +145,7 @@ public class CodeSimplifier {
             for (String reg : writesTo) {
                 Integer lastPossibleRead = readIndex(recentReadLine, reg);
                 Integer lastWrite = recentWriteLine.get(reg);
-                if (! line instanceof CMov) { // the write definitely happened
+                if (!(line instanceof ACmov)) { // the write definitely happened
                     if (lastWrite != null && lastWrite > lastPossibleRead) {
                         // there was no point doing the write
                         codeList.set(lastWrite, new ACommand("# formerly wrote to " + reg));
