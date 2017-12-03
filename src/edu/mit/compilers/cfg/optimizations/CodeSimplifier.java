@@ -139,7 +139,9 @@ public class CodeSimplifier {
     // return the set of registers that MIGHT have something written to them
     private static class WritesToRegisters implements AssemblyLine.AssemblyLineVisitor<Set<String>> {
         @Override
-        public Set<String> on(ACall line) { return new HashSet<String>(); }
+        public Set<String> on(ACall line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(ACmov line) {
@@ -207,7 +209,9 @@ public class CodeSimplifier {
     // return the set of registers that MIGHT be read
     private static class ReadsFromRegisters implements AssemblyLine.AssemblyLineVisitor<Set<String>> {
         @Override
-        public Set<String> on(ACall line) { return new HashSet<String>(); }
+        public Set<String> on(ACall line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(ACmov line) {
