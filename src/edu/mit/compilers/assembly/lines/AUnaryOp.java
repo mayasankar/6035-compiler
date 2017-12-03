@@ -11,6 +11,7 @@ public class AUnaryOp extends AssemblyLine {
     }
 
     public String getReg() { return this.reg; }
+    public void setReg(String reg) { this.reg = reg; }
 
     @Override
     public String getString() {

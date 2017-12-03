@@ -19,6 +19,8 @@ public class AOps extends AssemblyLine {
 
     public String getLeft() { return lreg; }
     public String getRight() { return rreg; }
+    public void setRight(String right) { this.rreg = right; }
+    public void setLeft(String left) { this.lreg = left; }
 
     @Override
     public <R> R accept(AssemblyLineVisitor<R> visitor) {

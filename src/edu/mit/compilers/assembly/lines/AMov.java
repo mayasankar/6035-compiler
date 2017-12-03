@@ -14,6 +14,8 @@ public class AMov extends AssemblyLine {
     public Boolean rightIsRegister() { return right.startsWith("%"); }
     public String getLeft() { return left; }
     public String getRight() { return right; }
+    public void setRight(String right) { this.right = right; }
+    public void setLeft(String left) { this.left = left; }
 
     @Override
     public String getString() {

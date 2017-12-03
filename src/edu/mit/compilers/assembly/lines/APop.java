@@ -10,6 +10,10 @@ public class APop extends AssemblyLine {
     }
 
     public String getReg() { return reg; }
+    public void setReg(String reg) {
+        assert reg.startsWith("%");
+        this.reg = reg;
+    }
 
     @Override
     public String getString() {

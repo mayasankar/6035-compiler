@@ -24,7 +24,8 @@ public class CodeSimplifier {
     // return a simplified version of codeList
     public static List<AssemblyLine> simplifyMovs(List<AssemblyLine> codeList) {
         codeList = removeTrivialMovs(codeList);
-        codeList = simplifyPairMovs(codeList);
+        //codeList = simplifyPairMovs(codeList);
+        codeList = reduceMovs(codeList);
         codeList = removeTrivialMovs(codeList);
         //codeList = eliminatePushPop(codeList);
         return codeList;
@@ -81,10 +82,77 @@ public class CodeSimplifier {
         return codeList;
     }
 
+    private static Integer readIndex(Map<String, Integer> readIndices, String reg) {
+        if (readIndices.get(reg) == null) {
+            if (readIndices.get("ALL") == null) {
+                return -1;
+            }
+            return readIndices.get("ALL");
+        }
+        if (readIndices.get("ALL") == null) {
+            return readIndices.get(reg);
+        }
+        if (readIndices.get("ALL") > readIndices.get(reg)) {
+            return readIndices.get("ALL");
+        }
+        return readIndices.get(reg);
+    }
+
     // if I store something in %x, then don't touch it or %y before doing mov %x %y,
     // and overwrite it without doing anything else to it, eliminate it
     public static List<AssemblyLine> reduceMovs(List<AssemblyLine> l) {
-        return l; // TODO
+        // map registers to when they were most recently read and written
+        // if we have (1) write to reg X (2) mov X, Y (3) no reads/writes of X or Y in between 1 and 2,
+        // can simplify to write-to-reg-Y
+        // NOTE this assumes we don't ever read X again. this is valid for our code, but if we change stuff, may break
+        // also, if we write to X and don't read it before the next write, eliminate
+
+        List<AssemblyLine> codeList = new ArrayList<>(l);
+        AssemblyLine.AssemblyLineVisitor<Set<String>> writeVisitor = new WritesToRegisters();
+        AssemblyLine.AssemblyLineVisitor<Set<String>> readVisitor = new ReadsFromRegisters();
+
+        Map<String, Integer> recentReadLine = new HashMap<>();
+        Map<String, Integer> recentWriteLine = new HashMap<>();
+
+        for (int i=0; i<codeList.size(); i++) {
+            AssemblyLine line = codeList.get(i);
+            Set<String> writesTo = line.accept(writeVisitor);
+            Set<String> readsFrom = line.accept(readVisitor);
+
+            if (line instanceof AMov) {
+                AMov movLine = (AMov)line;
+                String rreg = movLine.getRight();
+                String lreg = movLine.getLeft();
+                if (movLine.leftIsRegister() && movLine.rightIsRegister()) {
+                    Integer lastLeftWrite = recentWriteLine.get(lreg);
+                    Integer lastRightWrite = recentWriteLine.get(rreg);
+                    if (lastRightWrite == null) {
+                        lastRightWrite = -1;
+                    }
+                    Integer lastLeftRead = readIndex(recentReadLine, lreg);
+                    Integer lastRightRead = readIndex(recentReadLine, rreg);
+                    if (lastLeftWrite != null && lastLeftWrite >= lastLeftRead && lastLeftWrite >= lastRightRead && lastLeftWrite > lastRightWrite) {
+                        AssemblyLine.AssemblyLineVisitor<Boolean> changeWriteVisitor = new ChangeWrites(rreg);
+                        codeList.get(lastLeftWrite).accept(changeWriteVisitor);
+                        codeList.set(i, new ATrivial());
+                    }
+                }
+            }
+            for (String reg : readsFrom) {
+                recentReadLine.put(reg, i);
+            }
+            for (String reg : writesTo) {
+                Integer lastPossibleRead = readIndex(recentReadLine, reg);
+                Integer lastWrite = recentWriteLine.get(reg);
+                if (lastWrite != null && lastWrite >= lastPossibleRead) {
+                    // there was no point doing the write
+                    codeList.set(lastWrite, new ATrivial());
+                }
+                recentWriteLine.put(reg, i);
+            }
+
+        }
+        return codeList;
     }
 
     // if I push a register and pop it back without using the register meanwhile, remove
@@ -276,6 +344,95 @@ public class CodeSimplifier {
 
         @Override
         public Set<String> on(AWhitespace line) { return new HashSet<String>(); }
+    }
+
+    // change write behavior of accepting lines to write to given reg
+    private static class ChangeWrites implements AssemblyLine.AssemblyLineVisitor<Boolean> {
+        private String reg;
+
+        public ChangeWrites(String reg) {
+            this.reg = reg;
+        }
+
+        @Override
+        public Boolean on(ACall line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(ACmov line) {
+            line.setRight(reg);
+            return true;
+        }
+
+        @Override
+        public Boolean on(ACmp line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(ACommand line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(AJmp line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(ALabel line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(AMov line) {
+            line.setRight(reg);
+            return true;
+        }
+
+        @Override
+        public Boolean on(AOps line) {
+            line.setRight(reg);
+            return true;
+        }
+
+        @Override
+        public Boolean on(APush line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(APop line) {
+            line.setReg(reg);
+            return true;
+        }
+
+        @Override
+        public Boolean on(AShift line) {
+            return false;  // can't actually change this
+        }
+
+        @Override
+        public Boolean on(AString line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(ATrivial line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
+
+        @Override
+        public Boolean on(AUnaryOp line) {
+            line.setReg(reg);
+            return true;
+        }
+
+        @Override
+        public Boolean on(AWhitespace line) {
+            throw new RuntimeException("Makes no sense to change write destination.");
+        }
     }
 
 
