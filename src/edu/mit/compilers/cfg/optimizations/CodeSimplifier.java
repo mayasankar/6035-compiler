@@ -316,7 +316,7 @@ public class CodeSimplifier {
 
         @Override
         public Set<String> on(AOps line) {
-            return new HashSet<String>(Arrays.asList(line.getLeft()));
+            return new HashSet<String>(Arrays.asList(line.getLeft(), line.getRight()));
         }
 
         @Override
