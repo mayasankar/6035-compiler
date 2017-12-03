@@ -80,6 +80,55 @@ public class CodeSimplifier {
         return codeList;
     }
 
+    // if I store something in %x, then don't touch it or %y before doing mov %x %y,
+    // and overwrite it without doing anything else to it, eliminate it
+    public static List<AssemblyLine> reduceMovs(List<AssemblyLine> l) {
+        return l; // TODO
+    }
+
+    // if I push a register and pop it back without using the register meanwhile, remove
+    public static List<AssemblyLine> eliminatePushPop(List<AssemblyLine> l) {
+        // stack of push operations, stack of their indices
+        // stack of <regs written to since most recent push, possibly including ALL if jmp>
+        // upon POP, remove the top things from push stack and index stack, see if we can simplify it,
+        //      and pop the top thing from regs written (rep'd as separate item) and add all its contents to the next-to-top thing
+        List<APush> pushOperations = new ArrayList<>();
+        List<Integer> pushIndices = new ArrayList<>();
+        List<Set<String>> regsWrittenSinceLastPush = new ArrayList<>();
+        Set<String> regsWritten = new HashSet<>();
+        AssemblyLine.AssemblyLineVisitor<Set<String>> writesTo = new WritesToRegisters();
+
+        List<AssemblyLine> codeList = new ArrayList<>(l);
+        for (int i=0; i<codeList.size(); i++) {
+            AssemblyLine line = codeList.get(i);
+            if (line instanceof APush) {
+                pushOperations.add((APush)line);
+                pushIndices.add(i);
+                regsWrittenSinceLastPush.add(regsWritten);
+                regsWritten = new HashSet<>();
+            }
+            else if (line instanceof APop) {
+                APush push = pushOperations.remove(pushOperations.size()-1);
+                Integer index = pushIndices.remove(pushIndices.size()-1);
+                String reg = push.getReg();
+                // check ALL in case there was a jmp or something else we can't be sure of in between
+                if (!regsWritten.contains("ALL") && !regsWritten.contains(reg)) {
+                    // we pushed a register and then never wrote anything else to it; we can remove that
+                    codeList.set(index, new ATrivial());
+                    codeList.set(i, new ATrivial());
+                }
+                if (regsWrittenSinceLastPush.size() > 0) {
+                    regsWritten.addAll(regsWrittenSinceLastPush.remove(regsWrittenSinceLastPush.size()-1));
+                }
+            }
+            else {
+                regsWritten.addAll(line.accept(writesTo));
+            }
+        }
+        return codeList;
+    }
+
+
     // return the set of registers that MIGHT have something written to them
     private static class WritesToRegisters implements AssemblyLine.AssemblyLineVisitor<Set<String>> {
         @Override
@@ -100,7 +149,9 @@ public class CodeSimplifier {
         public Set<String> on(ACommand line) { return new HashSet<String>(); }
 
         @Override
-        public Set<String> on(AJmp line) { return new HashSet<String>(); }
+        public Set<String> on(AJmp line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(ALabel line) { return new HashSet<String>(); }
@@ -168,7 +219,9 @@ public class CodeSimplifier {
         public Set<String> on(ACommand line) { return new HashSet<String>(); }
 
         @Override
-        public Set<String> on(AJmp line) { return new HashSet<String>(); }
+        public Set<String> on(AJmp line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(ALabel line) { return new HashSet<String>(); }
