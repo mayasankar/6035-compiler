@@ -134,7 +134,7 @@ public class CodeSimplifier {
                     if (lastLeftWrite != null && lastLeftWrite >= lastLeftRead && lastLeftWrite >= lastRightRead && lastLeftWrite > lastRightWrite) {
                         AssemblyLine.AssemblyLineVisitor<Boolean> changeWriteVisitor = new ChangeWrites(rreg);
                         if (codeList.get(lastLeftWrite).accept(changeWriteVisitor)) {
-                            codeList.set(i, new ATrivial());
+                            codeList.set(i, new ACommand("# formerly mov " + lreg + ", " + rreg));
                         }
                     }
                 }
@@ -147,7 +147,7 @@ public class CodeSimplifier {
                 Integer lastWrite = recentWriteLine.get(reg);
                 if (lastWrite != null && lastWrite >= lastPossibleRead) {
                     // there was no point doing the write
-                    codeList.set(lastWrite, new ATrivial());
+                    codeList.set(lastWrite, new ACommand("# formerly wrote to " + reg));
                 }
                 recentWriteLine.put(reg, i);
             }
@@ -187,11 +187,11 @@ public class CodeSimplifier {
                     // but we should check if it's popping to a different register
                     String regPop = ((APop)line).getReg();
                     if (!regPop.equals(regPush)) {
-                        codeList.set(index, new ACommand("; formerly push " + regPush));
+                        codeList.set(index, new ACommand("# formerly push " + regPush));
                         codeList.set(i, new AMov(regPush, regPop));
                     }
-                    codeList.set(index, new ACommand("; formerly push " + regPush));
-                    codeList.set(i, new ACommand("; formerly pop " + regPop));
+                    codeList.set(index, new ACommand("# formerly push " + regPush));
+                    codeList.set(i, new ACommand("# formerly pop " + regPop));
                 }
                 if (regsWrittenSinceLastPush.size() > 0) {
                     regsWritten.addAll(regsWrittenSinceLastPush.remove(regsWrittenSinceLastPush.size()-1));
