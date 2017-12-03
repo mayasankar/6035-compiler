@@ -232,7 +232,9 @@ public class CodeSimplifier {
         }
 
         @Override
-        public Set<String> on(ALabel line) { return new HashSet<String>(); }
+        public Set<String> on(ALabel line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(AMov line) {
@@ -296,7 +298,15 @@ public class CodeSimplifier {
         }
 
         @Override
-        public Set<String> on(ACommand line) { return new HashSet<String>(); }
+        public Set<String> on(ACommand line) {
+            if (line.getCommand().equals("int $0x80")) {
+                return new HashSet<String>(Arrays.asList("%eax", "%ebx"));
+            }
+            if (line.getCommand().equals("cqto")) {
+                return new HashSet<String>(Arrays.asList("%rax", "%rdx"));
+            }
+            return new HashSet<String>();
+        }
 
         @Override
         public Set<String> on(AJmp line) {
@@ -304,7 +314,9 @@ public class CodeSimplifier {
         }
 
         @Override
-        public Set<String> on(ALabel line) { return new HashSet<String>(); }
+        public Set<String> on(ALabel line) {
+            return new HashSet<String>(Arrays.asList("ALL"));
+        }
 
         @Override
         public Set<String> on(AMov line) {
@@ -329,7 +341,7 @@ public class CodeSimplifier {
 
         @Override
         public Set<String> on(AShift line) {
-            return new HashSet<String>(Arrays.asList(line.getReg()));
+            return new HashSet<String>(Arrays.asList(line.getReg(), "%rcx"));
         }
 
         @Override

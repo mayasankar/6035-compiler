@@ -14,6 +14,8 @@ public class ACommand extends AssemblyLine {
         return command + "\n";
     }
 
+    public String getCommand() { return command; }
+
     @Override
     public <R> R accept(AssemblyLineVisitor<R> visitor) {
         return visitor.on(this);
