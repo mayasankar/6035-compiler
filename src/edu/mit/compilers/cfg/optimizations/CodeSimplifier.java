@@ -131,7 +131,7 @@ public class CodeSimplifier {
                     }
                     Integer lastLeftRead = readIndex(recentReadLine, lreg);
                     Integer lastRightRead = readIndex(recentReadLine, rreg);
-                    if (lastLeftWrite != null && lastLeftWrite >= lastLeftRead && lastLeftWrite >= lastRightRead && lastLeftWrite > lastRightWrite) {
+                    if (lastLeftWrite != null && lastLeftWrite > lastLeftRead && lastLeftWrite > lastRightRead && lastLeftWrite > lastRightWrite) {
                         AssemblyLine.AssemblyLineVisitor<Boolean> changeWriteVisitor = new ChangeWrites(rreg);
                         if (codeList.get(lastLeftWrite).accept(changeWriteVisitor)) {
                             codeList.set(i, new ACommand("# formerly mov " + lreg + ", " + rreg));
