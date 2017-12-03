@@ -374,7 +374,8 @@ public class CodeSimplifier {
 
         @Override
         public Boolean on(ACommand line) {
-            throw new RuntimeException("Makes no sense to change write destination.");
+            //throw new RuntimeException("Makes no sense to change write destination.");
+            return false;
         }
 
         @Override
