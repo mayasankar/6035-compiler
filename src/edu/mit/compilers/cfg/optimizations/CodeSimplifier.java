@@ -133,8 +133,9 @@ public class CodeSimplifier {
                     Integer lastRightRead = readIndex(recentReadLine, rreg);
                     if (lastLeftWrite != null && lastLeftWrite >= lastLeftRead && lastLeftWrite >= lastRightRead && lastLeftWrite > lastRightWrite) {
                         AssemblyLine.AssemblyLineVisitor<Boolean> changeWriteVisitor = new ChangeWrites(rreg);
-                        codeList.get(lastLeftWrite).accept(changeWriteVisitor);
-                        codeList.set(i, new ATrivial());
+                        if (codeList.get(lastLeftWrite).accept(changeWriteVisitor)) {
+                            codeList.set(i, new ATrivial());
+                        }
                     }
                 }
             }
@@ -347,6 +348,7 @@ public class CodeSimplifier {
     }
 
     // change write behavior of accepting lines to write to given reg
+    // returns false iff it fails, e.g. because the write can't be changed or was already deleted
     private static class ChangeWrites implements AssemblyLine.AssemblyLineVisitor<Boolean> {
         private String reg;
 
@@ -420,7 +422,7 @@ public class CodeSimplifier {
 
         @Override
         public Boolean on(ATrivial line) {
-            throw new RuntimeException("Makes no sense to change write destination.");
+            return false;
         }
 
         @Override
