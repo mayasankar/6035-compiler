@@ -26,7 +26,7 @@ public class CodeSimplifier {
         codeList = removeTrivialMovs(codeList);
         codeList = simplifyPairMovs(codeList);
         codeList = removeTrivialMovs(codeList);
-        //codeList = eliminatePushPop(codeList);
+        codeList = eliminatePushPop(codeList);
         return codeList;
     }
 
