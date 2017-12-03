@@ -26,6 +26,7 @@ public class CodeSimplifier {
         codeList = removeTrivialMovs(codeList);
         codeList = simplifyPairMovs(codeList);
         codeList = removeTrivialMovs(codeList);
+        //codeList = eliminatePushPop(codeList);
         return codeList;
     }
 
@@ -110,12 +111,18 @@ public class CodeSimplifier {
             else if (line instanceof APop) {
                 APush push = pushOperations.remove(pushOperations.size()-1);
                 Integer index = pushIndices.remove(pushIndices.size()-1);
-                String reg = push.getReg();
+                String regPush = push.getReg();
                 // check ALL in case there was a jmp or something else we can't be sure of in between
-                if (!regsWritten.contains("ALL") && !regsWritten.contains(reg)) {
+                if (!regsWritten.contains("ALL") && !regsWritten.contains(regPush)) {
                     // we pushed a register and then never wrote anything else to it; we can remove that
-                    codeList.set(index, new ATrivial());
-                    codeList.set(i, new ATrivial());
+                    // but we should check if it's popping to a different register
+                    String regPop = ((APop)line).getReg();
+                    if (!regPop.equals(regPush)) {
+                        codeList.set(index, new ACommand("; formerly push " + regPush));
+                        codeList.set(i, new AMov(regPush, regPop));
+                    }
+                    codeList.set(index, new ACommand("; formerly push " + regPush));
+                    codeList.set(i, new ACommand("; formerly pop " + regPop));
                 }
                 if (regsWrittenSinceLastPush.size() > 0) {
                     regsWritten.addAll(regsWrittenSinceLastPush.remove(regsWrittenSinceLastPush.size()-1));
