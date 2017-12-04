@@ -16,7 +16,7 @@ public class MethodDescriptor {
     Set<String> methodsCalled = new HashSet<>(); // might include methodName
     boolean isRecursive; // equivalent to whether it calls itself
     Set<String> globalsUsed = new HashSet<>();
-    //Set<String> globalsPossiblyAssigned; // TODO
+    Set<String> globalsPossiblyAssigned = new HashSet<>();
 
     private MethodDescriptor(String name) {
         this.methodName = name;
@@ -32,6 +32,7 @@ public class MethodDescriptor {
     }
 
     public Set<String> getGlobalsUsed() { return globalsUsed; }
+    public Set<String> getGlobalsAssigned(boolean includeArrays) { return globalsPossiblyAssigned; }
 
     public static Map<String, MethodDescriptor> calculateMethodDescriptors(CFGProgram cfgProgram) {
         Map<String, MethodDescriptor> descriptors = new HashMap<>();
@@ -50,26 +51,30 @@ public class MethodDescriptor {
                 }
                 desc.globalsUsed.retainAll(globals);
             }
-            desc.isRecursive = desc.methodsCalled.contains(methodName); // remove instead of contains also works
+            desc.isRecursive = desc.methodsCalled.contains(methodName);
             descriptors.put(methodName, desc);
             for (String nestedMethod : desc.methodsCalled) {
                 desc.globalsUsed.addAll(descriptors.get(nestedMethod).globalsUsed);
+                desc.globalsPossiblyAssigned.addAll(descriptors.get(nestedMethod).globalsPossiblyAssigned);
             }
         }
         return descriptors;
     }
 
     // called in order of method declarations
-    // calculates methodsCalled and starts calculation of globalsUsed
+    // calculates methodsCalled and starts calculations of globalsUsed and globalsPossiblyAssigned
     // always returns true
     private static class MDCreator implements CFGLine.CFGVisitor<Boolean> {
         MethodDescriptor desc;
         CfgUseVisitor USE = new CfgUseVisitor();
+        CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
         public MDCreator(MethodDescriptor desc) { this.desc = desc; }
 
         private Boolean onAllLines(CFGLine line) {
-            desc.globalsUsed.addAll(line.accept(USE)); // at the end, we will intersect this set with globals.
+            // at the end, we will intersect these sets with globals.
+            desc.globalsUsed.addAll(line.accept(USE));
+            desc.globalsPossiblyAssigned.addAll(line.accept(ASSIGN));
             return true;
         }
 

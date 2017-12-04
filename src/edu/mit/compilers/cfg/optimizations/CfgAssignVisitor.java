@@ -20,15 +20,29 @@ import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
+    private final boolean includeArrays;
+    private final boolean returnNestedGlobals;
+    private final Map<String, MethodDescriptor> methodDescriptors;
 
-    private boolean includeArrays;
-
-    public CfgAssignVisitor (boolean includeArrays) {
-        this.includeArrays = includeArrays;
+    public CfgAssignVisitor() {
+        this(true);
     }
 
-    public CfgAssignVisitor () {
-        this.includeArrays = true;
+    public CfgAssignVisitor(boolean includeArrays) {
+        this(includeArrays, null);
+    }
+
+    public CfgAssignVisitor(Map<String, MethodDescriptor> mds) {
+        this(true, mds);
+    }
+
+    private CfgAssignVisitor(boolean includeArrays, Map<String, MethodDescriptor> mds) {
+        this.includeArrays = includeArrays;
+        this.returnNestedGlobals = (mds != null);
+        this.methodDescriptors = mds;
+        if (! includeArrays && returnNestedGlobals) {
+            throw new RuntimeException("CfgAssignVisitor not implemented for these inputs");
+        }
     }
 
 	@Override
@@ -63,7 +77,12 @@ public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
     @Override
     public Set<String> on(CFGMethodCall line){
-        return new HashSet<>();
+        Set<String> answer = new HashSet<>();
+        if (returnNestedGlobals) {
+            answer.addAll(methodDescriptors.get(line.getExpression().getName())
+                                           .getGlobalsAssigned(includeArrays));
+        }
+        return answer;
     }
 
     @Override

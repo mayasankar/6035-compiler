@@ -22,8 +22,6 @@ public class DCE implements Optimization {
     // the CFG for main() because then we don't need to initialize global
     // variables to 0/false if they're initialized later.
 
-    // TODO (mayars) delete statements of the form x = x;
-
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
     private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);

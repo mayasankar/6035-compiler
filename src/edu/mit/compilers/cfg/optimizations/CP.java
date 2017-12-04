@@ -32,7 +32,7 @@ propagation, using constantPropagate().
 IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respectively.
 */
 
-// TODO how should this interface with arrays?
+// How should this interface with arrays?
 // could optimize the following code
 // a[0] = c;
 // d = a[0];
@@ -51,6 +51,7 @@ public class CP implements Optimization {
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         cfgProgram.recalculateMethodDescriptors();
         GEN = new CfgGenDefinitionVisitor(cfgProgram.getMethodDescriptors());
+        ASSIGN = new CfgAssignVisitor(cfgProgram.getMethodDescriptors());
 
         boolean anyCfgChanged = false;
         Set<String> globals = cfgProgram.getGlobalNames();
@@ -63,7 +64,7 @@ public class CP implements Optimization {
             }
             boolean changed = true;
             while (changed) {
-                doReachingDefinitionsAnalysis(cfg);
+                doReachingDefinitionsAnalysis(cfg, method.getKey().equals("main") ? cfgProgram.getGlobalVariables() : new ArrayList<VariableDescriptor>());
                 changed = propagate(cfg, globals);
                 // if (debug) {
                 //     System.out.println("CP-Optimized CFG:");
@@ -80,7 +81,7 @@ public class CP implements Optimization {
     }
 
     public static class CPDefinition {
-        String varDefined; // TODO make IRVariableExpression and deal with array case
+        String varDefined;
         IRExpression definition;
         Set<String> variablesUsed;
 
@@ -88,6 +89,17 @@ public class CP implements Optimization {
             varDefined = varExpr.getName();
             definition = def;
             variablesUsed = definition.accept(use);
+        }
+
+        public CPDefinition(VariableDescriptor varDesc) {
+            varDefined = varDesc.getName();
+            TypeDescriptor type = varDesc.getType();
+            if (type == TypeDescriptor.BOOL) {
+                definition = IRBoolLiteral.FALSE;
+            } else if (type == TypeDescriptor.INT) {
+                definition = IRIntLiteral.ZERO;
+            }
+            variablesUsed = new HashSet<>();
         }
 
         public boolean assignsVariable(String otherVar) {
@@ -121,8 +133,8 @@ public class CP implements Optimization {
         }
     }
 
-    private void doReachingDefinitionsAnalysis(CFG cfg) {
-        for (CFGLine line : cfg.getAllLines()) {
+    private void doReachingDefinitionsAnalysis(CFG cfg, List<VariableDescriptor> globals) {
+        for (CFGLine line : cfg.getAllLines()) { // is this necessary?
             line.setReachingDefinitionsOut(new HashMap<CPDefinition,Boolean>());
         }
 
@@ -130,24 +142,30 @@ public class CP implements Optimization {
         if (start instanceof CFGBlock) { // TODO refactor so this check is unnecessary
             throw new RuntimeException("This should not happen. Blockify prematurely called.");
         }
-        start.setReachingDefinitionsIn(new HashMap<CPDefinition,Boolean>());
-        Map<CPDefinition, Boolean> startOut = new HashMap<>();
-        for (CPDefinition def : start.accept(GEN)) { startOut.put(def, true); }
-        start.setReachingDefinitionsOut(startOut);
+
+        Map<CPDefinition, Boolean> startIn = new HashMap<>();
+        for (VariableDescriptor globalVar : globals) {
+            startIn.put(new CPDefinition(globalVar), true);
+        }
+        start.setReachingDefinitionsIn(startIn);
 
         Set<CFGLine> changed = cfg.getAllLines();
-        changed.remove(start);
 
         while (! changed.isEmpty()) {
             CFGLine line = changed.iterator().next();
             changed.remove(line);
 
-            Map<CPDefinition, Boolean> newIn = new HashMap<>();
-            // to newIn, add reaching definitions from all parents
-            for (CFGLine parent : line.getParents()) {
-                for (Map.Entry<CPDefinition, Boolean> kv : parent.getReachingDefinitionsOut().entrySet()) {
-                    if (!kv.getValue() || (kv.getValue() && ! newIn.containsKey(kv.getKey()))) {
-                        newIn.put(kv.getKey(), kv.getValue());
+            Map<CPDefinition, Boolean> newIn;
+            if (line == start) {
+                newIn = startIn;
+            } else {
+                newIn = new HashMap<>();
+                // to newIn, add reaching definitions from all parents
+                for (CFGLine parent : line.getParents()) {
+                    for (Map.Entry<CPDefinition, Boolean> kv : parent.getReachingDefinitionsOut().entrySet()) {
+                        if (!kv.getValue() || (kv.getValue() && ! newIn.containsKey(kv.getKey()))) {
+                            newIn.put(kv.getKey(), kv.getValue());
+                        }
                     }
                 }
             }
@@ -194,21 +212,7 @@ public class CP implements Optimization {
                     replacementMap.put(var, definition);
                 }
             }
-            for (String global : globals) { replacementMap.remove(global); }
-            // NOTE this section can be removed if we add globals to usevisitors
-            /*USEVisitor USE = new USEVisitor();
-            Set<Map.Entry<String, IRExpression>> kvs = new HashSet<>(replacementMap.entrySet());
-            for (Map.Entry<String, IRExpression> kv : kvs) {
-                if (kv.getValue() == null) {
-                    replacementMap.remove(kv.getKey());
-                    continue;
-                }
-                Set<String> globalVarsUsed = kv.getValue().accept(USE);
-                globalVarsUsed.retainAll(globals);
-                if (!globalVarsUsed.isEmpty()) {
-                    replacementMap.remove(kv.getKey());
-                }
-            }*/
+            //for (String global : globals) { replacementMap.remove(global); }
 
             LineOptimizer optimizer = new LineOptimizer(replacementMap);
             isChanged = line.accept(optimizer) || isChanged;
