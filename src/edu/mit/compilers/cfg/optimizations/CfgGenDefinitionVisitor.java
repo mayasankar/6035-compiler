@@ -20,6 +20,11 @@ import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 
 public class CfgGenDefinitionVisitor implements CFGLine.CFGVisitor<Set<CP.CPDefinition>> {
+    private USEVisitor use;
+
+    public CfgGenDefinitionVisitor(Map<String, MethodDescriptor> mds) {
+        use = new USEVisitor(mds);
+    }
 
 	@Override
     public Set<CP.CPDefinition> on(CFGBlock line){
@@ -29,7 +34,7 @@ public class CfgGenDefinitionVisitor implements CFGLine.CFGVisitor<Set<CP.CPDefi
     @Override
     public Set<CP.CPDefinition> on(CFGAssignStatement line){
         Set<CP.CPDefinition> answer = new HashSet<>();
-        answer.add(new CP.CPDefinition(line.getVarAssigned(), line.getExpression()));
+        answer.add(new CP.CPDefinition(line.getVarAssigned(), line.getExpression(), use));
 		return answer;
     }
 

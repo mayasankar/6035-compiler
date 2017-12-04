@@ -21,7 +21,7 @@ public class CFGProgram {
     private final MethodTable methodTable;
     private final List<VariableDescriptor> globalVariables = new ArrayList<>();
     private final Map<String, List<VariableDescriptor>> localVariables = new HashMap<>();
-    private Map<String, MethodDescriptor> methodDescriptors;
+    private Map<String, MethodDescriptor> methodDescriptors; // has a descriptor for imports too
 
     public CFGProgram(IRProgram program) {
     	methodTable = program.getMethodTable();
@@ -59,12 +59,10 @@ public class CFGProgram {
         return answer;
     }
 
-    public List<String> getMethodNames() {
-        List<String> names = new ArrayList<>();
-        for (IRMethodDecl decl : methodTable.getMethodList()) {
-            names.add(decl.getName());
-        }
-        return names;
+    public List<IRMethodDecl> getMethodList() { return methodTable.getMethodList(); }
+
+    public Set<String> getMethodNames() {
+        return methodCFGMap.keySet();
     }
 
     public Map<String, MethodDescriptor> getMethodDescriptors() { return methodDescriptors; }

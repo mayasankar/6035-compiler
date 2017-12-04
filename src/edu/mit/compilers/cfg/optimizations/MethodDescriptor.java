@@ -8,16 +8,27 @@ import java.util.Set;
 import edu.mit.compilers.cfg.*;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.ir.USEVisitor;
+import edu.mit.compilers.ir.decl.IRMethodDecl;
 
 public class MethodDescriptor {
-    String methodName;
+    final String methodName;
+    final boolean isImport;
     Set<String> methodsCalled = new HashSet<>(); // might include methodName
-    boolean isRecursive = false; // equivalent to whether it calls itself
+    boolean isRecursive; // equivalent to whether it calls itself
     Set<String> globalsUsed = new HashSet<>();
     //Set<String> globalsPossiblyAssigned; // TODO
 
     private MethodDescriptor(String name) {
         this.methodName = name;
+        this.isImport = false;
+    }
+
+    private MethodDescriptor(String name, boolean isImport) {
+        this.methodName = name;
+        this.isImport = isImport;
+        if (isImport) {
+            isRecursive = false;
+        }
     }
 
     public Set<String> getGlobalsUsed() { return globalsUsed; }
@@ -25,14 +36,20 @@ public class MethodDescriptor {
     public static Map<String, MethodDescriptor> calculateMethodDescriptors(CFGProgram cfgProgram) {
         Map<String, MethodDescriptor> descriptors = new HashMap<>();
         Set<String> globals = cfgProgram.getGlobalNames();
-        for (String methodName : cfgProgram.getMethodNames()) {
-            CFG cfg = cfgProgram.getMethodToCFGMap().get(methodName);
+        for (IRMethodDecl method : cfgProgram.getMethodList()) {
+            String methodName = method.getName();
             MethodDescriptor desc = new MethodDescriptor(methodName);
-            MDCreator creator = new MDCreator(desc);
-            for (CFGLine line : cfg.getAllLines()) {
-                line.accept(creator);
+            if (! method.isImport()) {
+                CFG cfg = cfgProgram.getMethodToCFGMap().get(methodName);
+                if (cfg == null) {
+                    System.out.println("BAD: " + methodName);
+                }
+                MDCreator creator = new MDCreator(desc);
+                for (CFGLine line : cfg.getAllLines()) {
+                    line.accept(creator);
+                }
+                desc.globalsUsed.retainAll(globals);
             }
-            desc.globalsUsed.retainAll(globals);
             desc.isRecursive = desc.methodsCalled.contains(methodName); // remove instead of contains also works
             descriptors.put(methodName, desc);
             for (String nestedMethod : desc.methodsCalled) {

@@ -43,17 +43,17 @@ IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respe
 // but then globals would have to be added to the use set.
 
 public class CP implements Optimization {
-    private CfgGenDefinitionVisitor GEN = new CfgGenDefinitionVisitor();
+    private CfgGenDefinitionVisitor GEN;
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
     // TODO decide when splitting is a good idea
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
+        cfgProgram.recalculateMethodDescriptors();
+        GEN = new CfgGenDefinitionVisitor(cfgProgram.getMethodDescriptors());
+
         boolean anyCfgChanged = false;
-        Set<String> globals = new HashSet<>();
-        for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
-            globals.add(var.getName());
-        }
+        Set<String> globals = cfgProgram.getGlobalNames();
 
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
@@ -84,10 +84,10 @@ public class CP implements Optimization {
         IRExpression definition;
         Set<String> variablesUsed;
 
-        public CPDefinition(IRVariableExpression varExpr, IRExpression def) {
+        public CPDefinition(IRVariableExpression varExpr, IRExpression def, USEVisitor use) {
             varDefined = varExpr.getName();
             definition = def;
-            variablesUsed = definition.accept(new USEVisitor());
+            variablesUsed = definition.accept(use);
         }
 
         public boolean assignsVariable(String otherVar) {
@@ -196,7 +196,7 @@ public class CP implements Optimization {
             }
             for (String global : globals) { replacementMap.remove(global); }
             // NOTE this section can be removed if we add globals to usevisitors
-            USEVisitor USE = new USEVisitor();
+            /*USEVisitor USE = new USEVisitor();
             Set<Map.Entry<String, IRExpression>> kvs = new HashSet<>(replacementMap.entrySet());
             for (Map.Entry<String, IRExpression> kv : kvs) {
                 if (kv.getValue() == null) {
@@ -208,7 +208,8 @@ public class CP implements Optimization {
                 if (!globalVarsUsed.isEmpty()) {
                     replacementMap.remove(kv.getKey());
                 }
-            }
+            }*/
+
             LineOptimizer optimizer = new LineOptimizer(replacementMap);
             isChanged = line.accept(optimizer) || isChanged;
         }
