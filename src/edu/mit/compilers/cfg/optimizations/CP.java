@@ -98,6 +98,8 @@ public class CP implements Optimization {
                 definition = IRBoolLiteral.FALSE;
             } else if (type == TypeDescriptor.INT) {
                 definition = IRIntLiteral.ZERO;
+            } else {
+                throw new RuntimeException("Undefined type: " + type);
             }
             variablesUsed = new HashSet<>();
         }
@@ -145,6 +147,7 @@ public class CP implements Optimization {
 
         Map<CPDefinition, Boolean> startIn = new HashMap<>();
         for (VariableDescriptor globalVar : globals) {
+            if (globalVar.getType().isArray()) { continue; }
             startIn.put(new CPDefinition(globalVar), true);
         }
         start.setReachingDefinitionsIn(startIn);
