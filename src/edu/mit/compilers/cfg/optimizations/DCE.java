@@ -22,8 +22,6 @@ public class DCE implements Optimization {
     // the CFG for main() because then we don't need to initialize global
     // variables to 0/false if they're initialized later.
 
-    // TODO (mayars) make sure use/assign sets interface correctly with array variables
-
     // TODO (mayars) simplify if statements that have identically true or
     // identically false conditions.
 
@@ -36,11 +34,10 @@ public class DCE implements Optimization {
     private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
+        cfgProgram.recalculateMethodDescriptors();
         boolean anythingChanged = false;
-        Set<String> globals = new HashSet<>();
-        for (VariableDescriptor var : cfgProgram.getGlobalVariables()) {
-            globals.add(var.getName());
-        }
+        Set<String> globals = cfgProgram.getGlobalNames();
+
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
             if (debug) {
@@ -69,7 +66,7 @@ public class DCE implements Optimization {
         endIn.addAll(end.accept(USE));
         end.setLivenessIn(endIn);
 
-        // TODO if this becomes too slow, make changed into a field variable
+        // NOTE if this becomes too slow, make changed into a field variable
         // and update it with only the places where things are changed
         Set<CFGLine> changed = new HashSet<CFGLine>(cfg.getAllLines());
         changed.remove(end);
@@ -139,16 +136,16 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGConditional line) {
-            // remove it if it is not a branch
+            // remove it if it is not a branch or if the condition is a bool literal
             if (! line.isBranch()) {
                 cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
                 return true;
             } else if (line.getExpression().equals(IRBoolLiteral.TRUE)) {
-                // TODO this case
-                return false;
+                cfg.replaceLine(line, line.getTrueBranch());
+                return true;
             } else if (line.getExpression().equals(IRBoolLiteral.FALSE)) {
-                // TODO this case
-                return false;
+                cfg.replaceLine(line, line.getFalseBranch());
+                return true;
             } else {
                 return false;
             }
