@@ -22,12 +22,7 @@ public class DCE implements Optimization {
     // the CFG for main() because then we don't need to initialize global
     // variables to 0/false if they're initialized later.
 
-    // TODO (mayars) simplify if statements that have identically true or
-    // identically false conditions.
-
     // TODO (mayars) delete statements of the form x = x;
-
-    // TODO (mayars) check CFGConditional always true/false (see below)
 
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
@@ -115,6 +110,11 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGAssignStatement line) {
+            // if the assign statement is a[x] = a[x] or b = b then delete it
+            if (line.getVarAssigned().equals(line.getExpression())) {
+                cfg.removeLine(line);
+                return true;
+            }
             // assigning to global variables shouldn't be eliminated since there are side effects
             // use liveness sets
             Set<String> aliveAtEnd = line.getLivenessOut();
@@ -153,7 +153,7 @@ public class DCE implements Optimization {
 
         @Override
         public Boolean on(CFGNoOp line) {
-            // could remove it if it can be condensed out
+            // remove it if it can be condensed out
             if (! line.isEnd()) {
                 cfg.removeLine(line);
             }
