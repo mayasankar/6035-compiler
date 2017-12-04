@@ -214,7 +214,7 @@ public class DCE implements Optimization {
 
         @Override
         public CFGLine on(IRUnaryOpExpression ir) { return getReplacementLine(line); }
-        @Override
+        @Override // TODO deal with div by 0 case
         public CFGLine on(IRBinaryOpExpression ir) { return getReplacementLine(line); }
         @Override
         public CFGLine on(IRTernaryOpExpression ir) { return getReplacementLine(line); }

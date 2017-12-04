@@ -26,6 +26,8 @@ public class CFGBoundsCheck extends CFGLine {
 	}
 
     public IRVariableExpression getExpression() { return this.arrayVariable; }
+    public IRExpression getIndexExpression() { return arrayVariable.getIndexExpression(); }
+    public void setIndexExpression(IRExpression expr) { arrayVariable.setIndexExpression(expr); }
 
     @Override
     public boolean isNoOp() { return false; }

@@ -39,14 +39,11 @@ IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respe
 // to
 // d = c;
 
-// if name = main, can add definitions of globals to 0 to beginning reaching definitions,
-// but then globals would have to be added to the use set.
+// TODO decide when splitting is a good idea
 
 public class CP implements Optimization {
     private CfgGenDefinitionVisitor GEN;
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
-
-    // TODO decide when splitting is a good idea
 
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         cfgProgram.recalculateMethodDescriptors();
@@ -240,7 +237,10 @@ public class CP implements Optimization {
         }
 
         public Boolean on(CFGBoundsCheck line) {
-            return false; // TODO
+            IRExpression expr = line.getIndexExpression();
+            IRExpression newExpr = expr.accept(propagator);
+            line.setIndexExpression(newExpr);
+            return !(expr.equals(newExpr));
         }
 
         public Boolean on(CFGConditional line) {
@@ -422,7 +422,7 @@ public class CP implements Optimization {
                 case "+": return ir.getLeftExpr().accept(this).add(ir.getRightExpr().accept(this));
                 case "-": return ir.getLeftExpr().accept(this).subtract(ir.getRightExpr().accept(this));
                 case "*": return ir.getLeftExpr().accept(this).multiply(ir.getRightExpr().accept(this));
-                case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this));
+                case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this)); // TODO deal with div by 0 case
                 // TODO could use mod instead of remainder, depending on behavior of negative numbers
                 case "%": return ir.getLeftExpr().accept(this).remainder(ir.getRightExpr().accept(this));
                 default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
