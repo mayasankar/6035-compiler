@@ -7,6 +7,7 @@ import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRIntLiteral extends IRLiteral<BigInteger> {
     public static final IRIntLiteral ZERO = new IRIntLiteral(BigInteger.ZERO);
+    public static final IRIntLiteral ONE = new IRIntLiteral(BigInteger.ONE);
 
 	public IRIntLiteral(BigInteger value) {
 		super(value);

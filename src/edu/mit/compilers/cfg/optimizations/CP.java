@@ -212,8 +212,6 @@ public class CP implements Optimization {
                     replacementMap.put(var, definition);
                 }
             }
-            //for (String global : globals) { replacementMap.remove(global); }
-
             LineOptimizer optimizer = new LineOptimizer(replacementMap);
             isChanged = line.accept(optimizer) || isChanged;
         }
@@ -229,23 +227,31 @@ public class CP implements Optimization {
             propagator = new Propagator(map);
         }
 
+        public IRExpression getPropagatedExpression(IRExpression expr) {
+            try {
+                return expr.accept(propagator);
+            } catch (ArithmeticException e) {
+                return new IRBinaryOpExpression(IRIntLiteral.ONE, "/", IRIntLiteral.ZERO);
+            }
+        }
+
         public Boolean on(CFGAssignStatement line) {
             IRExpression expr = line.getExpression();
-            IRExpression newExpr = expr.accept(propagator);
+            IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
             return !(expr.equals(newExpr));
         }
 
         public Boolean on(CFGBoundsCheck line) {
             IRExpression expr = line.getIndexExpression();
-            IRExpression newExpr = expr.accept(propagator);
+            IRExpression newExpr = getPropagatedExpression(expr);
             line.setIndexExpression(newExpr);
             return !(expr.equals(newExpr));
         }
 
         public Boolean on(CFGConditional line) {
             IRExpression expr = line.getExpression();
-            IRExpression newExpr = expr.accept(propagator);
+            IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
             return !(expr.equals(newExpr));
         }
@@ -257,7 +263,7 @@ public class CP implements Optimization {
         public Boolean on(CFGReturn line) {
             if (line.isVoid()) { return false; }
             IRExpression expr = line.getExpression();
-            IRExpression newExpr = expr.accept(propagator);
+            IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
             return !(expr.equals(newExpr));
         }
@@ -422,8 +428,7 @@ public class CP implements Optimization {
                 case "+": return ir.getLeftExpr().accept(this).add(ir.getRightExpr().accept(this));
                 case "-": return ir.getLeftExpr().accept(this).subtract(ir.getRightExpr().accept(this));
                 case "*": return ir.getLeftExpr().accept(this).multiply(ir.getRightExpr().accept(this));
-                case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this)); // TODO deal with div by 0 case
-                // TODO could use mod instead of remainder, depending on behavior of negative numbers
+                case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this));
                 case "%": return ir.getLeftExpr().accept(this).remainder(ir.getRightExpr().accept(this));
                 default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
             }
