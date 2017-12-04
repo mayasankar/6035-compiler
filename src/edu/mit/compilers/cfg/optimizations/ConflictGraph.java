@@ -24,6 +24,9 @@ public class ConflictGraph {
     private Map<String, Set<String>> variableConflicts = new HashMap<>();
 
     public void addVariable(String var) {
+        if(variableConflicts.containsKey(var)) {
+            return;
+        }
         variableConflicts.put(var, new HashSet<String>());
     }
 
@@ -105,6 +108,19 @@ public class ConflictGraph {
             coloring.put(var, i);
         }
         return coloring;
+    }
+    
+    @Override
+    public String toString() {
+        String str = "Variable Conflicts:\n";
+        for(String var: variableConflicts.keySet()) {
+            str += "Variable " + var +": ";
+            for(String conflict: variableConflicts.get(var)) {
+                str += conflict + ", ";
+            }
+            str += "\n";
+        }
+        return str;
     }
 
 }
