@@ -20,7 +20,14 @@ import edu.mit.compilers.cfg.lines.*;
 
 public class CfgUseVisitor implements CFGLine.CFGVisitor<Set<String>> {
 
-    private IRNode.IRNodeVisitor<Set<String>> USE = new USEVisitor();
+    private IRNode.IRNodeVisitor<Set<String>> USE;
+
+    public CfgUseVisitor() {
+        USE = new USEVisitor();
+    }
+    public CfgUseVisitor(Map<String, MethodDescriptor> mds) {
+        USE = new USEVisitor(mds);
+    }
 
 	@Override
     public Set<String> on(CFGBlock line){

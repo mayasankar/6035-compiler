@@ -40,7 +40,7 @@ IntEvaluator and BoolEvaluator evaluate constant int and bool expressions, respe
 // d = c;
 
 // if name = main, can add definitions of globals to 0 to beginning reaching definitions,
-// but then they would have to be added to the use set.
+// but then globals would have to be added to the use set.
 
 public class CP implements Optimization {
     private CfgGenDefinitionVisitor GEN = new CfgGenDefinitionVisitor();

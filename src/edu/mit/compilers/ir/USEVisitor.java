@@ -16,9 +16,22 @@ import edu.mit.compilers.ir.expression.literal.*;
 import edu.mit.compilers.ir.statement.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.cfg.*;
+import edu.mit.compilers.cfg.optimizations.MethodDescriptor;
 
 // return a set of used variables in any IRNode
 public class USEVisitor implements IRNode.IRNodeVisitor<Set<String>> {
+    final boolean returnNestedGlobals; // used only when called on IRMethodCallExpression
+    final Map<String, MethodDescriptor> methodDescriptors;
+
+    public USEVisitor() {
+        returnNestedGlobals = false;
+        methodDescriptors = null;
+    }
+
+    public USEVisitor(Map<String, MethodDescriptor> mds) {
+        returnNestedGlobals = (mds != null);
+        methodDescriptors = mds;
+    }
 
     @Override
     public Set<String> on(IRProgram ir){
@@ -79,11 +92,14 @@ public class USEVisitor implements IRNode.IRNodeVisitor<Set<String>> {
         }
         return ret;
     }
-    @Override // TODO (mayars) -- life will be easier if this includes globals
+    @Override
     public Set<String> on(IRMethodCallExpression ir){
         Set<String> ret = new HashSet<>();
         for (IRExpression arg: ir.getArguments()) {
             ret.addAll(arg.accept(this));
+        }
+        if (returnNestedGlobals) {
+            ret.addAll(methodDescriptors.get(ir.getName()).getGlobalsUsed());
         }
         return ret;
     }
