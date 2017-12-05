@@ -69,6 +69,7 @@ public abstract class CFGLine {
         public R on(CFGBoundsCheck line);
     	public R on(CFGConditional line);
     	public R on(CFGNoOp line);
+        public R on(CFGNoReturnError line);
     	public R on(CFGReturn line);
     	public R on(CFGMethodCall line);
         public R on(CFGBlock line);

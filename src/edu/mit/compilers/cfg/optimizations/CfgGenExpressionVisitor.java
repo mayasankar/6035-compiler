@@ -57,4 +57,9 @@ public class CfgGenExpressionVisitor implements CFGLine.CFGVisitor<Map<IRExpress
     public Map<IRExpression, Set<String>> on(CFGNoOp line){
         return new HashMap<>();
     }
+
+    @Override
+    public Map<IRExpression, Set<String>> on(CFGNoReturnError line){
+        return new HashMap<>();
+    }
 }

@@ -22,6 +22,8 @@ public class DCE implements Optimization {
     // the CFG for main() because then we don't need to initialize global
     // variables to 0/false if they're initialized later.
 
+    // TODO delete variables that no longer exist from CFGProgram
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
     private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
@@ -156,6 +158,12 @@ public class DCE implements Optimization {
                 cfg.removeLine(line);
             }
             return false; // even if we're removing a noop, we are not affecting gen/kill sets
+        }
+
+        @Override
+        public Boolean on(CFGNoReturnError line) {
+            // don't remove the line, it will only disappear if it has no parents
+            return false;
         }
 
         @Override

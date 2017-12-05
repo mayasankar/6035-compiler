@@ -166,6 +166,13 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
     }
 
     @Override
+    public List<AssemblyLine> on(CFGNoReturnError line) {
+        List<AssemblyLine> answer = new ArrayList<>();
+        answer.add(new AJmp("jmp", ".nonreturning_method"));
+        return answer;
+    }
+
+    @Override
     public List<AssemblyLine> on(CFGReturn line) {
         List<AssemblyLine> lines = new ArrayList<>();
         if (!line.isVoid()) {
