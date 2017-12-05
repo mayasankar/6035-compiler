@@ -82,6 +82,7 @@ public class MethodDescriptor {
         public Boolean on(CFGBoundsCheck line) { return onAllLines(line); }
         public Boolean on(CFGConditional line) { return onAllLines(line); }
         public Boolean on(CFGNoOp line) { return onAllLines(line); }
+        public Boolean on(CFGNoReturnError line) { return true; }
         public Boolean on(CFGReturn line) { return onAllLines(line); }
         public Boolean on(CFGMethodCall line) {
             desc.methodsCalled.add(line.getExpression().getName());

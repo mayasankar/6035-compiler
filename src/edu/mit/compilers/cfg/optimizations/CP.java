@@ -260,6 +260,10 @@ public class CP implements Optimization {
             return false;
         }
 
+        public Boolean on(CFGNoReturnError line) {
+            return false;
+        }
+
         public Boolean on(CFGReturn line) {
             if (line.isVoid()) { return false; }
             IRExpression expr = line.getExpression();

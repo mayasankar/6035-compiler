@@ -178,6 +178,11 @@ public class CSE implements Optimization {
         }
 
         @Override
+        public Boolean on(CFGNoReturnError line) {
+            return false;
+        }
+
+        @Override
         public Boolean on(CFGReturn line) {
             // depth 0 so doesn't make sense to reduce
             return false;

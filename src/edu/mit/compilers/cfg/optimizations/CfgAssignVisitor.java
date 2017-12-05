@@ -94,4 +94,9 @@ public class CfgAssignVisitor implements CFGLine.CFGVisitor<Set<String>> {
     public Set<String> on(CFGNoOp line){
         return new HashSet<>();
     }
+
+    @Override
+    public Set<String> on(CFGNoReturnError line){
+        return new HashSet<>();
+    }
 }
