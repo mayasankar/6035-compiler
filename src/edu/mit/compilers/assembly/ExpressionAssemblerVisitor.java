@@ -44,9 +44,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         List<AssemblyLine> lines = argExpr.accept(this); // value in %r10
         String register = "%r10";
         if (op.equals("!")){
-            lines.add(new AMov("$1", "%r11"));
-            lines.add(new AOps("sub", register, "%r11"));
-            lines.add(new AMov("%r11", register));
+            lines.add(new AOps("xorq", "$1", register));
         }
         else { // "-"
             lines.add(new AUnaryOp("neg", register));
