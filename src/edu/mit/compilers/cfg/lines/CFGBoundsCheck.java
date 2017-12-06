@@ -25,6 +25,10 @@ public class CFGBoundsCheck extends CFGLine {
         }
 	}
 
+    private CFGBoundsCheck(CFGBoundsCheck other) {
+        this.arrayVariable = other.arrayVariable;
+    }
+
     public IRVariableExpression getExpression() { return this.arrayVariable; }
     public IRExpression getIndexExpression() { return arrayVariable.getIndexExpression(); }
     public void setIndexExpression(IRExpression expr) { arrayVariable.setIndexExpression(expr); }
@@ -34,6 +38,9 @@ public class CFGBoundsCheck extends CFGLine {
 
     @Override
     public boolean isAssign() { return false; }
+
+    @Override
+    public CFGLine copy() { return new CFGBoundsCheck(this); }
 
     @Override
     public String ownValue() {

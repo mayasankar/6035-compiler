@@ -23,6 +23,10 @@ public class CFGMethodCall extends CFGLine {
         this.expression = expression;
     }
 
+    private CFGMethodCall(CFGMethodCall other) {
+        this.expression = other.expression;
+    }
+
     public IRMethodCallExpression getExpression() { return expression; }
     public void setExpression(IRMethodCallExpression expression) { this.expression = expression; }
 
@@ -30,6 +34,9 @@ public class CFGMethodCall extends CFGLine {
     public boolean isNoOp() { return false; }
     @Override
     public boolean isAssign() { return false; }
+    
+    @Override
+    public CFGLine copy() { return new CFGMethodCall(this); }
 
     @Override
     public String ownValue() {

@@ -42,9 +42,6 @@ public class MethodDescriptor {
             MethodDescriptor desc = new MethodDescriptor(methodName);
             if (! method.isImport()) {
                 CFG cfg = cfgProgram.getMethodToCFGMap().get(methodName);
-                if (cfg == null) {
-                    System.out.println("BAD: " + methodName);
-                }
                 MDCreator creator = new MDCreator(desc);
                 for (CFGLine line : cfg.getAllLines()) {
                     line.accept(creator);

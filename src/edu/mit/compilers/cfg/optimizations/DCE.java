@@ -193,20 +193,34 @@ public class DCE implements Optimization {
     // you want to replace that line with.
     // returns either CFGMethodCall (if expression is a method call that affects
     // global variables), or line.getNext() (if line is not end) or new noop (if line is end)
-    private static class LineReplacer implements IRExpression.IRExpressionVisitor<CFGLine> {
+    public static class LineReplacer implements IRExpression.IRExpressionVisitor<CFGLine> {
         private CFGLine line;
+        private boolean returnNoOpIfDelete;
 
-        public LineReplacer(CFGLine line) { this.line = line; }
+        public LineReplacer(CFGLine line, boolean returnNoOp) {
+            this.line = line;
+            this.returnNoOpIfDelete = returnNoOp;
+        }
 
-        public static CFGLine getReplacementLine(CFGLine line) {
+        public LineReplacer(CFGLine line) { this(line, false); }
+
+        private static CFGLine getReplacementLine(CFGLine line, boolean returnNoOpIfDelete) {
             if (line.isBranch()) {
                 throw new RuntimeException("Trying to delete a branch");
             }
-            if (line.isEnd()) {
+            if (returnNoOpIfDelete || line.isEnd()) {
                 return new CFGNoOp();
             } else {
                 return line.getTrueBranch();
             }
+        }
+
+        public static CFGLine getReplacementLine(CFGLine line) {
+            return getReplacementLine(line, false);
+        }
+
+        private CFGLine getReplacementLine() {
+            return getReplacementLine(line, returnNoOpIfDelete);
         }
 
         @Override
@@ -221,21 +235,21 @@ public class DCE implements Optimization {
         }
 
         @Override
-        public CFGLine on(IRUnaryOpExpression ir) { return getReplacementLine(line); }
+        public CFGLine on(IRUnaryOpExpression ir) { return getReplacementLine(); }
         @Override // TODO deal with div by 0 case
-        public CFGLine on(IRBinaryOpExpression ir) { return getReplacementLine(line); }
+        public CFGLine on(IRBinaryOpExpression ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRTernaryOpExpression ir) { return getReplacementLine(line); }
+        public CFGLine on(IRTernaryOpExpression ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRLenExpression ir) { return getReplacementLine(line); }
+        public CFGLine on(IRLenExpression ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRVariableExpression ir) { return getReplacementLine(line); }
+        public CFGLine on(IRVariableExpression ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRBoolLiteral ir) { return getReplacementLine(line); }
+        public CFGLine on(IRBoolLiteral ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRIntLiteral ir) { return getReplacementLine(line); }
+        public CFGLine on(IRIntLiteral ir) { return getReplacementLine(); }
         @Override
-        public CFGLine on(IRStringLiteral ir) { return getReplacementLine(line); }
+        public CFGLine on(IRStringLiteral ir) { return getReplacementLine(); }
     }
 
 }

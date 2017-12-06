@@ -58,6 +58,11 @@ public class CFG {
         return this;
     }
 
+    public void addLine(CFGLine newLine) {
+        this.end.setNext(newLine);
+        end = newLine;
+    }
+
     public void blockify() { // TODO test
         List<CFGLine> queue = new LinkedList<>();
         queue.add(start);
@@ -96,6 +101,23 @@ public class CFG {
         return answer;
     }
 
+    public CFG copy() { // TODO some of the expressions in the copy will be the same, implement IRExpression.copy
+        Map<CFGLine, CFGLine> oldToNew = new HashMap<>();
+        for (CFGLine oldLine : getAllLines()) {
+            if (oldLine.getCorrespondingBlock() != null) {
+                throw new RuntimeException("Blockify prematurely called");
+            }
+            oldToNew.put(oldLine, oldLine.copy());
+        }
+        for (Map.Entry<CFGLine, CFGLine> oldNew : oldToNew.entrySet()) {
+            CFGLine oldLine = oldNew.getKey();
+            CFGLine newLine = oldNew.getValue();
+            newLine.setBranches(oldToNew.get(oldLine.getTrueBranch()),
+                                oldToNew.get(oldLine.getFalseBranch()));
+        }
+        return new CFG(oldToNew.get(start), oldToNew.get(end));
+    }
+
     // NOTE if newLine is a newly created CFGLine, then you need to call
     // newLine.stealChildren(line) in addition to replaceLine(line, newline)
     // the two commute (probably).
@@ -117,6 +139,16 @@ public class CFG {
         } else {
             replaceLine(line, line.getTrueBranch());
         }
+    }
+
+    // replaces a line with a CFG, used for inlining
+    public void replaceLineWithCfg(CFGLine line, CFG subCfg) {
+        for (CFGLine parentLine : line.getParents()) {
+            parentLine.replaceChildren(line, subCfg.start);
+        }
+        subCfg.end.stealChildren(line);
+        if (line == this.start) { this.start = subCfg.start; }
+        if (line == this.end) { this.end = subCfg.end; }
     }
 
     private void updateBlockWithLine(CFGLine line, CFGBlock block) {

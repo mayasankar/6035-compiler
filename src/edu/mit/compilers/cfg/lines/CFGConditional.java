@@ -23,6 +23,18 @@ public class CFGConditional extends CFGLine {
         this.expression = expression;
     }
 
+    private CFGConditional(CFGConditional other) {
+        this.expression = other.expression;
+    }
+
+    @Override
+    public void setBranches(CFGLine trueBranch, CFGLine falseBranch) {
+        this.trueBranch = trueBranch;
+        this.falseBranch = falseBranch;
+        trueBranch.addParentLine(this);
+        if (falseBranch != trueBranch) { falseBranch.addParentLine(this); }
+    }
+
     public IRExpression getExpression() { return expression; }
     public void setExpression(IRExpression expression) { this.expression = expression; }
 
@@ -30,6 +42,9 @@ public class CFGConditional extends CFGLine {
     public boolean isNoOp() { return false; }
     @Override
     public boolean isAssign() { return false; }
+
+    @Override
+    public CFGLine copy() { return new CFGConditional(this); }
 
     @Override
     public String ownValue() {

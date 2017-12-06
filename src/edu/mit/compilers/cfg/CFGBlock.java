@@ -76,6 +76,11 @@ public class CFGBlock extends CFGLine {
     }
 
     @Override
+    public CFGLine copy() {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
     public boolean isEnd() {
         if (lastLine.getTrueBranch() == null) {
             if (lastLine.getFalseBranch() != null) {

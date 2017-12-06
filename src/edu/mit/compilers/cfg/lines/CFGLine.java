@@ -101,6 +101,15 @@ public abstract class CFGLine {
         this.parents.remove(parent);
     }
 
+    public void removeParentRecursive(CFGLine parent) {
+        this.parents.remove(parent);
+        if (this.parents.isEmpty()) {
+            for (CFGLine child : this.getChildren()) {
+                child.removeParentRecursive(this);
+            }
+        }
+    }
+
     public Map<IRExpression, Set<String>> getAvailableExpressionsIn() { return this.availableExpressionsIN; }
     public void setAvailableExpressionsIn(Map<IRExpression, Set<String>> newSet) { this.availableExpressionsIN = newSet; }
     public Map<IRExpression, Set<String>> getAvailableExpressionsOut() { return this.availableExpressionsOUT; }
@@ -133,7 +142,14 @@ public abstract class CFGLine {
     public void setNext(CFGLine next) {
         this.trueBranch = next;
         this.falseBranch = next;
-        next.addParentLine(this);
+        if (next != null) { next.addParentLine(this); }
+    }
+
+    public void setBranches(CFGLine trueBranch, CFGLine falseBranch) {
+        if (trueBranch != falseBranch) {
+            throw new RuntimeException("Not a CFGConditional, but is a branch");
+        }
+        setNext(trueBranch);
     }
 
     public void addParentLine(CFGLine parent) {
@@ -161,6 +177,7 @@ public abstract class CFGLine {
     }
 
     // the children of this are set to the children of other, except loops other->other become loops this->this.
+    // assume that other is no longer a parent, hence stealing children not copying them
     public void stealChildren(CFGLine other) {
         if (other.isEnd()) {
             // these steps are probably unnecessary.
@@ -175,6 +192,9 @@ public abstract class CFGLine {
             }
         } else {
             setNext(other.trueBranch == other ? this : other.trueBranch);
+        }
+        for (CFGLine child : other.getChildren()) {
+            child.removeParent(other);
         }
     }
 
@@ -197,6 +217,8 @@ public abstract class CFGLine {
         throw new RuntimeException("Must be overridden by child class of CFGLine.");
     }
     public abstract boolean isAssign();
+
+    public abstract CFGLine copy();
 
     @Override
     public String toString() {

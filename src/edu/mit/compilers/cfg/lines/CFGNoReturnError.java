@@ -16,6 +16,9 @@ public class CFGNoReturnError extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
+    public CFGLine copy() { return new CFGNoReturnError(); }
+
+    @Override
     public String ownValue() {
         return "Control falls off not void method";
     }

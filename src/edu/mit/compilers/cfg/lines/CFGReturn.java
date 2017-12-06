@@ -23,6 +23,10 @@ public class CFGReturn extends CFGLine {
         this.expression = expression;
     }
 
+    private CFGReturn(CFGReturn other) {
+        this.expression = other.expression;
+    }
+
     public CFGReturn() {
         super();
         this.expression = null;
@@ -42,6 +46,9 @@ public class CFGReturn extends CFGLine {
     public boolean isNoOp() { return false; }
     @Override
     public boolean isAssign() { return false; }
+
+    @Override
+    public CFGLine copy() { return new CFGReturn(this); }
 
     @Override
     public String ownValue() {

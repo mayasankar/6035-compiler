@@ -19,6 +19,9 @@ public class CFGNoOp extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
+    public CFGLine copy() { return new CFGNoOp(); }
+
+    @Override
     public String ownValue() {
         return "NOOP";
     }

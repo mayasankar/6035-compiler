@@ -24,6 +24,17 @@ public class CFGAssignStatement extends CFGLine {
         }
 	}
 
+    public CFGAssignStatement(IRVariableExpression varAssigned, IRExpression expression) {
+        this.varAssigned = varAssigned;
+        if (this.varAssigned.getDepth() > 1) {
+            throw new RuntimeException("CFGAssignStatements must not have >1 varAssigned depth: " + this.varAssigned.toString());
+        }
+        this.expression = expression;
+        if (this.expression.getDepth() > 1) {
+            throw new RuntimeException("CFGAssignStatements must not have >1 expression depth: " + expression.toString());
+        }
+    }
+
 	public CFGAssignStatement(String variableName, IRExpression expression) {
         this.varAssigned = new IRVariableExpression(variableName);
         if (expression.getDepth() > 1) {
@@ -43,6 +54,11 @@ public class CFGAssignStatement extends CFGLine {
         this.expression = expression;
 	}
 
+    private CFGAssignStatement(CFGAssignStatement other) {
+        this.varAssigned = other.varAssigned;
+        this.expression = other.expression;
+    }
+
     public IRVariableExpression getVarAssigned() { return this.varAssigned; }
     public IRExpression getExpression() { return this.expression; }
 	public void setExpression(IRExpression expr) {
@@ -57,6 +73,9 @@ public class CFGAssignStatement extends CFGLine {
 
     @Override
     public boolean isAssign() { return true; }
+
+    @Override
+    public CFGLine copy() { return new CFGAssignStatement(this); }
 
     @Override
     public String ownValue() {
