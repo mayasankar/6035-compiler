@@ -62,7 +62,11 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 
 	@Override
 	public List<IRExpression> getChildren() {
-		return Arrays.asList();
+        if (arrayIndex == null) {
+    		return Arrays.asList();
+        } else {
+            return Arrays.asList(arrayIndex);
+        }
 	}
 
 	@Override

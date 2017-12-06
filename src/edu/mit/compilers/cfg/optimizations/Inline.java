@@ -250,11 +250,11 @@ public class Inline implements Optimization {
 
         public Boolean on(IRLenExpression ir) {
             ir.resetName(getNewName(ir.getArgument()));
-            return true;
+            return onMostExpressions(ir);
         }
         public Boolean on(IRVariableExpression ir) {
             ir.resetName(getNewName(ir.getName()));
-            return true;
+            return onMostExpressions(ir);
         }
         public Boolean on(IRBoolLiteral ir) { return true; }
         public Boolean on(IRIntLiteral ir) { return true; }
