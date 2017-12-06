@@ -23,15 +23,18 @@ public class Inline implements Optimization {
     private Set<String> uninlinedFunctions;
     private CFGProgram cfgProgram;
     private InlinedVariableRenamer renamer;
+    private Set<String> inlinedThisIteration = new HashSet<>(); // set of things that have been inlined in this iteration of the function.
 
     public boolean optimize(CFGProgram cp, boolean debug) {
         this.cfgProgram = cp;
         this.uninlinedFunctions = new HashSet<>();
         this.uninlinedFunctions.add("main");
         List<IRMethodDecl> methodList = cfgProgram.getMethodList();
+
         for (int index = 0; index < methodList.size(); ++index) {
             IRMethodDecl method = methodList.get(index);
             renamer = new InlinedVariableRenamer("inline_" + index + "_");
+            inlinedThisIteration.clear();
             if (method.isImport()) { continue; }
             String methodName = method.getName();
             CFG cfg = cfgProgram.getMethodToCFGMap().get(methodName);
@@ -93,8 +96,19 @@ public class Inline implements Optimization {
             inlineCFG = parameterAssigner.concat(inlineCFG);
             // now, inline inlineCFG
             this.currentCfg.replaceLineWithCfg(line, inlineCFG);
-            // TODO things that need to be fixed:
-            // need to add the renamed local variables to cfgProgram.localVariables
+            if (inlinedThisIteration.add(methodName)) {
+                // TODO add the renamed parameters and local variables to cfgProgram.localVariables
+                for (VariableDescriptor oldVariable : methodDecl.getParameters().getVariableDescriptorList()) {
+                    cfgProgram.addLocalVariable(
+                        currentFunctionName,
+                        new VariableDescriptor(renamer.getNewName(oldVariable.getName()), oldVariable));
+                }
+                for (VariableDescriptor oldVariable : cfgProgram.getLocalVariablesForMethod(methodName)) {
+                    cfgProgram.addLocalVariable(
+                        currentFunctionName,
+                        new VariableDescriptor(renamer.getNewName(oldVariable.getName()), oldVariable));
+                }
+            }
             return true;
         }
 

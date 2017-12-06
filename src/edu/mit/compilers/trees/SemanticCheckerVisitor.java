@@ -48,6 +48,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 	private int declarationCounter = 0; // used to give each var a unique name
 	private List<VariableDeclarationProcessor> varDeclsToRename = new ArrayList<>();
 	private List<VariableExpressionProcessor> varExprsToRename = new ArrayList<>();
+    private List<VariableTable> parametersToRename = new ArrayList<>();
 
 	private class VariableDeclarationProcessor {
 		private String newName;
@@ -85,6 +86,11 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
 		// NOTE: order matters; declarations have to be renamed before expressions
 		for (VariableDeclarationProcessor dp : varDeclsToRename) { dp.process(); }
 		for (VariableExpressionProcessor ep : varExprsToRename) { ep.process(); }
+        for (VariableTable parameters : parametersToRename) {
+            for (VariableDescriptor desc : parameters.getVariableDescriptorList()) {
+                desc.resetName();
+            }
+        }
 		varDeclsToRename.clear();
 		varExprsToRename.clear();
 	}
@@ -185,6 +191,7 @@ public class SemanticCheckerVisitor implements IRNode.IRNodeVisitor<Boolean> {
             }
             param.accept(this);
         }
+        parametersToRename.add(parameters);
 		return hasError;
 	}
 

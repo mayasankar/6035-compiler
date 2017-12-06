@@ -34,6 +34,16 @@ public class VariableDescriptor implements Named {
         this.decl = null;
     }
 
+    // returns a copied VariableDescriptor with newName
+    public VariableDescriptor(String newName, VariableDescriptor other) {
+        this.name = newName;
+        this.type = other.type;
+        this.length = other.length;
+        this.decl = null; // TODO do we need it to be accessible?
+    }
+
+    public void resetName() { this.name = decl.getName(); }
+
     public TypeDescriptor getType() { return type; }
 
     public int getStackOffset() { return stackOffset; }
