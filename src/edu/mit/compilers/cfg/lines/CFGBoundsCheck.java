@@ -1,7 +1,10 @@
 package edu.mit.compilers.cfg.lines;
 
-import antlr.Token;
+import java.util.Arrays;
+import java.util.List;
+
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.ir.expression.IRMethodCallExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 
 
@@ -26,7 +29,7 @@ public class CFGBoundsCheck extends CFGLine {
 	}
 
     private CFGBoundsCheck(CFGBoundsCheck other) {
-        this.arrayVariable = other.arrayVariable;
+        this.arrayVariable = other.arrayVariable.copy();
     }
 
     public IRVariableExpression getExpression() { return this.arrayVariable; }
@@ -40,7 +43,10 @@ public class CFGBoundsCheck extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
-    public CFGLine copy() { return new CFGBoundsCheck(this); }
+    public CFGBoundsCheck copy() { return new CFGBoundsCheck(this); }
+
+    @Override
+    public List<IRVariableExpression> getExpressions() { return Arrays.asList(arrayVariable); }
 
     @Override
     public String ownValue() {

@@ -220,6 +220,8 @@ public abstract class CFGLine {
 
     public abstract CFGLine copy();
 
+    public abstract List<? extends IRExpression> getExpressions();
+
     @Override
     public String toString() {
         return stringHelper(0, 40, new HashSet<CFGLine>());

@@ -1,8 +1,10 @@
 package edu.mit.compilers.cfg.lines;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import edu.mit.compilers.ir.expression.IRExpression;
-import java.util.Set;
 
 public class CFGConditional extends CFGLine {
     IRExpression expression;
@@ -24,7 +26,7 @@ public class CFGConditional extends CFGLine {
     }
 
     private CFGConditional(CFGConditional other) {
-        this.expression = other.expression;
+        this.expression = other.expression.copy();
     }
 
     @Override
@@ -44,7 +46,10 @@ public class CFGConditional extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
-    public CFGLine copy() { return new CFGConditional(this); }
+    public CFGConditional copy() { return new CFGConditional(this); }
+
+    @Override
+    public List<IRExpression> getExpressions() { return Arrays.asList(expression); }
 
     @Override
     public String ownValue() {

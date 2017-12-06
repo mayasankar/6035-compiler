@@ -1,10 +1,12 @@
 package edu.mit.compilers.cfg.lines;
 
-import antlr.Token;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 import edu.mit.compilers.ir.statement.IRAssignStatement;
-import java.util.Set;
 
 public class CFGAssignStatement extends CFGLine {
 	private IRVariableExpression varAssigned; // operation must be = here
@@ -55,8 +57,8 @@ public class CFGAssignStatement extends CFGLine {
 	}
 
     private CFGAssignStatement(CFGAssignStatement other) {
-        this.varAssigned = other.varAssigned;
-        this.expression = other.expression;
+        this.varAssigned = other.varAssigned.copy();
+        this.expression = other.expression.copy();
     }
 
     public IRVariableExpression getVarAssigned() { return this.varAssigned; }
@@ -75,7 +77,10 @@ public class CFGAssignStatement extends CFGLine {
     public boolean isAssign() { return true; }
 
     @Override
-    public CFGLine copy() { return new CFGAssignStatement(this); }
+    public CFGAssignStatement copy() { return new CFGAssignStatement(this); }
+
+    @Override
+    public List<IRExpression> getExpressions() { return Arrays.asList(varAssigned, expression); }
 
     @Override
     public String ownValue() {

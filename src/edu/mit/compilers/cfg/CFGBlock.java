@@ -1,8 +1,10 @@
 package edu.mit.compilers.cfg;
 import java.util.ArrayList;
 import java.util.List;
-import edu.mit.compilers.cfg.lines.CFGLine;
 import java.util.Set;
+
+import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.cfg.lines.CFGLine;
 
 public class CFGBlock extends CFGLine {
     private List<CFGLine> lines;
@@ -77,6 +79,11 @@ public class CFGBlock extends CFGLine {
 
     @Override
     public CFGLine copy() {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
+    public List<IRExpression> getExpressions() {
         throw new RuntimeException("Unimplemented");
     }
 

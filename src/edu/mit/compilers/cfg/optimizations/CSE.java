@@ -31,8 +31,16 @@ public class CSE implements Optimization {
         boolean changed = false;
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
             CFG cfg = method.getValue();
+            if (debug) {
+                System.out.println("Original CFG:");
+                System.out.println(cfg);
+            }
             doAvailableExpressionAnalysis(cfg);
             changed = changed || reduceCommonSubexpressions(cfg);
+            if (debug) {
+                System.out.println("CSE-optimized CFG:");
+                System.out.println(cfg);
+            }
         }
         return changed;
     }

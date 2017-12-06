@@ -1,8 +1,10 @@
 package edu.mit.compilers.cfg.lines;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import edu.mit.compilers.ir.expression.*;
-import java.util.Set;
 
 public class CFGMethodCall extends CFGLine {
     IRMethodCallExpression expression;
@@ -24,7 +26,7 @@ public class CFGMethodCall extends CFGLine {
     }
 
     private CFGMethodCall(CFGMethodCall other) {
-        this.expression = other.expression;
+        this.expression = other.expression.copy();
     }
 
     public IRMethodCallExpression getExpression() { return expression; }
@@ -34,9 +36,12 @@ public class CFGMethodCall extends CFGLine {
     public boolean isNoOp() { return false; }
     @Override
     public boolean isAssign() { return false; }
-    
+
     @Override
-    public CFGLine copy() { return new CFGMethodCall(this); }
+    public CFGMethodCall copy() { return new CFGMethodCall(this); }
+
+    @Override
+    public List<IRMethodCallExpression> getExpressions() { return Arrays.asList(expression); }
 
     @Override
     public String ownValue() {

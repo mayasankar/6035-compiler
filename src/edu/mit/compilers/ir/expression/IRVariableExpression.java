@@ -31,6 +31,15 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 		arrayIndex = expression;
 	}
 
+    private IRVariableExpression(IRVariableExpression other) {
+        expressionType = IRExpression.ExpressionType.VARIABLE;
+        this.variableName = other.variableName;
+        this.arrayIndex = other.isArray() ? other.arrayIndex.copy() : null;
+    }
+
+    @Override
+    public IRVariableExpression copy() { return new IRVariableExpression(this); }
+
 	public String getName() { return variableName; }
 	public IRExpression getIndexExpression() { return arrayIndex; }
 	public void setIndexExpression(IRExpression expr) { arrayIndex = expr;}

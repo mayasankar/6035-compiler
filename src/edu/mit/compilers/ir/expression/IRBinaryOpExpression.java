@@ -31,12 +31,22 @@ public class IRBinaryOpExpression extends IRExpression{
 		this.rightExpr = rightExpr;
 	}
 
+    private IRBinaryOpExpression(IRBinaryOpExpression other) {
+        expressionType = IRExpression.ExpressionType.BINARY;
+        this.leftExpr = other.leftExpr.copy();
+        this.operator = other.operator;
+        this.rightExpr = other.rightExpr.copy();
+    }
+
 	public IRExpression getLeftExpr() { return leftExpr; }
 	public IRExpression getRightExpr() { return rightExpr; }
 	public String getOperator() { return operator; }
 	public void setOperator(String op) { this.operator = op; }
 	public void setRightExpr(IRExpression expr) { this.rightExpr = expr; }
 	public void setLeftExpr(IRExpression expr) { this.leftExpr = expr; }
+
+    @Override
+    public IRBinaryOpExpression copy() { return new IRBinaryOpExpression(this); }
 
 	private boolean isCommutative() {
 		switch (operator) {

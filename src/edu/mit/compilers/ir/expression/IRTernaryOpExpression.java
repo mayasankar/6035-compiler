@@ -26,6 +26,15 @@ public class IRTernaryOpExpression extends IRExpression {
 		this.falseExpression = falseExpression;
 	}
 
+    private IRTernaryOpExpression(IRTernaryOpExpression other) {
+        setLineNumbers(other);
+        this.condition = other.condition.copy();
+        this.trueExpression = other.trueExpression.copy();
+        this.falseExpression = other.falseExpression.copy();
+    }
+    @Override
+    public IRTernaryOpExpression copy() { return new IRTernaryOpExpression(this); }
+
 	public IRExpression getCondition() { return condition; }
 	public IRExpression getTrueExpression() { return trueExpression; }
 	public IRExpression getFalseExpression() { return falseExpression; }

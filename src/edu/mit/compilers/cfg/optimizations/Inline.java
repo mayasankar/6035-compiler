@@ -22,12 +22,16 @@ public class Inline implements Optimization {
 
     private Set<String> uninlinedFunctions;
     private CFGProgram cfgProgram;
+    private InlinedVariableRenamer renamer;
 
     public boolean optimize(CFGProgram cp, boolean debug) {
         this.cfgProgram = cp;
         this.uninlinedFunctions = new HashSet<>();
         this.uninlinedFunctions.add("main");
-        for (IRMethodDecl method : cfgProgram.getMethodList()) {
+        List<IRMethodDecl> methodList = cfgProgram.getMethodList();
+        for (int index = 0; index < methodList.size(); ++index) {
+            IRMethodDecl method = methodList.get(index);
+            renamer = new InlinedVariableRenamer("inline_" + index + "_");
             if (method.isImport()) { continue; }
             String methodName = method.getName();
             CFG cfg = cfgProgram.getMethodToCFGMap().get(methodName);
@@ -84,11 +88,13 @@ public class Inline implements Optimization {
             List<IRMemberDecl> parameters = methodDecl.getParameters().getVariableList();
             List<IRExpression> arguments = expr.getArguments();
             for (int i = 0; i < arguments.size(); ++i) {
-                parameterAssigner.addLine(new CFGAssignStatement(parameters.get(i).getName(), arguments.get(i)));
+                parameterAssigner.addLine(new CFGAssignStatement(renamer.getNewName(parameters.get(i).getName()), arguments.get(i)));
             }
             inlineCFG = parameterAssigner.concat(inlineCFG);
             // now, inline inlineCFG
             this.currentCfg.replaceLineWithCfg(line, inlineCFG);
+            // TODO things that need to be fixed:
+            // need to add the renamed local variables to cfgProgram.localVariables
             return true;
         }
 
@@ -142,6 +148,7 @@ public class Inline implements Optimization {
     }
 
     // always returns true
+    // TODO should also give all variables from the inner cfg a distinct name
     private class InlineCFGMaker implements CFGLine.CFGVisitor<Boolean> {
         CFG cfg;
         CFGLine newEnd;
@@ -154,13 +161,21 @@ public class Inline implements Optimization {
         }
 
         private Boolean onMostLines(CFGLine line) {
+            renameExpressions(line);
             if (line.isEnd()) {
                 line.setNext(newEnd);
             }
             return true;
         }
 
+        private void renameExpressions(CFGLine line) {
+            for (IRExpression expr : line.getExpressions()) {
+                expr.accept(renamer);
+            }
+        }
+
         public Boolean on(CFGReturn line) {
+            renameExpressions(line);
             CFGLine replacementLine;
             if (line.isVoid()) {
                 replacementLine = new CFGNoOp();
@@ -189,4 +204,38 @@ public class Inline implements Optimization {
         }
     }
 
+    // always returns true
+    private static class InlinedVariableRenamer implements IRExpression.IRExpressionVisitor<Boolean> {
+        private String prefix;
+
+        public InlinedVariableRenamer(String prefix) { this.prefix = prefix; }
+
+        public String getNewName(String oldName) {
+            return prefix + oldName;
+        }
+
+        private Boolean onMostExpressions(IRExpression expr) {
+            for (IRExpression child : expr.getChildren()) {
+                child.accept(this);
+            }
+            return true;
+        }
+
+        public Boolean on(IRUnaryOpExpression ir) { return onMostExpressions(ir); }
+        public Boolean on(IRBinaryOpExpression ir) { return onMostExpressions(ir); }
+        public Boolean on(IRTernaryOpExpression ir) { return onMostExpressions(ir); }
+        public Boolean on(IRMethodCallExpression ir) { return onMostExpressions(ir); }
+
+        public Boolean on(IRLenExpression ir) {
+            ir.resetName(getNewName(ir.getArgument()));
+            return true;
+        }
+        public Boolean on(IRVariableExpression ir) {
+            ir.resetName(getNewName(ir.getName()));
+            return true;
+        }
+        public Boolean on(IRBoolLiteral ir) { return true; }
+        public Boolean on(IRIntLiteral ir) { return true; }
+        public Boolean on(IRStringLiteral ir) { return true; }
+    }
 }

@@ -10,6 +10,11 @@ public class IRStringLiteral extends IRLiteral<String> {
 		expressionType = IRExpression.ExpressionType.STRING_LITERAL;
 	}
 
+    @Override
+    public IRStringLiteral copy() {
+        return new IRStringLiteral(this.value);
+    }
+
 	@Override
 	public TypeDescriptor getType() {
 		return TypeDescriptor.STRING;

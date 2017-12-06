@@ -1,6 +1,8 @@
 package edu.mit.compilers.cfg.lines;
 
-import antlr.Token;
+import java.util.Arrays;
+import java.util.List;
+
 import edu.mit.compilers.ir.expression.IRExpression;
 import edu.mit.compilers.ir.expression.IRVariableExpression;
 
@@ -16,7 +18,10 @@ public class CFGNoReturnError extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
-    public CFGLine copy() { return new CFGNoReturnError(); }
+    public CFGNoReturnError copy() { return new CFGNoReturnError(); }
+
+    @Override
+    public List<IRExpression> getExpressions() { return Arrays.asList(); }
 
     @Override
     public String ownValue() {

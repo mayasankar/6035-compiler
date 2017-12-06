@@ -14,10 +14,15 @@ import edu.mit.compilers.symbol_tables.TypeDescriptor;
 public class IRLenExpression extends IRExpression implements IRExpression.Renameable {
     private String variableName; // what you are taking the length of
 
-    public IRLenExpression(Token id) {
+    public IRLenExpression(Token id) { this(id.getText()); }
+
+    private IRLenExpression(String varName) {
         expressionType = IRExpression.ExpressionType.LEN;
-        variableName = id.getText();
+        variableName = varName;
     }
+
+    @Override
+    public IRLenExpression copy() { return new IRLenExpression(variableName); }
 
     public String getArgument() { return variableName; }
     @Override

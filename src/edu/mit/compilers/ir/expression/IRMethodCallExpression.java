@@ -1,5 +1,6 @@
 package edu.mit.compilers.ir.expression;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,11 +13,22 @@ public class IRMethodCallExpression extends IRExpression {
 	private String functionName;
 
 	public IRMethodCallExpression(String descriptorName, List<IRExpression> arguments) {
+        // TODO -- line numbers?
 		expressionType = IRExpression.ExpressionType.METHOD_CALL;
 		this.arguments = Collections.unmodifiableList(arguments);
 		this.functionName = descriptorName;
 		//TODO: some code to get the method descriptor
 	}
+
+    private IRMethodCallExpression(IRMethodCallExpression other) {
+        List<IRExpression> myArgs = new ArrayList<>();
+        for (IRExpression expr : other.arguments) { myArgs.add(expr.copy()); }
+        this.arguments = Collections.unmodifiableList(myArgs);
+        this.functionName = other.functionName;
+    }
+
+    @Override
+    public IRMethodCallExpression copy() { return new IRMethodCallExpression(this); }
 
 	@Override
 	public TypeDescriptor getType() {

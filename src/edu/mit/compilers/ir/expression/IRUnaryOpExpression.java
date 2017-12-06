@@ -9,12 +9,11 @@ import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRUnaryOpExpression extends IRExpression {
 
-	//private IRUnaryOperator operator;
 	private String operator;
 	private IRExpression argument;
 
 	public IRUnaryOpExpression(Token operator, IRExpression argument) {
-		//setLineNumbers(operator);
+		//setLineNumbers(operator); //TODO mayars why is this gone?
 		expressionType = IRExpression.ExpressionType.UNARY;
 		this.operator = operator.getText();
 		this.argument = argument;
@@ -25,6 +24,15 @@ public class IRUnaryOpExpression extends IRExpression {
 		this.operator = operator;
 		this.argument = argument;
 	}
+
+    private IRUnaryOpExpression(IRUnaryOpExpression other) {
+        expressionType = IRExpression.ExpressionType.UNARY;
+        this.operator = other.operator;
+        this.argument = other.argument.copy();
+    }
+
+    @Override
+    public IRUnaryOpExpression copy() { return new IRUnaryOpExpression(this); }
 
 	public String getOperator() { return operator; }
 	public IRExpression getArgument() { return argument; }

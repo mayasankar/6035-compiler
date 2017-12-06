@@ -1,8 +1,10 @@
 package edu.mit.compilers.cfg.lines;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import edu.mit.compilers.ir.expression.IRExpression;
-import java.util.Set;
 
 public class CFGReturn extends CFGLine {
     IRExpression expression; // null if void return statement
@@ -24,7 +26,7 @@ public class CFGReturn extends CFGLine {
     }
 
     private CFGReturn(CFGReturn other) {
-        this.expression = other.expression;
+        this.expression = other.isVoid() ? null : other.expression.copy();
     }
 
     public CFGReturn() {
@@ -48,7 +50,16 @@ public class CFGReturn extends CFGLine {
     public boolean isAssign() { return false; }
 
     @Override
-    public CFGLine copy() { return new CFGReturn(this); }
+    public CFGReturn copy() { return new CFGReturn(this); }
+
+    @Override
+    public List<IRExpression> getExpressions() {
+        if (expression == null) {
+            return Arrays.asList();
+        } else {
+            return Arrays.asList(expression);
+        }
+    }
 
     @Override
     public String ownValue() {

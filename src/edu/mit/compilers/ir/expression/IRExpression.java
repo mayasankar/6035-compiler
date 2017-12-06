@@ -50,6 +50,8 @@ public abstract class IRExpression extends IRNode {
 	@Override
 	public abstract List<IRExpression> getChildren();
 
+    public abstract IRExpression copy();
+
     public boolean isConstant() {
         for (IRExpression child : getChildren()) {
             if (!(child.isConstant())) { return false; }

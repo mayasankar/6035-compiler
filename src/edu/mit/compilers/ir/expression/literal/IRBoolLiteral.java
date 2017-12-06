@@ -12,6 +12,11 @@ public class IRBoolLiteral extends IRLiteral<Boolean> {
 		expressionType = IRExpression.ExpressionType.BOOL_LITERAL;
 	}
 
+    @Override
+    public IRBoolLiteral copy() {
+        return new IRBoolLiteral(this.value);
+    }
+
 	@Override
 	public TypeDescriptor getType() {
 		return TypeDescriptor.BOOL;
