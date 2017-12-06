@@ -33,7 +33,7 @@ public class Inline implements Optimization {
 
         for (int index = 0; index < methodList.size(); ++index) {
             IRMethodDecl method = methodList.get(index);
-            renamer = new InlinedVariableRenamer("inline_" + index + "_");
+            renamer = new InlinedVariableRenamer("inline_" + index + "_", cfgProgram.getGlobalNames());
             inlinedThisIteration.clear();
             if (method.isImport()) { continue; }
             String methodName = method.getName();
@@ -221,11 +221,19 @@ public class Inline implements Optimization {
     // always returns true
     private static class InlinedVariableRenamer implements IRExpression.IRExpressionVisitor<Boolean> {
         private String prefix;
+        private Set<String> globals;
 
-        public InlinedVariableRenamer(String prefix) { this.prefix = prefix; }
+        public InlinedVariableRenamer(String prefix, Set<String> globals) {
+            this.prefix = prefix;
+            this.globals = globals;
+        }
 
         public String getNewName(String oldName) {
-            return prefix + oldName;
+            if (globals.contains(oldName)) {
+                return oldName;
+            } else {
+                return prefix + oldName;
+            }
         }
 
         private Boolean onMostExpressions(IRExpression expr) {
