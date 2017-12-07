@@ -4,6 +4,7 @@ import java.util.Map;
 
 import edu.mit.compilers.cfg.CFG;
 import edu.mit.compilers.cfg.CFGBlock;
+import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
@@ -14,12 +15,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
 
     private String label;
     private int numAllocs;
-    private VariableStackAssigner stacker;
+    private CFGLocationAssigner stacker;
     private TypeDescriptor returnType;
 	private IRMethodDecl decl;
 
@@ -29,7 +31,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
     private ExpressionAssemblerVisitor expressionAssembler;
 
 
-    public MethodAssembler(String method, int numParams, VariableStackAssigner stacker, TypeDescriptor returnType, IRMethodDecl decl) {
+    public MethodAssembler(String method, int numParams, CFGLocationAssigner stacker, TypeDescriptor returnType, IRMethodDecl decl) {
         this.label = method;
         this.numAllocs = stacker.getNumAllocs();
         this.stacker = stacker;
@@ -44,7 +46,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> prefixLines = new ArrayList<>();
         prefixLines.add(new ALabel(label));
 
-        List<AssemblyLine> lines = pullInArguments();
+        List<AssemblyLine> lines = stacker.pullInArguments(decl);
 
 		lines.addAll(cfg.getStart().getCorrespondingBlock().accept(this));
 
@@ -78,7 +80,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         prefixLines.addAll(lines);
         return prefixLines;
     }
-
+/*
 	private List<AssemblyLine> pullInArguments() {
         List<AssemblyLine> lines = new ArrayList<>();
         List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
@@ -113,51 +115,50 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
      		return (i-4)*8 + "(%rbp)";
      	}
      }
-
+*/
     // NOTE: GUARANTEED TO ONLY USE %r10
-    private List<AssemblyLine> onDepthZeroExpression(IRExpression expr) {
-        if (expr.getDepth() > 0) {
-            throw new RuntimeException("Called onDepthZeroExpression on expression of non-zero depth.");
-        }
-        return expr.accept(expressionAssembler);
-    }
 
-    private List<AssemblyLine> onExpression(IRExpression expr) {
-        return expr.accept(expressionAssembler);
-    }
 
     @Override
     public List<AssemblyLine> on(CFGAssignStatement line) {
-        IRVariableExpression varAssigned = line.getVarAssigned();
-        List<AssemblyLine> lines = onExpression(line.getExpression());  // value now in %r10
-        if (varAssigned.isArray()){
-            lines.add(new APush("%r10")); // will get it out right before the end and assign to %r11
-            lines.addAll(onExpression(varAssigned.getIndexExpression())); // array index now in %r10
-            lines.add(new APop("%r11"));
-        }
-        else {
-            lines.add(new AMov("%r10", "%r11"));
-        }
-        lines.addAll(stacker.moveFrom(varAssigned.getName(), "%r11", "%r10"));
-        return lines;
+        return expressionAssembler.onCFGAssignExpr(line);
     }
 
     @Override
     public List<AssemblyLine> on(CFGBoundsCheck line) {
         IRVariableExpression variable = line.getExpression();
-        List<AssemblyLine> lines = onExpression(variable.getIndexExpression()); // array index now in %r10
-        String indexRegister = "%r10";
-        lines.add(new AMov(stacker.getMaxSize(variable.getName()), "%r11"));
-        lines.add(new ACmp("%r11", indexRegister));
-        lines.add(new AJmp("jge", ".out_of_bounds"));
+        List<AssemblyLine> lines = new ArrayList<>();
+        IRExpression index = variable.getIndexExpression();
+        String indexRegister;
+        if(!stacker.isStoredInRegister(index, line)) {
+            indexRegister = stacker.getFreeRegister(line);
+        } else {
+            indexRegister = stacker.getLocationOfVariable(index, line);
+        }
         lines.add(new ACmp("$0", indexRegister));
         lines.add(new AJmp("jl", ".out_of_bounds"));
+        
+        lines.add(new ACmp(stacker.getMaxSize(variable.getName()), indexRegister));
+        lines.add(new AJmp("jle", ".out_of_bounds"));
+
         return lines;
     }
 
     @Override
     public List<AssemblyLine> on(CFGConditional line) {
-        return onDepthZeroExpression(line.getExpression());
+        List<AssemblyLine> lines = new ArrayList<>();
+        IRExpression branchExpr = line.getExpression();
+        String branchLoc;
+        if(stacker.isStoredInRegister(branchExpr, line)) {
+            branchLoc = stacker.getLocationOfVariable(branchExpr, line);
+        } else {
+            branchLoc = stacker.getFreeRegister(line);
+            lines.add(new AMov(stacker.getLocationOfVariable(branchExpr, line), branchLoc));
+        }
+        lines.add(new ACmp("$0", branchLoc));
+        lines.add(new AJmp("je", blockNames.get(line.getCorrespondingBlock().getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
+  
+        return lines;
     }
 
     @Override
@@ -177,8 +178,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> lines = new ArrayList<>();
         if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
-            lines.addAll(onDepthZeroExpression(returnExpr));  // return value now in %r10
-            lines.add(new AMov("%r10", "%rax"));
+            String answerLoc = stacker.getLocationOfVariable(returnExpr, line);
+            lines.add(new AMov(answerLoc, "%rax"));
         }
         lines.add(new AJmp("jmp", label + "_end")); // jump to end of method where we return
         return lines;
@@ -189,24 +190,49 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> lines = new ArrayList<>();
         IRMethodCallExpression methodCall = line.getExpression();
         List<IRExpression> arguments = methodCall.getArguments();
-        List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
+        String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+        List<String> callerSavedRegisters = new LinkedList<>();
+        String freeRegister = stacker.getFreeRegister(line);
+        
+        // Move first six arguments to the correct register, as by convention
+        for (int i=0; i<arguments.size() && i < 6; i++) {
+            String reg = registers[i];
+            // If the register is currently in use, pop the value to the stack to remember it
+            if(!stacker.isFreeRegister(reg, line)) {
+                lines.add(new APush(reg));
+                callerSavedRegisters.add(0, reg);
+            }
+            IRExpression arg = arguments.get(i);
+            String argLoc = stacker.getLocationOfVariable(arg, line);
+            lines.add(new AMov(argLoc, reg));
+        }
+        if(!stacker.isFreeRegister("%rax", line)) {
+            lines.add(new APush("%rax"));
+            callerSavedRegisters.add(0, "%rax");
+        }
+        lines.add(new AMov("$0", "%rax"));
+        
+        // Move remaining args onto stack
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            lines.addAll(onDepthZeroExpression(arg));
-            lines.add(new APush("%r10"));
+            String argLoc = stacker.getLocationOfVariable(arg, line);
+            if(stacker.isStoredInRegister(arg, line)) {
+                lines.add(new APush(argLoc));
+            } else if (callerSavedRegisters.contains(argLoc)){ // if an arg has been moved to make space for another one
+                String stackLoc = 8 * (callerSavedRegisters.indexOf(argLoc) + 1) + "(%rsp)"; // TODO check for off by one errors here
+                lines.add(new AMov(stackLoc, freeRegister));
+                lines.add(new APush(freeRegister));
+            } else {
+                lines.add(new AMov(argLoc, freeRegister));
+                lines.add(new APush(freeRegister));
+            }
         }
-        for (int i=0; i<arguments.size() && i < 6; i++) {
-            IRExpression arg = arguments.get(i);
-            lines.addAll(onDepthZeroExpression(arg));
-            lines.add(new AMov("%r10", registers.get(i)));
-        }
-        lines.add(new AMov("$0", "%rax"));
+
         lines.add(new ACall(methodCall.getName()));
-        for (int i=arguments.size()-1; i>=6; i--) {
-            lines.add(new APop("%r10"));
+        for (int i=arguments.size()-1; i>=6; i--) {// TODO: Just decrease the stack pointer
+            lines.add(new APop(freeRegister));
         }
-        lines.add(new AMov("%rax", "%r10"));
         return lines;
     }
 
@@ -235,11 +261,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         for (CFGLine line: block.getLines()) {
             lines.addAll(line.accept(this));
         }
-        if (! block.isEnd() && block.isBranch() && !blockNames.get(block.getFalseBranch()).equals("null")) {
-            lines.add(new AMov("$0", "%r11"));
-            lines.add(new ACmp("%r11", "%r10"));
-            lines.add(new AJmp("je", blockNames.get(block.getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
-        }
+        
 		if (jumpToTrue) {
             lines.add(new AJmp("jmp", blockNames.get(block.getTrueBranch())));
 		}

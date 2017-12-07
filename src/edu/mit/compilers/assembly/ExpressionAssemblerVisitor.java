@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -24,11 +25,14 @@ import edu.mit.compilers.cfg.lines.*;
 public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisitor<List<AssemblyLine>> {
 
     private String methodLabel;
-    private VariableStackAssigner stacker;
+    private CFGLocationAssigner stacker;
     private Map<String, String> stringLabels;
     private int stringCount;
+    
+    private String freeRegister;
+    private CFGLine cfgline;
 
-    public ExpressionAssemblerVisitor(String methodLabel, VariableStackAssigner stacker) {
+    public ExpressionAssemblerVisitor(String methodLabel, CFGLocationAssigner stacker) {
         this.methodLabel = methodLabel;
         this.stacker = stacker;
         this.stringLabels = new HashMap<>();
@@ -37,17 +41,34 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     public Map<String, String> getStringLabels() { return stringLabels; }
 
+    public List<AssemblyLine> onCFGAssignExpr(CFGAssignStatement line) {
+        IRVariableExpression varAssigned = line.getVarAssigned();
+        freeRegister = stacker.getFreeRegister(line);
+        cfgline = line;
+        List<AssemblyLine> lines = line.getExpression().accept(this);  // value now in freeRegister
+        String storeLoc = stacker.getLocationOfVariable(line.getVarAssigned(), line);
+        if (varAssigned.isArray()){
+            lines.add(new APush(freeRegister)); // will get it out right before the end and assign to %r11
+            lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in freeRegister
+            lines.add(new APop("%r11"));
+        }
+        else {
+            lines.add(new AMov("%r10", "%r11"));
+        }
+        lines.addAll(stacker.moveFrom(varAssigned.getName(), "%r11", "%r10"));
+        return lines;
+    }
+    
     @Override
-    public List<AssemblyLine> on(IRUnaryOpExpression ir){  // uses %r11
+    public List<AssemblyLine> on(IRUnaryOpExpression ir){
         String op = ir.getOperator();
         IRExpression argExpr = ir.getArgument();
-        List<AssemblyLine> lines = argExpr.accept(this); // value in %r10
-        String register = "%r10";
+        List<AssemblyLine> lines = argExpr.accept(this); // value in free register
         if (op.equals("!")){
-            lines.add(new AOps("xorq", "$1", register));
+            lines.add(new AOps("xorq", "$1", freeRegister));
         }
         else { // "-"
-            lines.add(new AUnaryOp("neg", register));
+            lines.add(new AUnaryOp("neg", freeRegister));
         }
         return lines;
     }
@@ -58,11 +79,10 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     }
 
     @Override
-    public List<AssemblyLine> on(IRLenExpression ir){ // uses only %r10
+    public List<AssemblyLine> on(IRLenExpression ir){ 
         String arg = ir.getArgument();
-        String register = "%r10";
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov(stacker.getMaxSize(arg), register));
+        lines.add(new AMov(stacker.getMaxSize(arg), freeRegister));
         return lines;
     }
 
@@ -70,36 +90,62 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     public List<AssemblyLine> on(IRVariableExpression ir){ // uses only %r10 unlesss array
         List<AssemblyLine> lines = new ArrayList<>();
         if (ir.isArray()) {
-            lines.addAll(ir.getIndexExpression().accept(this));
+            lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
         }
-        lines.addAll(stacker.moveTo(ir.getName(), "%r10", "%r10"));
+        lines.addAll(stacker.pullFromStack(ir.getName(), freeRegister, freeRegister));
         return lines;
     }
 
     @Override
     public List<AssemblyLine> on(IRMethodCallExpression ir){  // uses only %r10 iff its argument expressions do
         List<AssemblyLine> lines = new ArrayList<>();
-        String register = "%r10";
-        List<IRExpression> arguments = ir.getArguments();
-        List<String> registers = new ArrayList<>(Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"));
+        IRMethodCallExpression methodCall = line.getExpression();
+        List<IRExpression> arguments = methodCall.getArguments();
+        String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+        List<String> callerSavedRegisters = new LinkedList<>();
+        
+        // Move first six arguments to the correct register, as by convention
+        for (int i=0; i<arguments.size() && i < 6; i++) {
+            String reg = registers[i];
+            // If the register is currently in use, pop the value to the stack to remember it
+            if(!stacker.isFreeRegister(reg, line)) {
+                lines.add(new APush(reg));
+                callerSavedRegisters.add(0, reg);
+            }
+            IRExpression arg = arguments.get(i);
+            String argLoc = stacker.getLocationOfVariable(arg, line);
+            lines.add(new AMov(argLoc, reg));
+        }
+        if(!stacker.isFreeRegister("%rax", line)) {
+            lines.add(new APush("%rax"));
+            callerSavedRegisters.add(0, "%rax");
+        }
+        lines.add(new AMov("$0", "%rax"));
+        
+        // Move remaining args onto stack
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            lines.addAll(arg.accept(this));
-            lines.add(new APush(register));
+            String argLoc = stacker.getLocationOfVariable(arg, line);
+            if(stacker.isStoredInRegister(arg, line)) {
+                lines.add(new APush(argLoc));
+            } else if (callerSavedRegisters.contains(argLoc)){ // if an arg has been moved to make space for another one
+                String stackLoc = 8 * (callerSavedRegisters.indexOf(argLoc) + 1) + "(%rsp)"; // TODO check for off by one errors here
+                lines.add(new AMov(stackLoc, freeRegister));
+                lines.add(new APush(freeRegister));
+            } else {
+                lines.add(new AMov(argLoc, freeRegister));
+                lines.add(new APush(freeRegister));
+            }
         }
-        for (int i=0; i<arguments.size() && i < 6; i++) {
-            IRExpression arg = arguments.get(i);
-            lines.addAll(arg.accept(this));
-            lines.add(new AMov(register, registers.get(i)));
+
+        lines.add(new ACall(methodCall.getName()));
+        for (int i=arguments.size()-1; i>=6; i--) {// TODO: Just decrease the stack pointer
+            lines.add(new APop(freeRegister));
         }
-        lines.add(new AMov("$0", "%rax"));
-        lines.add(new ACall(ir.getName()));
-        for (int i=arguments.size()-1; i>=6; i--) {
-            lines.add(new APop(register));
-        }
-        lines.add(new AMov("%rax", register));
+        lines.add(new AMov("%rax", freeRegister));
         return lines;
+        
     }
 
     @Override
@@ -114,9 +160,8 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     @Override
     public List<AssemblyLine> on(IRBoolLiteral ir){  // uses %r10 only
         Boolean booleanValue = ir.getValue();
-        String register = "%r10";
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov(booleanValue ? "$1" : "$0", register));
+        lines.add(new AMov(booleanValue ? "$1" : "$0", freeRegister));
         return lines;
     }
 

@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg.optimizations;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import edu.mit.compilers.cfg.CFG;
@@ -35,10 +36,10 @@ public class RegisterAllocation implements Optimization {
 	            }
 	        }
 	    }
-	    if(debug) {
-	        System.err.println(graph.toString());
-	    }
-	    return false;
+	    
+	    Map<String, Integer> coloring = graph.colorGraph();
+	    Map<String, String> varToRegister = new HashMap<>();
+	    return true;
 	}
 
     private void doLivenessAnalysis(CFG cfg, Set<String> globals) { // TODO: add global analysis to register allocation

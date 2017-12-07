@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
+import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
@@ -17,7 +18,7 @@ import edu.mit.compilers.ir.decl.IRMethodDecl;
 
 public class AssemblerNew {
 	private String code;
-	private VariableStackAssigner stacker;
+	private CFGLocationAssigner stacker;
 
 	public AssemblerNew(CFGProgram program) {
 		List<AssemblyLine> lines = new ArrayList<>();

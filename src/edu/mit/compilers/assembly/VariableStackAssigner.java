@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import edu.mit.compilers.cfg.CFG;
+import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.assembly.lines.*;
@@ -15,7 +16,7 @@ import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.ir.decl.*;
 
-public class VariableStackAssigner {
+public class VariableStackAssigner implements CFGLocationAssigner {
 	private Map<String, VariableDescriptor> variables = new HashMap<>();
 	private Map<String, VariableDescriptor> globals = new HashMap<>();
 
@@ -153,4 +154,29 @@ public class VariableStackAssigner {
 		}
 		return allocs;
 	}
+
+    @Override
+    public List<AssemblyLine> pullInArguments(IRMethodDecl decl) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public String getLocationOfVariable(String variable, CFGLine line) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<AssemblyLine> pullFromStack(String variable, String targetRegister, String indexRegister) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<AssemblyLine> pushToStack(String variable, String locRegister, String indexRegister) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
