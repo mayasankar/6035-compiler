@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import edu.mit.compilers.assembly.lines.AssemblyLine;
 import edu.mit.compilers.cfg.lines.CFGLine;
@@ -57,7 +59,21 @@ public class RegisterAssigner implements CFGLocationAssigner {
     public boolean isExpressionStoredInRegister(IRExpression expr, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
 
     @Override
-    public boolean isFreeRegister(String register, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
+    public boolean isFreeRegister(String register, CFGLine line) {
+        Set<String> liveVariables = line.getLivenessIn();  // TODO should this be livenessOUT?
+        Set<String> registersInUse;
+        for (String var : liveVariables) {
+            String reg = registerAssignments.get(var);
+            if (reg == null) {
+                throw new RuntimeException("No register assigned for variable " + var);
+            }
+            if (registersInUse.contains(reg)) {
+                throw new RuntimeException("Multiple variables in same register at this line.");
+            }
+            registersInUse.add(reg);
+        }
+        return (!registersInUse.contains(register));
+    }
 
     @Override
     public String getLocationOfVariable(String variable, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
