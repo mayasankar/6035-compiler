@@ -1,6 +1,7 @@
 package edu.mit.compilers.cfg.optimizations;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,11 +13,11 @@ import edu.mit.compilers.symbol_tables.VariableDescriptor;
 public class RegisterAllocation implements Optimization {
 
     ConflictGraph graph = new ConflictGraph();
-    
+
     private CfgUseVisitor USE = new CfgUseVisitor();
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor(true);
     private CfgAssignVisitor ASSIGN_NONARRAY = new CfgAssignVisitor(false);
-    
+
 	@Override
 	public boolean optimize(CFGProgram cp, boolean debug) {
 	    for(String method: cp.getMethodNames()) {
@@ -36,7 +37,7 @@ public class RegisterAllocation implements Optimization {
 	            }
 	        }
 	    }
-	    
+
 	    Map<String, Integer> coloring = graph.colorGraph();
 	    Map<String, String> varToRegister = new HashMap<>();
 	    return true;
@@ -74,5 +75,5 @@ public class RegisterAllocation implements Optimization {
             line.setLivenessOut(newOut);
         }
     }
-	
+
 }

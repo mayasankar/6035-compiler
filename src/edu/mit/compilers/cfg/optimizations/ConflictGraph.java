@@ -2,6 +2,7 @@ package edu.mit.compilers.cfg.optimizations;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ public class ConflictGraph {
     private Map<String, Set<String>> variableConflicts = new HashMap<>();
 
     public void addVariable(String var) {
-        if(variableConflicts.containsKey(var)) {
+        if (variableConflicts.containsKey(var)) {
             return;
         }
         variableConflicts.put(var, new HashSet<String>());
@@ -111,7 +112,8 @@ public class ConflictGraph {
         variableConflicts = graphCpy;
         return coloring;
     }
-    
+
+
     @Override
     public String toString() {
         String str = "Variable Conflicts:\n";
