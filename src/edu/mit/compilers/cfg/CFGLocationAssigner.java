@@ -6,6 +6,7 @@ import edu.mit.compilers.assembly.lines.AssemblyLine;
 import edu.mit.compilers.cfg.lines.CFGLine;
 import edu.mit.compilers.ir.decl.IRMethodDecl;
 import edu.mit.compilers.ir.expression.IRExpression;
+import edu.mit.compilers.cfg.*;
 
 public interface CFGLocationAssigner {
     public List<AssemblyLine> pullInArguments(IRMethodDecl decl);
