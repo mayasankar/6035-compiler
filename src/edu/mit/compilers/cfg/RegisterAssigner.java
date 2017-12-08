@@ -45,25 +45,36 @@ public class RegisterAssigner implements CFGLocationAssigner {
         return registerColoring;
     }
 
+    @Override
     public List<AssemblyLine> pullInArguments(IRMethodDecl decl) { throw new RuntimeException("Unimplemented."); }  // TODO
 
-    public boolean isStoredInRegister(String variable, CFGLine line) {
+    @Override
+    public boolean isVarStoredInRegister(String variable, CFGLine line) {
         // TODO should this involve line?
         return registerAssignments.get(variable).startsWith("%");
     }
-    public boolean isStoredInRegister(IRExpression expr, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
+    @Override
+    public boolean isExpressionStoredInRegister(IRExpression expr, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public boolean isFreeRegister(String register, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public String getLocationOfVariable(String variable, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
-    public String getLocationOfVariable(IRExpression variable, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
+    @Override
+    public String getLocationOfVarExpression(IRExpression variable, CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public String getFreeRegister(CFGLine line) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public List<AssemblyLine> pullFromStack(String variable, String targetRegister, String indexRegister) { throw new RuntimeException("Unimplemented."); }  // TODO
+    @Override
     public List<AssemblyLine> pushToStack(String variable, String locRegister, String indexRegister) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public String getMaxSize(String variable) { throw new RuntimeException("Unimplemented."); }  // TODO
 
+    @Override
     public int getNumAllocs() { return this.numAllocs; }
 }

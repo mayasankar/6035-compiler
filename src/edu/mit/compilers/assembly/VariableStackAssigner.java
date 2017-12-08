@@ -15,6 +15,7 @@ import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.cfg.optimizations.*;
 import edu.mit.compilers.symbol_tables.*;
 import edu.mit.compilers.ir.decl.*;
+import edu.mit.compilers.ir.expression.*;
 
 public class VariableStackAssigner implements CFGLocationAssigner {
 	private Map<String, VariableDescriptor> variables = new HashMap<>();
@@ -147,36 +148,56 @@ public class VariableStackAssigner implements CFGLocationAssigner {
         }
 	}
 
-	public int getNumAllocs() {
+
+    @Override
+    public List<AssemblyLine> pullInArguments(IRMethodDecl decl) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
+    public List<AssemblyLine> pullFromStack(String variable, String targetRegister, String indexRegister) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
+    public List<AssemblyLine> pushToStack(String variable, String locRegister, String indexRegister) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+	@Override
+    public boolean isVarStoredInRegister(String variable, CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+	@Override
+    public boolean isExpressionStoredInRegister(IRExpression expr, CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+
+	@Override
+    public boolean isFreeRegister(String register, CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+
+	@Override
+    public String getLocationOfVariable(String variable, CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+	@Override
+    public String getLocationOfVarExpression(IRExpression variable, CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+
+	@Override
+    public String getFreeRegister(CFGLine line){
+		throw new RuntimeException("Unimplemented");
+	}
+
+    @Override
+    public int getNumAllocs(){
 		int allocs = 0;
 		for(VariableDescriptor desc: variables.values()) {
 			allocs += desc.getSpaceRequired();
 		}
 		return allocs;
 	}
-
-    @Override
-    public List<AssemblyLine> pullInArguments(IRMethodDecl decl) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    @Override
-    public String getLocationOfVariable(String variable, CFGLine line) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<AssemblyLine> pullFromStack(String variable, String targetRegister, String indexRegister) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<AssemblyLine> pushToStack(String variable, String locRegister, String indexRegister) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }

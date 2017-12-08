@@ -28,7 +28,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     private CFGLocationAssigner stacker;
     private Map<String, String> stringLabels;
     private int stringCount;
-    
+
     private String freeRegister;
     private CFGLine cfgline;
 
@@ -46,7 +46,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         freeRegister = stacker.getFreeRegister(line);
         cfgline = line;
         List<AssemblyLine> lines = line.getExpression().accept(this);  // value now in freeRegister
-        String storeLoc = stacker.getLocationOfVariable(line.getVarAssigned(), line);
+        String storeLoc = stacker.getLocationOfVarExpression(line.getVarAssigned(), line);
         if (varAssigned.isArray()){
             lines.add(new APush(freeRegister)); // will get it out right before the end and assign to %r11
             lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in freeRegister
@@ -58,7 +58,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         lines.addAll(stacker.moveFrom(varAssigned.getName(), "%r11", "%r10"));
         return lines;
     }
-    
+
     @Override
     public List<AssemblyLine> on(IRUnaryOpExpression ir){
         String op = ir.getOperator();
@@ -79,7 +79,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     }
 
     @Override
-    public List<AssemblyLine> on(IRLenExpression ir){ 
+    public List<AssemblyLine> on(IRLenExpression ir){
         String arg = ir.getArgument();
         List<AssemblyLine> lines = new ArrayList<>();
         lines.add(new AMov(stacker.getMaxSize(arg), freeRegister));
@@ -103,7 +103,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         List<IRExpression> arguments = methodCall.getArguments();
         String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
         List<String> callerSavedRegisters = new LinkedList<>();
-        
+
         // Move first six arguments to the correct register, as by convention
         for (int i=0; i<arguments.size() && i < 6; i++) {
             String reg = registers[i];
@@ -113,7 +113,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 callerSavedRegisters.add(0, reg);
             }
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVariable(arg, line);
+            String argLoc = stacker.getLocationOfVarExpression(arg, line);
             lines.add(new AMov(argLoc, reg));
         }
         if(!stacker.isFreeRegister("%rax", line)) {
@@ -121,13 +121,13 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             callerSavedRegisters.add(0, "%rax");
         }
         lines.add(new AMov("$0", "%rax"));
-        
+
         // Move remaining args onto stack
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVariable(arg, line);
-            if(stacker.isStoredInRegister(arg, line)) {
+            String argLoc = stacker.getLocationOfVarExpression(arg, line);
+            if(stacker.isExpressionStoredInRegister(arg, line)) {
                 lines.add(new APush(argLoc));
             } else if (callerSavedRegisters.contains(argLoc)){ // if an arg has been moved to make space for another one
                 String stackLoc = 8 * (callerSavedRegisters.indexOf(argLoc) + 1) + "(%rsp)"; // TODO check for off by one errors here
@@ -145,7 +145,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         }
         lines.add(new AMov("%rax", freeRegister));
         return lines;
-        
+
     }
 
     @Override

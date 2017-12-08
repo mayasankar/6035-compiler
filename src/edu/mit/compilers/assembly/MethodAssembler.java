@@ -130,14 +130,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> lines = new ArrayList<>();
         IRExpression index = variable.getIndexExpression();
         String indexRegister;
-        if(!stacker.isStoredInRegister(index, line)) {
+        if(!stacker.isExpressionStoredInRegister(index, line)) {
             indexRegister = stacker.getFreeRegister(line);
         } else {
-            indexRegister = stacker.getLocationOfVariable(index, line);
+            indexRegister = stacker.getLocationOfVarExpression(index, line);
         }
         lines.add(new ACmp("$0", indexRegister));
         lines.add(new AJmp("jl", ".out_of_bounds"));
-        
+
         lines.add(new ACmp(stacker.getMaxSize(variable.getName()), indexRegister));
         lines.add(new AJmp("jle", ".out_of_bounds"));
 
@@ -149,15 +149,15 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> lines = new ArrayList<>();
         IRExpression branchExpr = line.getExpression();
         String branchLoc;
-        if(stacker.isStoredInRegister(branchExpr, line)) {
-            branchLoc = stacker.getLocationOfVariable(branchExpr, line);
+        if(stacker.isExpressionStoredInRegister(branchExpr, line)) {
+            branchLoc = stacker.getLocationOfVarExpression(branchExpr, line);
         } else {
             branchLoc = stacker.getFreeRegister(line);
-            lines.add(new AMov(stacker.getLocationOfVariable(branchExpr, line), branchLoc));
+            lines.add(new AMov(stacker.getLocationOfVarExpression(branchExpr, line), branchLoc));
         }
         lines.add(new ACmp("$0", branchLoc));
         lines.add(new AJmp("je", blockNames.get(line.getCorrespondingBlock().getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
-  
+
         return lines;
     }
 
@@ -178,7 +178,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         List<AssemblyLine> lines = new ArrayList<>();
         if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
-            String answerLoc = stacker.getLocationOfVariable(returnExpr, line);
+            String answerLoc = stacker.getLocationOfVarExpression(returnExpr, line);
             lines.add(new AMov(answerLoc, "%rax"));
         }
         lines.add(new AJmp("jmp", label + "_end")); // jump to end of method where we return
@@ -193,7 +193,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
         List<String> callerSavedRegisters = new LinkedList<>();
         String freeRegister = stacker.getFreeRegister(line);
-        
+
         // Move first six arguments to the correct register, as by convention
         for (int i=0; i<arguments.size() && i < 6; i++) {
             String reg = registers[i];
@@ -203,7 +203,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
                 callerSavedRegisters.add(0, reg);
             }
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVariable(arg, line);
+            String argLoc = stacker.getLocationOfVarExpression(arg, line);
             lines.add(new AMov(argLoc, reg));
         }
         if(!stacker.isFreeRegister("%rax", line)) {
@@ -211,13 +211,13 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
             callerSavedRegisters.add(0, "%rax");
         }
         lines.add(new AMov("$0", "%rax"));
-        
+
         // Move remaining args onto stack
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVariable(arg, line);
-            if(stacker.isStoredInRegister(arg, line)) {
+            String argLoc = stacker.getLocationOfVarExpression(arg, line);
+            if(stacker.isExpressionStoredInRegister(arg, line)) {
                 lines.add(new APush(argLoc));
             } else if (callerSavedRegisters.contains(argLoc)){ // if an arg has been moved to make space for another one
                 String stackLoc = 8 * (callerSavedRegisters.indexOf(argLoc) + 1) + "(%rsp)"; // TODO check for off by one errors here
@@ -261,7 +261,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         for (CFGLine line: block.getLines()) {
             lines.addAll(line.accept(this));
         }
-        
+
 		if (jumpToTrue) {
             lines.add(new AJmp("jmp", blockNames.get(block.getTrueBranch())));
 		}
