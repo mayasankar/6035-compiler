@@ -198,6 +198,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 
 	@Override
     public String getLocationOfVariable(String variable, CFGLine line){
+		if(variable.startsWith("$")) {return variable;}
 		VariableDescriptor var = getVar(variable);
 
 	    return "-" + var.getSpaceRequired() + "(%rbp)";
