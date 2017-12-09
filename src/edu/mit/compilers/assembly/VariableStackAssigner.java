@@ -201,7 +201,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 		if(variable.startsWith("$")) {return variable;}
 		VariableDescriptor var = getVar(variable);
 
-	    return "-" + var.getSpaceRequired() + "(%rbp)";
+	    return "-" + var.getStackOffset() + "(%rbp)";
 	}
 
 	@Override
