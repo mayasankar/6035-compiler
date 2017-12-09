@@ -29,8 +29,11 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     private Map<String, String> stringLabels;
     private int stringCount;
 
-    private String freeRegister;
-    private CFGLine cfgline;
+    private String exprName = null;
+    
+    public String freeRegister;
+    public CFGMethodCall method;
+    private CFGAssignStatement line;
 
     public ExpressionAssemblerVisitor(String methodLabel, CFGLocationAssigner stacker) {
         this.methodLabel = methodLabel;
@@ -41,21 +44,32 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     public Map<String, String> getStringLabels() { return stringLabels; }
 
+    public String getExprName(IRExpression expr) {
+        expr.accept(this); // makes sure strings are kept track of
+        if(exprName == null) {
+            throw new RuntimeException("Do not call on things which are not depth 0.");
+        }
+        String ans = exprName;
+        exprName = null;
+        return ans;
+        
+    }
+    
     public List<AssemblyLine> onCFGAssignExpr(CFGAssignStatement line) {
         IRVariableExpression varAssigned = line.getVarAssigned();
-        freeRegister = stacker.getFreeRegister(line);
-        cfgline = line;
+        String sourceReg = stacker.getFreeRegister(line);
+        String indexReg = null;
+        freeRegister = sourceReg;
         List<AssemblyLine> lines = line.getExpression().accept(this);  // value now in freeRegister
-        String storeLoc = stacker.getLocationOfVarExpression(line.getVarAssigned(), line);
+        String storeName = getExprName(varAssigned);
         if (varAssigned.isArray()){
-            lines.add(new APush(freeRegister)); // will get it out right before the end and assign to %r11
-            lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in freeRegister
-            lines.add(new APop("%r11"));
+            indexReg = stacker.getIndexRegister(line);
+            freeRegister = indexReg;
+            lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in indexReg
+            
         }
-        else {
-            lines.add(new AMov("%r10", "%r11"));
-        }
-        lines.addAll(stacker.moveFrom(varAssigned.getName(), "%r11", "%r10"));
+        lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg));
+
         return lines;
     }
 
@@ -88,18 +102,21 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     @Override
     public List<AssemblyLine> on(IRVariableExpression ir){ // uses only %r10 unlesss array
+        exprName = ir.getName();
         List<AssemblyLine> lines = new ArrayList<>();
         if (ir.isArray()) {
             lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
         }
-        lines.addAll(stacker.pullFromStack(ir.getName(), freeRegister, freeRegister));
+        lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
         return lines;
     }
 
     @Override
-    public List<AssemblyLine> on(IRMethodCallExpression ir){  // uses only %r10 iff its argument expressions do
+    public List<AssemblyLine> on(IRMethodCallExpression ir){  // must set cfgline
         List<AssemblyLine> lines = new ArrayList<>();
-        IRMethodCallExpression methodCall = line.getExpression();
+        CFGMethodCall line = method;
+        String freeRegister = stacker.getFreeRegister(method);
+        IRMethodCallExpression methodCall = ir;
         List<IRExpression> arguments = methodCall.getArguments();
         String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
         List<String> callerSavedRegisters = new LinkedList<>();
@@ -113,7 +130,8 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 callerSavedRegisters.add(0, reg);
             }
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVarExpression(arg, line);
+            String argName = getExprName(arg);
+            String argLoc = stacker.getLocationOfVariable(argName, line);
             lines.add(new AMov(argLoc, reg));
         }
         if(!stacker.isFreeRegister("%rax", line)) {
@@ -126,8 +144,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
-            String argLoc = stacker.getLocationOfVarExpression(arg, line);
-            if(stacker.isExpressionStoredInRegister(arg, line)) {
+            String argName = getExprName(arg);
+            String argLoc = stacker.getLocationOfVariable(argName, line);
+            if(stacker.isVarStoredInRegister(argName, line)) {
                 lines.add(new APush(argLoc));
             } else if (callerSavedRegisters.contains(argLoc)){ // if an arg has been moved to make space for another one
                 String stackLoc = 8 * (callerSavedRegisters.indexOf(argLoc) + 1) + "(%rsp)"; // TODO check for off by one errors here
@@ -151,24 +170,25 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     @Override
     public List<AssemblyLine> on(IRIntLiteral ir){  // uses %r10 only
         String valueAsStr = "$" + ir.toString();
-        String register = "%r10";
+        exprName = valueAsStr;
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov(valueAsStr, register));
+        lines.add(new AMov(valueAsStr, freeRegister));
         return lines;
     }
 
     @Override
     public List<AssemblyLine> on(IRBoolLiteral ir){  // uses %r10 only
         Boolean booleanValue = ir.getValue();
+        String convertedValue = booleanValue ? "$1" : "$0";
+        exprName = convertedValue;
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov(booleanValue ? "$1" : "$0", freeRegister));
+        lines.add(new AMov(convertedValue, freeRegister));
         return lines;
     }
 
     @Override
     public List<AssemblyLine> on(IRStringLiteral ir){  // uses %r10 only
         String stringValue = ir.toString();
-        String register = "%r10";
         String label;
         if (! stringLabels.containsKey(stringValue)) {
             stringCount += 1;
@@ -178,64 +198,69 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         else {
             label = stringLabels.get(stringValue);
         }
+        exprName = "$" + label;
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.add(new AMov("$" + label, register));
+        lines.add(new AMov("$" + label, freeRegister));
         return lines;
     }
 
     @Override
     public List<AssemblyLine> on(IRBinaryOpExpression ir){  // definitely uses %r11
-        String register = "%r10";  // the register we want to output the expression into
-        String leftReg = "%r10";  // the register the left expression should generate into
-        String rightReg = "%r11";  // the register the right expression should generate into; distinct from leftReg
         String op = ir.getOperator();
         IRExpression leftExpr = ir.getLeftExpr();
         IRExpression rightExpr = ir.getRightExpr();
+        String rightName = getExprName(rightExpr);
+        String rExprLoc = stacker.getLocationOfVariable(rightName, line);
 
         List<AssemblyLine> lines = new ArrayList<>();
-        lines.addAll(rightExpr.accept(this)); // right value in %r10
-        lines.add(new AMov("%r10", rightReg)); // right value in %r11 // TODO once we can input regs, make it so right starts in rightReg
-        lines.addAll(leftExpr.accept(this)); // left value in %r10, right value in %r11  (doesn't overwrite %r11 b/c subexprs required to be depth 0)
+        lines.addAll(leftExpr.accept(this)); // left value in freeRegister
         switch (op) {
             case "+":
-                lines.add(new AOps("add", rightReg, leftReg));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new AOps("add", rExprLoc, freeRegister));
                 return lines;
             case "-":
-                lines.add(new AOps("sub", rightReg, leftReg));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new AOps("sub", rExprLoc, freeRegister));
                 return lines;
             case "*":
-                lines.add(new AOps("imul", rightReg, leftReg));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new AOps("imul", rExprLoc, freeRegister));
                 return lines;
             case "/": case "%":
+                lines.add(new APush("%rax"));
+                lines.add(new APush("%rdx"));
                 lines.add(new AMov("$0", "%rdx"));
-                lines.add(new AMov(leftReg, "%rax"));
+                lines.add(new AMov(freeRegister, "%rax"));
                 lines.add(new ACommand("cqto"));
-                lines.add(new AUnaryOp("idiv", rightReg));
-                lines.add(new AMov((op.equals("/")) ? "%rax" : "%rdx", register));
+                lines.addAll(rightExpr.accept(this)); // Right expr now in freeRegister
+                lines.add(new AUnaryOp("idiv", freeRegister));
+                lines.add(new AMov((op.equals("/")) ? "%rax" : "%rdx", freeRegister));
+                lines.add(new APop("%rdx"));
+                lines.add(new APop("%rax"));
                 return lines;
             case ">>":
             case "<<":
-                lines.add(new AMov(rightReg, "%rcx"));  // NOTE this creates a problem of overwriting %rcx, how do we fix?
-                lines.add(new AShift((op.equals(">>")) ? "shr" : "shl", register));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new APush("%rcx"));
+                String freeRegCopy = freeRegister;
+                freeRegister = "%rcx";
+                lines.addAll(rightExpr.accept(this));// right expr now in %rcx
+                freeRegister = freeRegCopy;
+                lines.add(new AShift((op.equals(">>")) ? "shr" : "shl", freeRegister));
+                lines.add(new APop("%rcx"));
                 return lines;
             case "&&":
-                lines.add(new AOps("and", rightReg, leftReg));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new AOps("and", rExprLoc, freeRegister));
                 return lines;
             case "||":
-                lines.add(new AOps("or", rightReg, leftReg));
-                lines.add(new AMov(leftReg, register));
+                lines.add(new AOps("or", rExprLoc, freeRegister));
                 return lines;
             case "==": case "!=": case "<": case ">": case "<=": case ">=":
-                lines.add(new ACmp(rightReg, leftReg));
-                lines.add(new AMov("$0", register));
-                lines.add(new AMov("$1", "%r11"));
+                lines.add(new ACmp(rExprLoc, freeRegister));
+                lines.add(new AMov("$0", freeRegister));
+                String secondReg = (freeRegister.equals("%r10"))? "%r11": "%r10";
+                lines.add(new APush(secondReg));
+                lines.add(new AMov("$1", secondReg));
                 String dir = (op.equals("==")) ? "e" : (op.equals("!=")) ? "ne" : (op.equals("<")) ? "l" : (op.equals("<=")) ? "le" : (op.equals(">")) ? "g" : "ge";
-                lines.add(new ACmov("cmov" + dir, "%r11", register));  // cmove, cmovne, cmovl, cmovg, cmovle, cmovge
+                lines.add(new ACmov("cmov" + dir, secondReg, freeRegister));  // cmove, cmovne, cmovl, cmovg, cmovle, cmovge
+                lines.add(new APop(secondReg));
                 return lines;
             default:
                 throw new RuntimeException("unsupported operation in binary expression");
@@ -243,3 +268,4 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     }
 }
+    

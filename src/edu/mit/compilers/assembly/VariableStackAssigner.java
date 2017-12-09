@@ -68,7 +68,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 
 	// move variable to targetRegister from stack
 	// usually both registers should be %r10; don't use %r11; if not an array nor global, indexRegister doesn't matter
-	public List<AssemblyLine> moveTo(String variableName, String targetRegister, String indexRegister) {
+	public List<AssemblyLine> moveFromStore(String variableName, String targetRegister, String indexRegister) {
 		VariableDescriptor var = getVar(variableName);
 		int offset = var.getStackOffset();
 		List<AssemblyLine> lines = new ArrayList<>();
@@ -106,7 +106,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 
 	// move variable from sourceRegister to the stack
 	// usually should be %r11 and %r10; source and index should not be same register and index shouldn't be %r11; if not an array nor global, indexRegister doesn't matter
-	public List<AssemblyLine> moveFrom(String variableName, String sourceRegister, String indexRegister) {
+	public List<AssemblyLine> moveToStore(String variableName, String sourceRegister, String indexRegister) {
 		VariableDescriptor var = getVar(variableName);
 		int offset = var.getStackOffset();
 		List<AssemblyLine> lines = new ArrayList<>();
@@ -149,47 +149,63 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	}
 
 
-    @Override
+	@Override
     public List<AssemblyLine> pullInArguments(IRMethodDecl decl) {
-        throw new RuntimeException("Unimplemented");
+        List<AssemblyLine> lines = new ArrayList<>();
+        List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
+        for(int i=0; i < parameters.size(); ++i) {
+            IRMemberDecl param = parameters.get(i);
+            String paramLoc = getParamLoc(i);
+
+            if (i<=5) {
+                lines.addAll(moveToStore(param.getName(), paramLoc, "%r10"));
+            } else {
+                lines.add(new AMov(paramLoc, "%r11"));
+                lines.addAll(moveToStore(param.getName(), "%r11", "%r10"));
+            }
+        }
+        return lines;
     }
 
-    @Override
-    public List<AssemblyLine> pullFromStack(String variable, String targetRegister, String indexRegister) {
-        throw new RuntimeException("Unimplemented");
-    }
+    private String getParamLoc(int i) {
+        if(i==0) {
+            return "%rdi";
+        } else if (i==1) {
+            return "%rsi";
+        } else if (i==2) {
+            return "%rdx";
+        } else if (i==3) {
+            return "%rcx";
+        } else if (i==4) {
+            return "%r8";
+        } else if (i==5) {
+            return "%r9";
+        } else {
+            return (i-4)*8 + "(%rbp)";
+        }
+     }
 
-    @Override
-    public List<AssemblyLine> pushToStack(String variable, String locRegister, String indexRegister) {
-        throw new RuntimeException("Unimplemented");
-    }
 
 	@Override
     public boolean isVarStoredInRegister(String variable, CFGLine line){
-		throw new RuntimeException("Unimplemented");
-	}
-	@Override
-    public boolean isExpressionStoredInRegister(IRExpression expr, CFGLine line){
-		throw new RuntimeException("Unimplemented");
+	    return false;
 	}
 
 	@Override
     public boolean isFreeRegister(String register, CFGLine line){
-		throw new RuntimeException("Unimplemented");
+		return true;
 	}
 
 	@Override
     public String getLocationOfVariable(String variable, CFGLine line){
-		throw new RuntimeException("Unimplemented");
-	}
-	@Override
-    public String getLocationOfVarExpression(IRExpression variable, CFGLine line){
-		throw new RuntimeException("Unimplemented");
+		VariableDescriptor var = getVar(variable);
+
+	    return "-" + var.getSpaceRequired() + "(%rbp)";
 	}
 
 	@Override
     public String getFreeRegister(CFGLine line){
-		throw new RuntimeException("Unimplemented");
+		return "%r10";
 	}
 
     @Override
@@ -200,4 +216,9 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 		}
 		return allocs;
 	}
+
+    @Override
+    public String getIndexRegister(CFGLine line) {
+        return "%r11";
+    }
 }
