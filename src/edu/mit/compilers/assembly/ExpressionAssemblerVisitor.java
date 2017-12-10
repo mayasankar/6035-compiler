@@ -69,7 +69,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in indexReg
             
         }
-        lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg));
+		lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg));
 
         return lines;
     }
@@ -103,13 +103,14 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     @Override
     public List<AssemblyLine> on(IRVariableExpression ir){ // uses only %r10 unlesss array
-        exprName = ir.getName();
         List<AssemblyLine> lines = new ArrayList<>();
         if (ir.isArray()) {
             lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
         }
         lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
-        return lines;
+        
+        exprName = ir.getName();
+		return lines;
     }
 
     @Override

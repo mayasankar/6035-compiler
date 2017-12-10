@@ -106,7 +106,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         lines.add(new AJmp("jl", ".out_of_bounds"));
 
         lines.add(new ACmp(stacker.getMaxSize(variable.getName()), indexRegister));
-        lines.add(new AJmp("jle", ".out_of_bounds"));
+        lines.add(new AJmp("jge", ".out_of_bounds"));
 
         return lines;
     }

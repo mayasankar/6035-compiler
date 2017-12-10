@@ -69,28 +69,24 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	// move variable to targetRegister from stack
 	// usually both registers should be %r10; don't use %r11; if not an array nor global, indexRegister doesn't matter
 	public List<AssemblyLine> moveFromStore(String variableName, String targetRegister, String indexRegister) {
+		List<AssemblyLine> lines = new ArrayList<>();
+		if(variableName.startsWith("$")) { 
+			lines.add(new AMov(variableName, targetRegister));
+			return lines;
+		}
 		VariableDescriptor var = getVar(variableName);
 		int offset = var.getStackOffset();
-		List<AssemblyLine> lines = new ArrayList<>();
 		if (! variables.containsKey(variableName)) {
 			// it's a global variable
 			if (var.isArray()) {
-				lines.add(new APush("%r11"));
-				lines.add(new AMov("$3", "%rcx"));  // shift to multiply by 8
-                lines.add(new AShift("shl", indexRegister));
-				lines.add(new AMov("$" + variableName, "%r11"));
-				lines.add(new AOps("add", "%r11", indexRegister));
-				lines.add(new AMov("0(" + indexRegister + ")", "%r11"));
-				lines.add(new AMov("%r11", targetRegister));
-				lines.add(new APop("%r11"));
+                lines.add(new AOps("imul", "$8", indexRegister));
+				lines.add(new AOps("add", "$" + variableName, indexRegister));
+				lines.add(new AMov("0(" + indexRegister + ")", targetRegister));
 				return lines;
 			}
 			else {
-				lines.add(new APush("%r11"));
 				lines.add(new AMov("$" + variableName, indexRegister));
-				lines.add(new AMov("0(" + indexRegister + ")", "%r11")); // TODO can we remove the %r11 (and thus the pushes) to simplify this?
-				lines.add(new AMov("%r11", targetRegister));
-				lines.add(new APop("%r11"));
+				lines.add(new AMov("0(" + indexRegister + ")", targetRegister)); // TODO can we remove the %r11 (and thus the pushes) to simplify this?
 				return lines;
 			}
 		}
@@ -113,12 +109,8 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 		if (! variables.containsKey(variableName)) {
 			// it's a global variable
 			if (var.isArray()) {
-				lines.add(new APush("%r11"));
-				lines.add(new AMov("$3", "%rcx"));  // shift to multiply by 8
-                lines.add(new AShift("shl", indexRegister));
-				lines.add(new AMov("$" + variableName, "%r11"));
-				lines.add(new AOps("add", "%r11", indexRegister));
-				lines.add(new APop("%r11"));
+                lines.add(new AOps("imul", "$8", indexRegister));
+				lines.add(new AOps("add", "$" + variableName, indexRegister));
 				lines.add(new AMov(sourceRegister, "0(" + indexRegister + ")"));
 				return lines;
 			}
