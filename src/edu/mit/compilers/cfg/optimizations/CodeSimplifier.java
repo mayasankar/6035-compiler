@@ -60,7 +60,7 @@ public class CodeSimplifier {
                 AMov mov = (AMov) codeList.get(i);
                 reg1 = mov.getLeft();
                 reg2 = mov.getRight();
-                // if we had a move on the last line, and the register
+				// if we had a move on the last line, and the register
                 // moved into is the same as the first one we move now,
                 // and the middle thing being simplified out is a register
                 // and not both others were on the stack, simplify

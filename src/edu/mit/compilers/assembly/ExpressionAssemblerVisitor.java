@@ -58,12 +58,11 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     public List<AssemblyLine> onCFGAssignExpr(CFGAssignStatement line) {
         IRVariableExpression varAssigned = line.getVarAssigned();
         String sourceReg = stacker.getFreeRegister(line);
-        String indexReg = null;
+        String indexReg = stacker.getIndexRegister(line);
         freeRegister = sourceReg;
         List<AssemblyLine> lines = line.getExpression().accept(this);  // value now in freeRegister
         String storeName = getExprName(varAssigned);
         if (varAssigned.isArray()){
-            indexReg = stacker.getIndexRegister(line);
             freeRegister = indexReg;
             lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in indexReg
             
