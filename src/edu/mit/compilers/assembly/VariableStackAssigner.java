@@ -41,7 +41,8 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 		}
 	}
 
-	private VariableDescriptor getVar(String variableName) {
+	@Override
+	public VariableDescriptor getVar(String variableName) {
 		VariableDescriptor var = variables.get(variableName);
 		if (var == null) {
 			var = globals.get(variableName);
@@ -52,93 +53,6 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 		return var;
 	}
 
-	private String getAddress(String variableName) {
-		VariableDescriptor var = getVar(variableName);
-		int offset = var.getStackOffset();
-		if (! variables.containsKey(variableName)) {
-			// it's a global variable
-			return "$" + variableName;
-		}
-		if (var.isArray()) {
-            return "-" + (new Integer(offset).toString()) + "(%rbp, %r10, 8)";
-        } else {
-            return "-" + (new Integer(offset).toString()) + "(%rbp)";
-        }
-	}
-
-	// move variable to targetRegister from stack
-	// usually both registers should be %r10; don't use %r11; if not an array nor global, indexRegister doesn't matter
-	public List<AssemblyLine> moveFromStore(String variableName, String targetRegister, String indexRegister) {
-		List<AssemblyLine> lines = new ArrayList<>();
-		if(variableName.startsWith("$")) { 
-			lines.add(new AMov(variableName, targetRegister));
-			return lines;
-		}
-		VariableDescriptor var = getVar(variableName);
-		int offset = var.getStackOffset();
-		if (! variables.containsKey(variableName)) {
-			// it's a global variable
-			if (var.isArray()) {
-                lines.add(new AOps("imul", "$8", indexRegister));
-				lines.add(new AOps("add", "$" + variableName, indexRegister));
-				lines.add(new AMov("0(" + indexRegister + ")", targetRegister));
-				return lines;
-			}
-			else {
-				lines.add(new AMov("$" + variableName, indexRegister));
-				lines.add(new AMov("0(" + indexRegister + ")", targetRegister)); // TODO can we remove the %r11 (and thus the pushes) to simplify this?
-				return lines;
-			}
-		}
-		String strLoc = "-" + new Integer(offset).toString();
-		if (var.isArray()) {
-			strLoc += "(%rbp, " + indexRegister + ", 8)";
-		} else {
-			strLoc += "(%rbp)";
-        }
-		lines.add(new AMov(strLoc, targetRegister));
-		return lines;
-	}
-
-	// move variable from sourceRegister to the stack
-	// usually should be %r11 and %r10; source and index should not be same register and index shouldn't be %r11; if not an array nor global, indexRegister doesn't matter
-	public List<AssemblyLine> moveToStore(String variableName, String sourceRegister, String indexRegister) {
-		VariableDescriptor var = getVar(variableName);
-		int offset = var.getStackOffset();
-		List<AssemblyLine> lines = new ArrayList<>();
-		if (! variables.containsKey(variableName)) {
-			// it's a global variable
-			if (var.isArray()) {
-                lines.add(new AOps("imul", "$8", indexRegister));
-				lines.add(new AOps("add", "$" + variableName, indexRegister));
-				lines.add(new AMov(sourceRegister, "0(" + indexRegister + ")"));
-				return lines;
-			}
-			else {
-				lines.add(new AMov("$" + variableName, indexRegister));
-				lines.add(new AMov(sourceRegister, "0(" + indexRegister + ")"));
-				return lines;
-			}
-		}
-		String strLoc = "-" + new Integer(offset).toString();
-		if (var.isArray()) {
-			strLoc += "(%rbp, " + indexRegister + ", 8)";
-		} else {
-			strLoc += "(%rbp)";
-		}
-		lines.add(new AMov(sourceRegister, strLoc));
-		return lines;
-	}
-
-	public String getMaxSize(String variableName) {
-		VariableDescriptor var = getVar(variableName);
-		if (var.isArray()) {
-			int max_index = var.getLength();
-			return "$" + (new Integer(max_index).toString());
-        } else {
-            throw new RuntimeException("Attempted to call getMaxSize() on non-array variable '" + variableName + "'.");
-        }
-	}
 
 
 	@Override
@@ -150,10 +64,10 @@ public class VariableStackAssigner implements CFGLocationAssigner {
             String paramLoc = getParamLoc(i);
 
             if (i<=5) {
-                lines.addAll(moveToStore(param.getName(), paramLoc, "%r10"));
+                lines.addAll(moveToStore(param.getName(), paramLoc, "%r10", null));
             } else {
                 lines.add(new AMov(paramLoc, "%r11"));
-                lines.addAll(moveToStore(param.getName(), "%r11", "%r10"));
+                lines.addAll(moveToStore(param.getName(), "%r11", "%r10", null));
             }
         }
         return lines;
@@ -213,5 +127,10 @@ public class VariableStackAssigner implements CFGLocationAssigner {
     @Override
     public String getSecondFreeRegister(CFGLine line) {
         return "%r11";
+    }
+
+    @Override
+    public boolean isGlobal(String variableName) {
+        return globals.containsKey(variableName);
     }
 }

@@ -69,7 +69,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in indexReg
             
         }
-		lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg));
+		lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg, line));
 
         return lines;
     }
@@ -107,7 +107,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         if (ir.isArray()) {
             lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
         }
-        lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
+        lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister, line));
         
         exprName = ir.getName();
 		return lines;
@@ -133,7 +133,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             }
             IRExpression arg = arguments.get(i);
             String argName = getExprName(arg);
-            lines.addAll(stacker.moveFromStore(argName, reg, reg));
+            lines.addAll(stacker.moveFromStore(argName, reg, reg, line));
         }
         if(!stacker.isFreeRegister("%rax", line)) {
             lines.add(new APush("%rax"));
@@ -154,7 +154,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 lines.add(new AMov(stackLoc, freeRegister));
                 lines.add(new APush(freeRegister));
             } else {
-                lines.addAll(stacker.moveFromStore(argName, freeRegister, freeRegister));
+                lines.addAll(stacker.moveFromStore(argName, freeRegister, freeRegister, line));
                 lines.add(new APush(freeRegister));
             }
         }
