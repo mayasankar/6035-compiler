@@ -434,6 +434,8 @@ public class CP implements Optimization {
                 case "*": return ir.getLeftExpr().accept(this).multiply(ir.getRightExpr().accept(this));
                 case "/": return ir.getLeftExpr().accept(this).divide(ir.getRightExpr().accept(this));
                 case "%": return ir.getLeftExpr().accept(this).remainder(ir.getRightExpr().accept(this));
+				case ">>": return ir.getLeftExpr().accept(this).shiftRight(ir.getRightExpr().accept(this).intValue());
+				case "<<": return ir.getLeftExpr().accept(this).shiftLeft(ir.getRightExpr().accept(this).intValue());
                 default: throw new RuntimeException("Undefined operator " + ir.getOperator() + ".");
             }
         }
