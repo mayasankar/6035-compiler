@@ -16,8 +16,8 @@ public interface CFGLocationAssigner {
 
     public String getLocationOfVariable(String variable, CFGLine line);
 
-    public String getFreeRegister(CFGLine line);
-    public String getIndexRegister(CFGLine line);
+    public String getFirstFreeRegister(CFGLine line);
+    public String getSecondFreeRegister(CFGLine line);
 
     public List<AssemblyLine> moveFromStore(String variable, String targetRegister, String indexRegister);
     public List<AssemblyLine> moveToStore(String variable, String locRegister, String indexRegister);

@@ -205,7 +205,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	}
 
 	@Override
-    public String getFreeRegister(CFGLine line){
+    public String getFirstFreeRegister(CFGLine line){
 		return "%r10";
 	}
 
@@ -219,7 +219,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	}
 
     @Override
-    public String getIndexRegister(CFGLine line) {
+    public String getSecondFreeRegister(CFGLine line) {
         return "%r11";
     }
 }

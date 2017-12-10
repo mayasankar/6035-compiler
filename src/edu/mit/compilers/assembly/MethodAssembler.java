@@ -97,7 +97,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         String indexName = expressionAssembler.getExprName(index);
         String indexRegister;
         if(!stacker.isVarStoredInRegister(indexName, line)) {
-            indexRegister = stacker.getFreeRegister(line);
+            indexRegister = stacker.getFirstFreeRegister(line);
+            lines.addAll(stacker.moveFromStore(indexName, indexRegister, indexRegister));
         } else {
             indexRegister = stacker.getLocationOfVariable(indexName, line);
         }
@@ -119,8 +120,8 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         if(stacker.isVarStoredInRegister(branchName, line)) {
             branchLoc = stacker.getLocationOfVariable(branchName, line);
         } else {
-            branchLoc = stacker.getFreeRegister(line);
-            lines.add(new AMov(stacker.getLocationOfVariable(branchName, line), branchLoc));
+            branchLoc = stacker.getFirstFreeRegister(line);
+            lines.addAll(stacker.moveFromStore(branchName, branchLoc, branchLoc));
         }
         lines.add(new ACmp("$0", branchLoc));
         lines.add(new AJmp("je", blockNames.get(line.getCorrespondingBlock().getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
@@ -146,8 +147,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
             String returnName = expressionAssembler.getExprName(returnExpr);
-            String answerLoc = stacker.getLocationOfVariable(returnName, line);
-            lines.add(new AMov(answerLoc, "%rax"));
+            lines.addAll(stacker.moveFromStore(returnName, "%rax", "%rax"));
         }
         lines.add(new AJmp("jmp", label + "_end")); // jump to end of method where we return
         return lines;
