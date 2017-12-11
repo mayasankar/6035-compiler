@@ -21,12 +21,12 @@ import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     private static final String[] REGISTERS_FOR_USE = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-    
+
     Map<String, VariableDescriptor> globals = new HashMap<>();
     Map<String, VariableDescriptor> variables = new HashMap<>();
     Set<String> usedRegisters = new HashSet<>();
     int numAllocs;
-    
+
     public RegisterAllocatedAssigner(CFGProgram program, Map<String, Integer> colors) {
         for (VariableDescriptor var : program.getGlobalVariables()) {
             globals.put(var.getName(), var);
@@ -36,8 +36,8 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             int stackPointer = 0;
             for(VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
                 if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
-                    desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc)]);
-                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc)]);
+                    desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
+                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                 } else {
                     stackPointer = desc.pushOntoStack(stackPointer);
                 }
@@ -47,8 +47,8 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             for (IRMemberDecl param : params) {
                 VariableDescriptor desc = new VariableDescriptor(param.getName());
                 if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
-                    desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc)]);
-                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc)]);
+                    desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
+                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                 } else {
                     stackPointer = desc.pushOntoStack(stackPointer);
                 }
@@ -56,9 +56,9 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             }
             numAllocs = stackPointer;
         }
-        
+
     }
-    
+
     private VariableDescriptor getVar(String variable) {
         if(globals.containsKey(variable)) {
             return variables.get(variable);
@@ -68,7 +68,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             throw new RuntimeException("variable not found in CFG");
         }
     }
-    
+
     @Override
     public List<AssemblyLine> pullInArguments(IRMethodDecl decl) {
         List<String> paramRegs = Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9");
@@ -154,7 +154,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     @Override
     public List<AssemblyLine> moveFromStore(String variableName, String targetRegister, String indexRegister) {
         List<AssemblyLine> lines = new ArrayList<>();
-        if(variableName.startsWith("$")) { 
+        if(variableName.startsWith("$")) {
             lines.add(new AMov(variableName, targetRegister));
             return lines;
         }
