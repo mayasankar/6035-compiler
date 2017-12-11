@@ -30,7 +30,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     private int stringCount;
 
     private String exprName = null;
-    
+
     public String freeRegister;
     public String freeRegister2;
     public CFGMethodCall method;
@@ -53,9 +53,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         String ans = exprName;
         exprName = null;
         return ans;
-        
+
     }
-    
+
     public List<AssemblyLine> onCFGAssignExpr(CFGAssignStatement line) {
         IRVariableExpression varAssigned = line.getVarAssigned();
         String sourceReg = stacker.getFirstFreeRegister(line);
@@ -67,7 +67,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         if (varAssigned.isArray()){
             freeRegister = indexReg;
             lines.addAll(varAssigned.getIndexExpression().accept(this)); // array index now in indexReg
-            
+
         }
 		lines.addAll(stacker.moveToStore(storeName, sourceReg, indexReg));
 
@@ -108,7 +108,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
         }
         lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
-        
+
         exprName = ir.getName();
 		return lines;
     }
@@ -127,6 +127,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         for (int i=0; i<arguments.size() && i < 6; i++) {
             String reg = registers[i];
             // If the register is currently in use, pop the value to the stack to remember it
+            System.out.println("CALL. reg=" + reg + " free=" + (stacker.isFreeRegister(reg, line) ? "true" : "false"));
             if(!stacker.isFreeRegister(reg, line)) {
                 lines.add(new APush(reg));
                 callerSavedRegisters.add(0, reg);
@@ -215,7 +216,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
         List<AssemblyLine> lines = new ArrayList<>();
         lines.addAll(leftExpr.accept(this)); // left value in freeRegister
-        
+
         String lReg = freeRegister;
         String rReg = freeRegister2;
         freeRegister = freeRegister2;
@@ -268,4 +269,3 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 
     }
 }
-    
