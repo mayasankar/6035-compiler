@@ -17,6 +17,7 @@ import edu.mit.compilers.ir.decl.*;
 import edu.mit.compilers.cfg.optimizations.MethodDescriptor;
 
 public class CFGProgram {
+    private boolean simplifyAssembly = false;
     private final Map<String, CFG> methodCFGMap = new HashMap<>();
     private final MethodTable methodTable;
     private final List<VariableDescriptor> globalVariables = new ArrayList<>();
@@ -28,6 +29,14 @@ public class CFGProgram {
     	methodTable = program.getMethodTable();
     }
 
+    public void setAssemblySimplification(boolean flag) {
+        simplifyAssembly = flag;
+    }
+    
+    public boolean simplifyAssembly() {
+        return simplifyAssembly;
+    }
+    
     public void recalculateMethodDescriptors() { methodDescriptors = MethodDescriptor.calculateMethodDescriptors(this); }
 
     public void addMethod(String name, CFG methodCFG) {
