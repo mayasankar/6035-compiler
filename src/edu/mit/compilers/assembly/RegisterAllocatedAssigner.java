@@ -3,6 +3,7 @@ package edu.mit.compilers.assembly;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     
     Map<String, VariableDescriptor> globals = new HashMap<>();
     Map<String, VariableDescriptor> variables = new HashMap<>();
-    Set<String> usedRegisters;
+    Set<String> usedRegisters = new HashSet<>();
     int numAllocs;
     
     public RegisterAllocatedAssigner(CFGProgram program, Map<String, Integer> colors) {
@@ -36,6 +37,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             for(VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
                 if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc)]);
+                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc)]);
                 } else {
                     stackPointer = desc.pushOntoStack(stackPointer);
                 }
@@ -46,6 +48,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
                 VariableDescriptor desc = new VariableDescriptor(param.getName());
                 if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc)]);
+                    usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc)]);
                 } else {
                     stackPointer = desc.pushOntoStack(stackPointer);
                 }
