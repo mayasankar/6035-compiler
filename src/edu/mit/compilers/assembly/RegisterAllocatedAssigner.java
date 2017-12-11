@@ -123,6 +123,9 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
 
     @Override
     public boolean isVarStoredInRegister(String variable, CFGLine line) {
+        if (variable.startsWith("$")) {
+            return true;
+        }
         return getVar(variable).inRegister();
     }
 
