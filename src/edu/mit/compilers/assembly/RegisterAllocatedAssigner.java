@@ -131,7 +131,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
 
     @Override
     public boolean isFreeRegister(String register, CFGLine line) {
-        return usedRegisters.contains(register);
+        return !usedRegisters.contains(register);
     }
 
     @Override
