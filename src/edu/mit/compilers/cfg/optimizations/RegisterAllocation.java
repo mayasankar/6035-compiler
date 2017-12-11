@@ -25,7 +25,7 @@ public class RegisterAllocation implements Optimization {
 	public boolean optimize(CFGProgram cp, boolean debug) {
 	    for(String method: cp.getMethodNames()) {
 	        for(IRMemberDecl param: cp.getAllParameters(method)) {
-	            graph.addVariable(param.getName());   
+	            graph.addVariable(param.getName());
 	        }
 	        CFG cfg = cp.getMethodCFG(method);
 	        doLivenessAnalysis(cfg, cp.getGlobalNames());
@@ -46,6 +46,7 @@ public class RegisterAllocation implements Optimization {
 
 	    Map<String, Integer> coloring = graph.colorGraph();
 	    CFGLocationAssigner stacker = new RegisterAllocatedAssigner(cp, coloring);
+        if (debug) { stacker.debugPrint(); }
 	    cp.setStacker(stacker);
 	    return true;
 	}
