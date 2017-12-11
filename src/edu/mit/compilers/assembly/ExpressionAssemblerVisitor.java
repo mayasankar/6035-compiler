@@ -164,6 +164,9 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
             lines.add(new APop(freeRegister));
         }
         lines.add(new AMov("%rax", freeRegister));
+        for(String reg: callerSavedRegisters) {
+            lines.add(new APop(reg));
+        }
         return lines;
 
     }
