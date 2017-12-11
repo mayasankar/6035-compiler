@@ -98,7 +98,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         String indexRegister;
         if(!stacker.isVarStoredInRegister(indexName, line)) {
             indexRegister = stacker.getFirstFreeRegister(line);
-            lines.addAll(stacker.moveFromStore(indexName, indexRegister, indexRegister, line));
+            lines.addAll(stacker.moveFromStore(indexName, indexRegister, indexRegister));
         } else {
             indexRegister = stacker.getLocationOfVariable(indexName, line);
         }
@@ -121,7 +121,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
             branchLoc = stacker.getLocationOfVariable(branchName, line);
         } else {
             branchLoc = stacker.getFirstFreeRegister(line);
-            lines.addAll(stacker.moveFromStore(branchName, branchLoc, branchLoc, line));
+            lines.addAll(stacker.moveFromStore(branchName, branchLoc, branchLoc));
         }
         lines.add(new ACmp("$0", branchLoc));
         lines.add(new AJmp("je", blockNames.get(line.getCorrespondingBlock().getFalseBranch()))); // this line needs to go after the visitor on the falseBranch so the label has been generated
@@ -147,7 +147,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         if (!line.isVoid()) {
             IRExpression returnExpr = line.getExpression();
             String returnName = expressionAssembler.getExprName(returnExpr);
-            lines.addAll(stacker.moveFromStore(returnName, "%rax", "%rax", line));
+            lines.addAll(stacker.moveFromStore(returnName, "%rax", "%rax"));
         }
         lines.add(new AJmp("jmp", label + "_end")); // jump to end of method where we return
         return lines;
