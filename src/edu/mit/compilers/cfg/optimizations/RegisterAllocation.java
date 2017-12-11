@@ -10,6 +10,7 @@ import edu.mit.compilers.cfg.CFG;
 import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.CFGLine;
+import edu.mit.compilers.ir.decl.IRMemberDecl;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class RegisterAllocation implements Optimization {
@@ -23,6 +24,9 @@ public class RegisterAllocation implements Optimization {
 	@Override
 	public boolean optimize(CFGProgram cp, boolean debug) {
 	    for(String method: cp.getMethodNames()) {
+	        for(IRMemberDecl param: cp.getAllParameters(method)) {
+	            graph.addVariable(param.getName());   
+	        }
 	        CFG cfg = cp.getMethodCFG(method);
 	        doLivenessAnalysis(cfg, cp.getGlobalNames());
 	        for(VariableDescriptor variable: cp.getLocalVariablesForMethod(method)) {
