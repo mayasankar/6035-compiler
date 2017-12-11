@@ -134,18 +134,28 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         for (int i=0; i < 6; i++) {
             String reg = registers[i];
             // If the register is currently in use, pop the value to the stack to remember it
-			saveIfNeeded(reg, lines, callerSavedRegisters, line);
-
+            if(!stacker.isFreeRegister(reg, line)) {
+                lines.add(new APush(reg));
+                callerSavedRegisters.add(0, reg);
+            }
 			if(i < arguments.size()) {
 			    IRExpression arg = arguments.get(i);
 			    String argName = getExprName(arg);
 			    lines.addAll(stacker.moveFromStore(argName, reg, reg));
 			}
         }
-		saveIfNeeded("%rax", lines, callerSavedRegisters, line);
-		saveIfNeeded("%r10", lines, callerSavedRegisters, line);
-		saveIfNeeded("%r11", lines, callerSavedRegisters, line);
-
+        if(!stacker.isFreeRegister("%rax", line)) {
+            lines.add(new APush("%rax"));
+            callerSavedRegisters.add(0, "%rax");
+        }
+        if(!stacker.isFreeRegister("%rax", line)) {
+            lines.add(new APush("%rax"));
+            callerSavedRegisters.add(0, "%rax");
+        }
+        if(!stacker.isFreeRegister("%rax", line)) {
+            lines.add(new APush("%rax"));
+            callerSavedRegisters.add(0, "%rax");
+        }
         lines.add(new AMov("$0", "%rax"));
 
         // Move remaining args onto stack
