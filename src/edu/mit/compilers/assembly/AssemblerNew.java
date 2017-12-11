@@ -51,9 +51,10 @@ public class AssemblerNew {
 		lines.add(new AMov("$1", "%eax"));
 		lines.add(new AMov("$-2", "%ebx"));
 		lines.add(new ACommand("int $0x80"));
-
-		lines = CodeSimplifier.simplifyMovs(lines);
-
+		if(program.simplifyAssembly()) {
+		    lines = CodeSimplifier.simplifyMovs(lines);
+		}
+		    
 		code = "";
 		for (AssemblyLine line : lines) {
 			code += line.getString();

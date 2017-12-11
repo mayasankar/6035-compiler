@@ -2,6 +2,7 @@ package edu.mit.compilers.cfg.optimizations;
 
 import java.util.Map;
 
+import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.*;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 import edu.mit.compilers.ir.expression.*;
@@ -19,8 +20,14 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 
-public class CodeSimplifier {
+public class CodeSimplifier implements Optimization {
 
+    @Override
+    public boolean optimize(CFGProgram cp, boolean debug) {
+        cp.setAssemblySimplification(true);
+        return false;
+    }
+    
     // return a simplified version of codeList
     public static List<AssemblyLine> simplifyMovs(List<AssemblyLine> codeList) {
         codeList = removeTrivialMovs(codeList);
@@ -451,6 +458,8 @@ public class CodeSimplifier {
             throw new RuntimeException("Makes no sense to change write destination.");
         }
     }
+
+
 
 
 }
