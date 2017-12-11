@@ -36,7 +36,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             int stackPointer = 0;
             for (VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
                 if (colors.get(desc.getName()) == null) {
-                    throw new RuntimeException("No color for " + desc.getName());
+                    throw new RuntimeException("No color for " + desc.getName() + " in colors: " + colors.toString());
                 }
                 if (colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
@@ -49,6 +49,9 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             List<IRMemberDecl> params = program.getAllParameters(method);
             for (IRMemberDecl param : params) {
                 VariableDescriptor desc = new VariableDescriptor(param.getName());
+                if (colors.get(desc.getName()) == null) {
+                    throw new RuntimeException("No color for " + desc.getName() + " in colors: " + colors.toString());
+                }
                 if (colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                     usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
@@ -68,7 +71,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
         } else if (variables.containsKey(variable)) {
             return variables.get(variable);
         } else {
-            throw new RuntimeException("variable not found in CFG");
+            throw new RuntimeException("variable " + variable + " not found in CFG");
         }
     }
 
