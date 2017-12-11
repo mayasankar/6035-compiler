@@ -50,7 +50,7 @@ public class ConflictGraph {
             var1Conflicts.add(var2);
         }
 
-        if (var1Conflicts == null) {
+        if (var2Conflicts == null) {
             variableConflicts.put(var2, new HashSet<String>(Arrays.asList(var1)));
         }
         else {
