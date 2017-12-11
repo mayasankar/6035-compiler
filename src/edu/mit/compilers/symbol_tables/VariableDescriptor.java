@@ -9,6 +9,8 @@ public class VariableDescriptor implements Named {
     TypeDescriptor type;
     int length;
     int stackOffset;
+    String register;
+    boolean inStack = true;
     IRMemberDecl decl; // TODO I tried to remove this like the previous TODO said, but I'm pretty sure it's too deeply ingrained in SemanticCheckerVisitor. -jamb
 
     public VariableDescriptor(IRMemberDecl decl) {
@@ -57,6 +59,19 @@ public class VariableDescriptor implements Named {
     public int pushOntoStack(int rsp) {
         stackOffset = rsp + getSpaceRequired();
         return stackOffset;
+    }
+    
+    public void putInRegister(String register) {
+        this.register = register;
+        this.inStack = false;
+    }
+    
+    public boolean inRegister() {
+        return !inStack;
+    }
+    
+    public String getRegister() {
+        return register;
     }
 
     // TODO (mayars) fix

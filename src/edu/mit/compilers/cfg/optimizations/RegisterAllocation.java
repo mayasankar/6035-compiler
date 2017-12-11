@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import edu.mit.compilers.assembly.RegisterAllocatedAssigner;
 import edu.mit.compilers.cfg.CFG;
+import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.CFGProgram;
 import edu.mit.compilers.cfg.lines.CFGLine;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
@@ -39,7 +41,8 @@ public class RegisterAllocation implements Optimization {
 	    }
 
 	    Map<String, Integer> coloring = graph.colorGraph();
-	    Map<String, String> varToRegister = new HashMap<>();
+	    CFGLocationAssigner stacker = new RegisterAllocatedAssigner(cp, coloring);
+	    cp.setStacker(stacker);
 	    return true;
 	}
 

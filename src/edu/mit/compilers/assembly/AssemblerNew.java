@@ -22,7 +22,7 @@ public class AssemblerNew {
 
 	public AssemblerNew(CFGProgram program) {
 		List<AssemblyLine> lines = new ArrayList<>();
-		stacker = new VariableStackAssigner(program);
+		stacker =(program.getStacker() == null)? new VariableStackAssigner(program): program.getStacker();
 		lines.add(new ACommand(".globl main"));
 		lines.add(new AWhitespace());
 

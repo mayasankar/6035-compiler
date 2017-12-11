@@ -22,6 +22,7 @@ public class CFGProgram {
     private final List<VariableDescriptor> globalVariables = new ArrayList<>();
     private final Map<String, List<VariableDescriptor>> localVariables = new HashMap<>();
     private Map<String, MethodDescriptor> methodDescriptors; // has a descriptor for imports too
+    private CFGLocationAssigner stacker = null;
 
     public CFGProgram(IRProgram program) {
     	methodTable = program.getMethodTable();
@@ -108,5 +109,13 @@ public class CFGProgram {
 
     public IRMethodDecl getMethodParameters(String methodName) {
     	return methodTable.get(methodName);
+    }
+    
+    public void setStacker(CFGLocationAssigner stacker) {
+        this.stacker = stacker;
+    }
+    
+    public CFGLocationAssigner getStacker() {
+        return stacker;
     }
 }
