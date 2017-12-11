@@ -34,8 +34,11 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
         Map<String, CFG> methodMap = program.getMethodToCFGMap();
         for (String method : methodMap.keySet()) {
             int stackPointer = 0;
-            for(VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
-                if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
+            for (VariableDescriptor desc: program.getLocalVariablesForMethod(method)) {
+                if (colors.get(desc.getName()) == null) {
+                    throw new RuntimeException("No color for " + desc.getName());
+                }
+                if (colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                     usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                 } else {
@@ -46,7 +49,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             List<IRMemberDecl> params = program.getAllParameters(method);
             for (IRMemberDecl param : params) {
                 VariableDescriptor desc = new VariableDescriptor(param.getName());
-                if(colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
+                if (colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                     usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                 } else {
@@ -60,8 +63,8 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     }
 
     private VariableDescriptor getVar(String variable) {
-        if(globals.containsKey(variable)) {
-            return variables.get(variable);
+        if (globals.containsKey(variable)) {
+            return globals.get(variable);
         } else if (variables.containsKey(variable)) {
             return variables.get(variable);
         } else {
@@ -159,7 +162,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
             return lines;
         }
         VariableDescriptor var = getVar(variableName);
-        if(var.inRegister()) {
+        if (var.inRegister()) {
             lines.add(new AMov(var.getRegister(), targetRegister));
             return lines;
         }
