@@ -71,7 +71,7 @@ public class VariableDescriptor implements Named {
     }
 
     public String getRegister() {
-        if register.equals("") {
+        if (register.equals("")) {
             throw new RuntimeException("Attempted to get register that hasn't been assigned.");
         }
         return register;
