@@ -20,7 +20,7 @@ import edu.mit.compilers.ir.decl.IRMethodDecl;
 import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class RegisterAllocatedAssigner implements CFGLocationAssigner {
-    private static final String[] REGISTERS_FOR_USE = {"%r12", "%r13", "%r14", "%r15"}; //{"%r9", "%r8", "%rcx", "%rdx", "%rsi", "%rdi"};
+    private static final String[] REGISTERS_FOR_USE = {"%r12", "%r13", "%r14", "%r15", "%r9", "%r8", "%rcx", "%rdx", "%rsi", "%rdi"};
 
     Map<String, VariableDescriptor> globals = new HashMap<>();
     Map<String, VariableDescriptor> variables = new HashMap<>();

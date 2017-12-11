@@ -2,6 +2,7 @@ package edu.mit.compilers.cfg.optimizations;
 
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,9 +25,16 @@ public class RegisterAllocation implements Optimization {
 	@Override
 	public boolean optimize(CFGProgram cp, boolean debug) {
 	    for(String method: cp.getMethodNames()) {
-	        for(IRMemberDecl param: cp.getAllParameters(method)) {
-	            graph.addVariable(param.getName());
-	        }
+            List<IRMemberDecl> params = cp.getAllParameters(method);
+            for(IRMemberDecl param: params) {
+                graph.addVariable(param.getName());
+            }
+    		for (IRMemberDecl param1 : params) {
+                for (IRMemberDecl param2 : params) {
+                    if (param1 == param2) { continue; }
+                    graph.addConflict(param1.getName(), param2.getName());
+                }
+    		}
 	        CFG cfg = cp.getMethodCFG(method);
 	        doLivenessAnalysis(cfg, cp.getGlobalNames());
 	        for(VariableDescriptor variable: cp.getLocalVariablesForMethod(method)) {
