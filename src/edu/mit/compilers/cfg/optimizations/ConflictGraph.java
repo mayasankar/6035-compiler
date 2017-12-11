@@ -34,7 +34,8 @@ public class ConflictGraph {
     public void removeVariable(String var) {
         Set<String> varConflicts = getConflictingVariables(var);
         for (String conf : varConflicts) {
-            removeConflict(var, conf);
+            Set<String> confConflicts = getConflictingVariables(conf);
+            confConflicts.remove(var);
         }
         variableConflicts.remove(var);
     }
