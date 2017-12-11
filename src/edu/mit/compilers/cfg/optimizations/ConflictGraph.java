@@ -33,7 +33,8 @@ public class ConflictGraph {
 
     public void removeVariable(String var) {
         Set<String> varConflicts = getConflictingVariables(var);
-        for (String conf : varConflicts) {
+	varConflicts.remove(var); // to avoid concurrent modification exception
+	for (String conf : varConflicts) {
             Set<String> confConflicts = getConflictingVariables(conf);
             confConflicts.remove(var);
         }
@@ -41,6 +42,7 @@ public class ConflictGraph {
     }
 
     public void addConflict(String var1, String var2) {
+	if (var1.equals(var2)) { return; }
         Set<String> var1Conflicts = variableConflicts.get(var1);
         Set<String> var2Conflicts = variableConflicts.get(var2);
         if (var1Conflicts == null) {

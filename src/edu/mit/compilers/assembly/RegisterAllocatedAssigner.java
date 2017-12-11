@@ -246,4 +246,15 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     public int getNumAllocs() {
         return numAllocs;
     }
+
+    @Override
+    public void debugPrint() {
+        for (VariableDescriptor desc : globals.values()) {
+            System.out.println(desc.registerDebugValue());
+        }
+        System.out.println();
+        for (VariableDescriptor desc : variables.values()) {
+            System.out.println(desc.registerDebugValue());
+        }
+    }
 }
