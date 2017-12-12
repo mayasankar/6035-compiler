@@ -44,6 +44,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
 
     public List<AssemblyLine> assemble(CFG cfg) {
         List<AssemblyLine> prefixLines = new ArrayList<>();
+        prefixLines.add(new AWhitespace());
         prefixLines.add(new ALabel(label));
 
         List<AssemblyLine> lines = stacker.pushCallerSave();
@@ -66,6 +67,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         }
         lines.add(new ACommand("leave"));
         lines.add(new ACommand("ret"));
+        lines.add(new AWhitespace());
 
         // String literals
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();
