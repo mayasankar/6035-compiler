@@ -45,6 +45,8 @@ public class CP implements Optimization {
     private CfgGenDefinitionVisitor GEN;
     private CfgAssignVisitor ASSIGN = new CfgAssignVisitor();
 
+    private Map<String, VariableDescriptor> arrayVariableTable;
+
     public boolean optimize(CFGProgram cfgProgram, boolean debug) {
         cfgProgram.recalculateMethodDescriptors();
         GEN = new CfgGenDefinitionVisitor(cfgProgram.getMethodDescriptors());
@@ -54,14 +56,28 @@ public class CP implements Optimization {
         Set<String> globals = cfgProgram.getGlobalNames();
 
         for (Map.Entry<String, CFG> method : cfgProgram.getMethodToCFGMap().entrySet()) {
+            String methodName = method.getKey();
             CFG cfg = method.getValue();
+
+            this.arrayVariableTable = new HashMap<>();
+            for (VariableDescriptor global : cfgProgram.getGlobalVariables()) {
+                if (global.isArray()) {
+                    arrayVariableTable.put(global.getName(), global);
+                }
+            }
+            for (VariableDescriptor local : cfgProgram.getLocalVariablesForMethod(methodName)) {
+                if (local.isArray()) {
+                    arrayVariableTable.put(local.getName(), local);
+                }
+            }
+
             if (debug) {
                 System.out.println("Original CFG:");
                 System.out.println(cfg);
             }
             boolean changed = true;
             while (changed) {
-                doReachingDefinitionsAnalysis(cfg, method.getKey().equals("main") ? cfgProgram.getGlobalVariables() : new ArrayList<VariableDescriptor>());
+                doReachingDefinitionsAnalysis(cfg, methodName.equals("main") ? cfgProgram.getGlobalVariables() : new ArrayList<VariableDescriptor>());
                 changed = propagate(cfg, globals);
                 // if (debug) {
                 //     System.out.println("CP-Optimized CFG:");
@@ -70,7 +86,7 @@ public class CP implements Optimization {
                 anyCfgChanged = anyCfgChanged || changed;
             }
             if (debug) {
-                System.out.println("CP-Optimized CFG:");
+                System.out.println("CP-Optimized CFG for " + methodName + ":");
                 System.out.println(cfg);
             }
         }
@@ -220,7 +236,7 @@ public class CP implements Optimization {
 
     // returns whether or not the line is changed
     // runs both copy propagation and constant propagation optimization on the line
-    public class LineOptimizer implements CFGLine.CFGVisitor<Boolean> {
+    private class LineOptimizer implements CFGLine.CFGVisitor<Boolean> {
         Propagator propagator;
 
         public LineOptimizer(Map<String, IRExpression> map) {
@@ -284,7 +300,7 @@ public class CP implements Optimization {
         }
     }
 
-    private static class Propagator implements IRExpression.IRExpressionVisitor<IRExpression> {
+    private class Propagator implements IRExpression.IRExpressionVisitor<IRExpression> {
         // for an assign statement that uses a variable that has a single reaching definition
         // and the reaching definition has depth 0
         // replace with that reaching definition
@@ -292,8 +308,8 @@ public class CP implements Optimization {
 
         Map<String, IRExpression> replacementMap;
 
-        IntEvaluator intEvaluator = new IntEvaluator();
-        BoolEvaluator boolEvaluator = new BoolEvaluator();
+        IntEvaluator intEvaluator = new IntEvaluator(arrayVariableTable);
+        BoolEvaluator boolEvaluator = new BoolEvaluator(arrayVariableTable);
 
         public Propagator(Map<String, IRExpression> replacementMap) {
             this.replacementMap = replacementMap;
@@ -337,7 +353,7 @@ public class CP implements Optimization {
             return constantPropagate(new IRTernaryOpExpression(condition, trueExpression, falseExpression));
         }
         public IRExpression on(IRLenExpression ir) {
-            throw new RuntimeException("Aah len expressions should have been removed by now");
+            return constantPropagate(ir);
         }
         public IRMethodCallExpression onMethodCall(IRMethodCallExpression ir) {
             List<IRExpression> args = new ArrayList<>();
@@ -357,6 +373,12 @@ public class CP implements Optimization {
     }
 
     private static class BoolEvaluator implements IRExpression.IRExpressionVisitor<Boolean> {
+        Map<String, VariableDescriptor> arrayVariableTable; // if null, this only breaks on len expressions
+
+        public BoolEvaluator(Map<String, VariableDescriptor> arrayVariableTable) {
+            this.arrayVariableTable = arrayVariableTable;
+        }
+
         public Boolean on(IRUnaryOpExpression ir) {
             switch (ir.getOperator()) {
                 case "!": return ! ir.getArgument().accept(this);
@@ -364,7 +386,7 @@ public class CP implements Optimization {
             }
         }
         public Boolean on(IRBinaryOpExpression ir) {
-            IntEvaluator intEvaluator = new IntEvaluator();
+            IntEvaluator intEvaluator = new IntEvaluator(arrayVariableTable);
             switch (ir.getOperator()) {
                 case "==": {
                     TypeDescriptor type = ir.getLeftExpr().getType();
@@ -421,6 +443,12 @@ public class CP implements Optimization {
     }
 
     private static class IntEvaluator implements IRExpression.IRExpressionVisitor<BigInteger> {
+        Map<String, VariableDescriptor> arrayVariableTable; // if null, this only breaks on len expressions
+
+        public IntEvaluator(Map<String, VariableDescriptor> arrayVariableTable) {
+            this.arrayVariableTable = arrayVariableTable;
+        }
+
         public BigInteger on(IRUnaryOpExpression ir) {
             switch (ir.getOperator()) {
                 case "-": return ir.getArgument().accept(this).negate();
@@ -440,14 +468,18 @@ public class CP implements Optimization {
             }
         }
         public BigInteger on(IRTernaryOpExpression ir) {
-            if (ir.getCondition().accept(new BoolEvaluator())) {
+            if (ir.getCondition().accept(new BoolEvaluator(this.arrayVariableTable))) {
                 return ir.getTrueExpression().accept(this);
             } else {
                 return ir.getFalseExpression().accept(this);
             }
         }
         public BigInteger on(IRLenExpression ir) {
-            throw new RuntimeException("Can't be implemented without a symbol table");
+            if (this.arrayVariableTable == null) {
+                throw new RuntimeException("Can't be implemented without a symbol table");
+            }
+            int answer = this.arrayVariableTable.get(ir.getArgument()).getLength();
+            return BigInteger.valueOf(answer);
         }
         public BigInteger on(IRVariableExpression ir) {
             throw new RuntimeException("Int evaluator called on non-constant expression: " + ir.toString());
