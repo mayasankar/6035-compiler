@@ -277,7 +277,7 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     	if(var.getDepth() > 0) {
     		answer.concat(var.getIndexExpression().accept(this));
     		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
-			if(ir.getOperator().equals("+=") || ir.getOperator().equals("+=")) {
+			if(ir.getOperator().equals("+=") || ir.getOperator().equals("++") || ir.getOperator().equals("-=")|| ir.getOperator().equals("--")) {
 				answer.concat(var.accept(this));
 			} else {
 				answer.concat(new CFG(new CFGBoundsCheck(var)));
