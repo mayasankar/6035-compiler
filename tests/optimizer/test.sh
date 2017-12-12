@@ -1,7 +1,7 @@
 #!/bin/sh
 
 runcompiler_opt() {
-  $(git rev-parse --show-toplevel)/run.sh --opt=dce,cse --target=assembly -o $2 $1
+  $(git rev-parse --show-toplevel)/run.sh --opt=il,cse,cp,dce,dve,as --target=assembly -o $2 $1
 }
 
 runcompiler_unopt() {
@@ -65,20 +65,20 @@ for file in $PWD/input/*.dcf; do
   else
     msg="Program failed to generate assembly.";
   fi
-  echo $file
+#  echo $file
   if [ ! -z "$msg" ]; then
     fail=$(($fail+1))
     echo $msg
   else
     if [ ! -z "`cat $timing_unopt`" ]; then
-      echo -n "Unoptimized: "
+#      echo -n "Unoptimized: "
       unopt=`cat $timing_unopt|awk '{print($2)}'`
-      echo "${unopt} usec"
+      echo "${unopt}"
     fi
     if [ ! -z "`cat $timing_opt`" ]; then
-      echo -n "Optimized: "
+#      echo -n "Optimized: "
       opt=`cat $timing_opt|awk '{print($2)}'`
-      echo "${opt} usec"
+      echo "${opt}"
     fi
   fi
   int_speedup=$(($unopt / $opt)) 
