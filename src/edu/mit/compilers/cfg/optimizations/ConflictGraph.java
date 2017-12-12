@@ -43,19 +43,25 @@ public class ConflictGraph {
     public void addConflict(String var1, String var2) {
         Set<String> var1Conflicts = variableConflicts.get(var1);
         Set<String> var2Conflicts = variableConflicts.get(var2);
-        if (var1Conflicts == null) {
-            variableConflicts.put(var1, new HashSet<String>(Arrays.asList(var2)));
+        // if (var1Conflicts == null) {
+        //     variableConflicts.put(var1, new HashSet<String>(Arrays.asList(var2)));
+        // }
+        // else {
+        //     var1Conflicts.add(var2);
+        // }
+        //
+        // if (var2Conflicts == null) {
+        //     variableConflicts.put(var2, new HashSet<String>(Arrays.asList(var1)));
+        // }
+        // else {
+        //     var2Conflicts.add(var1);
+        // }
+        if (var1Conflicts == null || var2Conflicts == null) {
+            // presumably an array variable
+            return;
         }
-        else {
-            var1Conflicts.add(var2);
-        }
-
-        if (var2Conflicts == null) {
-            variableConflicts.put(var2, new HashSet<String>(Arrays.asList(var1)));
-        }
-        else {
-            var2Conflicts.add(var1);
-        }
+        var1Conflicts.add(var2);
+        var2Conflicts.add(var1);
     }
 
     public void removeConflict(String var1, String var2) {
