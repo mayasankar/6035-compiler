@@ -77,10 +77,10 @@ public class CP implements Optimization {
             }
             boolean changed = true;
             while (changed) {
-                doReachingDefinitionsAnalysis(cfg, methodName.equals("main") ? cfgProgram.getGlobalVariables() : new ArrayList<VariableDescriptor>());
+                doReachingDefinitionsAnalysis(cfg, new ArrayList<VariableDescriptor>());
                 changed = propagate(cfg, globals);
                 // if (debug) {
-                //     System.out.println("CP-Optimized CFG:");
+                //     System.out.println("CP-Optimized CFG: " + methodName);
                 //     System.out.println(cfg);
                 // }
                 anyCfgChanged = anyCfgChanged || changed;
@@ -137,14 +137,14 @@ public class CP implements Optimization {
         public boolean equals(Object obj) {
             if (obj instanceof CPDefinition) {
                 CPDefinition other = (CPDefinition) obj;
-                return varDefined.equals(other.varDefined) && definition.equals(other.definition);
+                return varDefined.equals(other.varDefined) && definition.equalsExpression(other.definition);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return varDefined.hashCode() + 17 * definition.hashCode();
+            return varDefined.hashCode();
         }
     }
 
@@ -255,21 +255,21 @@ public class CP implements Optimization {
             IRExpression expr = line.getExpression();
             IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
-            return !(expr.equals(newExpr));
+            return !(expr.equalsExpression(newExpr));
         }
 
         public Boolean on(CFGBoundsCheck line) {
             IRExpression expr = line.getIndexExpression();
             IRExpression newExpr = getPropagatedExpression(expr);
             line.setIndexExpression(newExpr);
-            return !(expr.equals(newExpr));
+            return !(expr.equalsExpression(newExpr));
         }
 
         public Boolean on(CFGConditional line) {
             IRExpression expr = line.getExpression();
             IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
-            return !(expr.equals(newExpr));
+            return !(expr.equalsExpression(newExpr));
         }
 
         public Boolean on(CFGNoOp line) {
@@ -285,14 +285,14 @@ public class CP implements Optimization {
             IRExpression expr = line.getExpression();
             IRExpression newExpr = getPropagatedExpression(expr);
             line.setExpression(newExpr);
-            return !(expr.equals(newExpr));
+            return !(expr.equalsExpression(newExpr));
         }
 
         public Boolean on(CFGMethodCall line) {
             IRMethodCallExpression expr = line.getExpression();
             IRMethodCallExpression newExpr = propagator.onMethodCall(expr);
             line.setExpression(newExpr);
-            return !(expr.equals(newExpr));
+            return !(expr.equalsExpression(newExpr));
         }
 
         public Boolean on(CFGBlock line) {

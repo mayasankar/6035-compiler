@@ -6,7 +6,7 @@ public class Optimizer {
     // NOTE the ith optimization name must correspond to the ith optimization
     // NOTE the order of optimizations is the order in which they will run
     // repeats are allowed
-    public final static String[] optimizationNames = new String[] { "il", "cse", "cp", "dce", "dve", "ra", "as" };
+    public final static String[] optimizationNames = new String[] { "il", "cse", "cp", "dce", "dvr", "ra", "as" };
     public final static Optimization[] optimizations = new Optimization[] { new Inline(), new CSE(), new CP(), new DCE(), new DeadVariableRemover(), new RegisterAllocation(), new CodeSimplifier() };
 
     public static void optimize(CFGProgram cfgProgram, boolean[] opts, boolean debug) {
@@ -23,7 +23,7 @@ public class Optimizer {
         while (anyChanges) {
             anyChanges = false;
             for (int i = 2; i <= 4; i++) {
-                if (opts[i] && i!=2) {  // TODO re-add CP once not-broken
+                if (opts[i]) {  // TODO re-add CP once not-broken
                     anyChanges = anyChanges || optimizations[i].optimize(cfgProgram, debug);
                 }
             }
