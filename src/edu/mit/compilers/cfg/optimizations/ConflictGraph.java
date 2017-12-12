@@ -33,8 +33,8 @@ public class ConflictGraph {
 
     public void removeVariable(String var) {
         Set<String> varConflicts = getConflictingVariables(var);
-	varConflicts.remove(var); // to avoid concurrent modification exception
-	for (String conf : varConflicts) {
+	    varConflicts.remove(var); // to avoid concurrent modification exception
+	    for (String conf : varConflicts) {
             Set<String> confConflicts = getConflictingVariables(conf);
             confConflicts.remove(var);
         }
@@ -45,19 +45,6 @@ public class ConflictGraph {
 	if (var1.equals(var2)) { return; }
         Set<String> var1Conflicts = variableConflicts.get(var1);
         Set<String> var2Conflicts = variableConflicts.get(var2);
-        // if (var1Conflicts == null) {
-        //     variableConflicts.put(var1, new HashSet<String>(Arrays.asList(var2)));
-        // }
-        // else {
-        //     var1Conflicts.add(var2);
-        // }
-        //
-        // if (var2Conflicts == null) {
-        //     variableConflicts.put(var2, new HashSet<String>(Arrays.asList(var1)));
-        // }
-        // else {
-        //     var2Conflicts.add(var1);
-        // }
         if (var1Conflicts == null || var2Conflicts == null) {
             // presumably an array variable
             return;
@@ -84,10 +71,12 @@ public class ConflictGraph {
     }
 
     // assigns an integer to each variable such that there are minimal distinct integers; returns this mapping
-    // TODO destroys the graph, maybe we should make a copy instead?
     public Map<String, Integer> colorGraph() {
-        Map<String, Set<String>> graphCpy = new HashMap<>(variableConflicts);
-        Set<String> variables = getVariables();
+        Map<String, Set<String>> graphCpy = new HashMap<>();
+        for (String s : variableConflicts.keySet()) {
+            graphCpy.put(s, new HashSet<String>(variableConflicts.get(s)));
+        }
+        Set<String> variables = graphCpy.keySet();
         List<String> varStack = new ArrayList<>();
         List<Set<String>> conflictStack = new ArrayList<>();
 
@@ -96,16 +85,24 @@ public class ConflictGraph {
             int minColors = Integer.MAX_VALUE;
             String minColoredVar = null;
             for (String var : variables) {
-                int colors = this.getConflictingVariables(var).size();
+                int colors = graphCpy.get(var).size();
                 if (colors < minColors) {
                     minColors = colors;
                     minColoredVar = var;
                 }
             }
             varStack.add(minColoredVar);
-            conflictStack.add(this.getConflictingVariables(minColoredVar));
-            removeVariable(minColoredVar);
-            variables = getVariables();
+            Set<String> conflicts = graphCpy.get(minColoredVar);
+            conflictStack.add(new HashSet<String>(conflicts));
+            for (String conf : conflicts) {
+                Set<String> confConflicts = graphCpy.get(conf);
+                if (confConflicts == null) {
+                    throw new RuntimeException("How the heck is this null?! conf:" + conf + "\ngraphCpy:" + graphCpy.toString());
+                }
+                confConflicts.remove(minColoredVar);
+            }
+            graphCpy.remove(minColoredVar);
+            variables = graphCpy.keySet();
         }
 
         // re-add the variables and color MethodAssembler
@@ -120,6 +117,7 @@ public class ConflictGraph {
                 }
                 colorConflicts.add(coloring.get(conf));
             }
+
             int i = 0;  // set i to be the smallest unused color (greedy)
             while (true) {
                 if (!colorConflicts.contains(i)) {
@@ -129,7 +127,7 @@ public class ConflictGraph {
             }
             coloring.put(var, i);
         }
-        variableConflicts = graphCpy;
+        //variableConflicts = graphCpy;
         return coloring;
     }
 
@@ -144,6 +142,9 @@ public class ConflictGraph {
             }
             str += "\n";
         }
+        str += "Coloring:\n";
+        str += colorGraph().toString();
+        str += "\n";
         return str;
     }
 
