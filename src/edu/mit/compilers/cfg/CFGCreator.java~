@@ -277,8 +277,12 @@ public class CFGCreator implements IRNode.IRNodeVisitor<CFG> {
     	if(var.getDepth() > 0) {
     		answer.concat(var.getIndexExpression().accept(this));
     		var = new IRVariableExpression(ir.getVariableName(), new IRVariableExpression(var.getIndexExpression().accept(namer)));
-			answer.concat(new CFG(new CFGBoundsCheck(var)));
-			//answer.concat(var.accept(this));
+			if(ir.getOperator().equals("+=") || ir.getOperator().equals("++") || ir.getOperator().equals("-=")|| ir.getOperator().equals("--")) {
+				answer.concat(var.accept(this));
+			} else {
+				answer.concat(new CFG(new CFGBoundsCheck(var)));
+			}
+			
     	}
     	// If the RHS is not a var or literal, make a temp
     	IRExpression value = ir.getValue();

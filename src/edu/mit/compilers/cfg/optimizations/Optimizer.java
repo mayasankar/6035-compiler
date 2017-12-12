@@ -12,8 +12,9 @@ public class Optimizer {
     public static void optimize(CFGProgram cfgProgram, boolean[] opts, boolean debug) {
         // TODO make it so that the cycle of optimizations is run until no more optimizing possible.
         for (int i = 0; i < opts.length; ++i) {
-            if (! opts[i]) { continue; }
-            optimizations[i].optimize(cfgProgram, debug);
+            if (! opts[i] || i == 2) { continue; }
+            System.out.println(optimizationNames[i]);
+			optimizations[i].optimize(cfgProgram, debug);
         }
     }
 }

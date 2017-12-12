@@ -92,7 +92,6 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
                 VariableDescriptor var = getVar(param.getName());
                 if( var.inRegister() && paramRegs.indexOf(var.getRegister())>fake_i) {
 					int dest = paramRegs.indexOf(var.getRegister());
-					System.out.println("Swapping registers " + fake_i + " and " + dest);
                     lines.add(new AMov(var.getRegister(), "%r11"));
                     lines.add(new AMov(paramLoc, var.getRegister()));
                     lines.add(new AMov("%r11", paramLoc));
