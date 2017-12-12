@@ -38,7 +38,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
                 if (colors.get(desc.getName()) == null) {
                     throw new RuntimeException("No color for " + desc.getName() + " in colors: " + colors.toString());
                 }
-                if (!desc.isArray() && colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
+                if (colors.get(desc.getName()) < REGISTERS_FOR_USE.length) {
                     desc.putInRegister(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                     usedRegisters.add(REGISTERS_FOR_USE[colors.get(desc.getName())]);
                 } else {
