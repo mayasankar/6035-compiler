@@ -1,5 +1,6 @@
 package edu.mit.compilers.assembly;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -213,6 +214,15 @@ public class VariableStackAssigner implements CFGLocationAssigner {
     @Override
     public String getSecondFreeRegister(CFGLine line) {
         return "%r11";
+    }
+
+    @Override
+    public List<AssemblyLine> pushCallerSave() {
+        return Arrays.asList();
+    }
+    @Override
+    public List<AssemblyLine> popCallerSave() {
+        return Arrays.asList();
     }
 
     @Override

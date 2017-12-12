@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.mit.compilers.assembly.lines.AMov;
-import edu.mit.compilers.assembly.lines.AOps;
-import edu.mit.compilers.assembly.lines.AssemblyLine;
+import edu.mit.compilers.assembly.lines.*;
 import edu.mit.compilers.cfg.CFG;
 import edu.mit.compilers.cfg.CFGLocationAssigner;
 import edu.mit.compilers.cfg.CFGProgram;
@@ -21,11 +19,13 @@ import edu.mit.compilers.symbol_tables.VariableDescriptor;
 
 public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     private static final String[] REGISTERS_FOR_USE = {"%r12", "%r13", "%r14", "%r15", "%r9", "%r8", "%rcx", "%rdx", "%rsi", "%rdi"};
+    private static final String[] CALLEE_SAVED_REGISTERS = {"%r12", "%r13", "%r14", "%r15"};
 
     Map<String, VariableDescriptor> globals = new HashMap<>();
     Map<String, VariableDescriptor> variables = new HashMap<>();
     Set<String> usedRegisters = new HashSet<>();
     int numAllocs;
+    List<String> registersToSave;
 
     public RegisterAllocatedAssigner(CFGProgram program, Map<String, Integer> colors) {
         for (VariableDescriptor var : program.getGlobalVariables()) {
@@ -61,6 +61,8 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
                 variables.put(desc.getName(), desc);
             }
             numAllocs = stackPointer;
+            registersToSave = new ArrayList<>(Arrays.asList(CALLEE_SAVED_REGISTERS));
+            registersToSave.retainAll(usedRegisters);
         }
 
     }
@@ -249,6 +251,24 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     @Override
     public int getNumAllocs() {
         return numAllocs;
+    }
+
+    @Override
+    public List<AssemblyLine> pushCallerSave() {
+        List<AssemblyLine> pushes = new ArrayList<>();
+        for (String register : registersToSave) {
+            pushes.add(new APush(register));
+        }
+        return pushes;
+    }
+
+    @Override
+    public List<AssemblyLine> popCallerSave() {
+        List<AssemblyLine> pops = new ArrayList<>();
+        for (String register : registersToSave) {
+            pops.add(0, new APop(register));
+        }
+        return pops;
     }
 
     @Override
