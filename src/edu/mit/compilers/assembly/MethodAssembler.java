@@ -82,7 +82,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         }
 
         // figure out how many allocations we did
-        String allocSpace = new Integer(8*numAllocs).toString();
+        String allocSpace = new Integer(numAllocs).toString();
         prefixLines.add(new ACommand("enter $" + allocSpace + ", $0"));
 
         prefixLines.addAll(lines);

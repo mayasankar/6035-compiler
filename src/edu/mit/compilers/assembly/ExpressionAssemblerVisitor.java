@@ -107,7 +107,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     @Override
     public List<AssemblyLine> on(IRVariableExpression ir){ // uses only %r10 unlesss array
         List<AssemblyLine> lines = new ArrayList<>();
-		if(lookup) {        
+		if(lookup) {
 			if (ir.isArray()) {
 		        lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
 		    }
@@ -135,25 +135,16 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         String[] registers = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
         List<String> callerSavedRegisters = new LinkedList<>();
 
-        // Move first six arguments to the correct register, as by convention
         for (int i=0; i < 6; i++) {
             String reg = registers[i];
-            // If the register is currently in use, pop the value to the stack to remember it
+            // If the register is currently in use, push the value to the stack to remember it
 			saveIfNeeded(reg, lines, callerSavedRegisters, line);
-
-			if(i < arguments.size()) {
-			    IRExpression arg = arguments.get(i);
-			    String argName = getExprName(arg);
-			    lines.addAll(stacker.moveFromStore(argName, reg, reg));
-			}
         }
-		saveIfNeeded("%rax", lines, callerSavedRegisters, line);
-		saveIfNeeded("%r10", lines, callerSavedRegisters, line);
-		saveIfNeeded("%r11", lines, callerSavedRegisters, line);
+        saveIfNeeded("%rax", lines, callerSavedRegisters, line);
+        saveIfNeeded("%r10", lines, callerSavedRegisters, line);
+        saveIfNeeded("%r11", lines, callerSavedRegisters, line);
 
-        lines.add(new AMov("$0", "%rax"));
-
-        // Move remaining args onto stack
+        // Move all but first 6 args onto stack
         for (int i=arguments.size()-1; i>=6; i--) {
             // if so many params we need stack pushes: iterate from size-1 down to 6 and push/pop them
             IRExpression arg = arguments.get(i);
@@ -170,6 +161,46 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
                 lines.add(new APush(freeRegister));
             }
         }
+
+        // Move first six arguments to the correct register, as by convention
+        Map<String, Integer> permutation = new HashMap<>(); // stores register -> param index mapping to it
+        Set<Integer> argsToMove = new HashSet<>();
+        for (int i=0; i < 6 && i < arguments.size(); ++i) { argsToMove.add(i); }
+        for (Integer i : argsToMove) {
+            permutation.put(stacker.getLocationOfVariable(getExprName(arguments.get(i)), line), i);
+        }
+        System.out.println(permutation);
+        outerloop: while (! argsToMove.isEmpty()) {
+            for (Integer i : argsToMove) {
+                Integer paramIntersecting = permutation.get(registers[i]);
+                if (! argsToMove.contains(paramIntersecting)) {
+                    String var = getExprName(arguments.get(i));
+                    String location = stacker.getLocationOfVariable(var, line);
+                    if (permutation.containsKey(location)) {
+                        lines.addAll(stacker.moveFromStore(var, registers[i], registers[i]));
+                    } else {
+                        lines.add(new AMov(freeRegister, registers[i]));
+                    }
+                    argsToMove.remove(i);
+                    continue outerloop;
+                }
+            }
+            Integer argIndex = argsToMove.iterator().next();
+            String argName = getExprName(arguments.get(argIndex));
+            permutation.remove(stacker.getLocationOfVariable(argName, line));
+            lines.addAll(stacker.moveFromStore(argName, freeRegister, freeRegister));
+            permutation.put(freeRegister, argIndex);
+        }
+
+        // for (int i=0; i < 6; ++i) {
+		// 	if(i < arguments.size()) {
+		// 	    IRExpression arg = arguments.get(i);
+		// 	    String argName = getExprName(arg);
+		// 	    lines.addAll(stacker.moveFromStore(argName, reg, reg));
+		// 	}
+        // }
+
+        lines.add(new AMov("$0", "%rax")); //only necessary if IR is import?
 
         lines.add(new ACall(methodCall.getName()));
         for (int i=arguments.size()-1; i>=6; i--) {// TODO: Just decrease the stack pointer

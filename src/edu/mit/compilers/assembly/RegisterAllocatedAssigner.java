@@ -82,11 +82,11 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
         List<String> paramRegs = Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9");
         List<AssemblyLine> lines = new ArrayList<>();
         List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
-		Map<Integer, Integer> paramMoved = new HashMap<>();
+		Map<Integer, Integer> paramMoved = new HashMap<>(); // thing that was once at i is now at fake_i
         for(int i=0; i < parameters.size(); ++i) {
 			int fake_i = (paramMoved.containsKey(i))? paramMoved.get(i): i;
             IRMemberDecl param = parameters.get(i);
-            String paramLoc = getParamLoc(fake_i);
+            String paramLoc = getParamLoc(fake_i); // where we want the ith parameter to go
 
             if (fake_i<=5) {
                 VariableDescriptor var = getVar(param.getName());
