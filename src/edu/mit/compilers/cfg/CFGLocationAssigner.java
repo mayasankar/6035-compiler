@@ -24,7 +24,7 @@ public interface CFGLocationAssigner {
 
     public String getMaxSize(String variable);
 
-    public int getNumAllocs();
+    public int getNumAllocs(String method);
 
     public List<AssemblyLine> pushCallerSave();
     public List<AssemblyLine> popCallerSave();

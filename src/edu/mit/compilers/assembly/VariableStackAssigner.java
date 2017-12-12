@@ -21,6 +21,7 @@ import edu.mit.compilers.ir.expression.*;
 public class VariableStackAssigner implements CFGLocationAssigner {
 	private Map<String, VariableDescriptor> variables = new HashMap<>();
 	private Map<String, VariableDescriptor> globals = new HashMap<>();
+	private Map<String, Integer> allocs = new HashMap<>();
 
 	public VariableStackAssigner(CFGProgram program) {
 		for (VariableDescriptor var : program.getGlobalVariables()) {
@@ -39,6 +40,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 				stackPointer = newDescriptor.pushOntoStack(stackPointer);
 				variables.put(param.getName(), newDescriptor);
 			}
+			allocs.put(method, stackPointer);
 		}
 	}
 
@@ -203,12 +205,8 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	}
 
     @Override
-    public int getNumAllocs(){
-		int allocs = 0;
-		for(VariableDescriptor desc: variables.values()) {
-			allocs += desc.getSpaceRequired();
-		}
-		return allocs;
+	public int getNumAllocs(String method) {
+		return allocs.get(method);
 	}
 
     @Override

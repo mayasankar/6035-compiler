@@ -249,7 +249,7 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
     }
 
     @Override
-    public int getNumAllocs() {
+    public int getNumAllocs(String method) {
         return numAllocs;
     }
 

@@ -33,7 +33,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
 
     public MethodAssembler(String method, int numParams, CFGLocationAssigner stacker, TypeDescriptor returnType, IRMethodDecl decl) {
         this.label = method;
-        this.numAllocs = stacker.getNumAllocs();
+        this.numAllocs = stacker.getNumAllocs(method);
         this.stacker = stacker;
         this.returnType = returnType;
         this.blockNames = new HashMap<>();

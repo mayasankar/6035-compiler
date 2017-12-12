@@ -8,7 +8,7 @@ import antlr.Token;
 import edu.mit.compilers.symbol_tables.TypeDescriptor;
 
 public class IRVariableExpression extends IRExpression implements IRExpression.Renameable {
-
+	
 	private String variableName;
 	private IRExpression arrayIndex = null;
 	private TypeDescriptor type = TypeDescriptor.UNSPECIFIED; // will never be INT_ARRAY or BOOL_ARRAY if semantically valid
@@ -93,32 +93,6 @@ public class IRVariableExpression extends IRExpression implements IRExpression.R
 		return visitor.on(this);
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof IRVariableExpression) {
-			IRVariableExpression expr = (IRVariableExpression)obj;
-			if (this.variableName.equals(expr.variableName)) {
-				if (this.isArray() && expr.isArray()) {
-					if (this.arrayIndex.equals(expr.arrayIndex)) {
-						return true;
-					}
-				}
-				else {
-					return this.isArray() == expr.isArray();
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		if (this.isArray()) {
-			return this.variableName.hashCode() + 17*this.arrayIndex.hashCode();
-		}
-		return this.variableName.hashCode();
-	}
-
-    public boolean isConstant() { return false; }
+	public boolean isConstant() { return false; }
 
 }
