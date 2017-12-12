@@ -113,6 +113,13 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
 		return lines;
     }
 
+	private void saveIfNeeded(String reg, List<AssemblyLine> lines, List<String> callerSavedRegisters, CFGLine line) {
+        if(!stacker.isFreeRegister(reg, line)) {
+            lines.add(new APush(reg));
+            callerSavedRegisters.add(0, reg);
+        }
+	}
+
     @Override
     public List<AssemblyLine> on(IRMethodCallExpression ir){  // must set cfgline
         List<AssemblyLine> lines = new ArrayList<>();
@@ -124,22 +131,21 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         List<String> callerSavedRegisters = new LinkedList<>();
 
         // Move first six arguments to the correct register, as by convention
-        for (int i=0; i<arguments.size() && i < 6; i++) {
+        for (int i=0; i < 6; i++) {
             String reg = registers[i];
             // If the register is currently in use, pop the value to the stack to remember it
-            System.out.println("CALL. reg=" + reg + " free=" + (stacker.isFreeRegister(reg, line) ? "true" : "false"));
-            if(!stacker.isFreeRegister(reg, line)) {
-                lines.add(new APush(reg));
-                callerSavedRegisters.add(0, reg);
-            }
-            IRExpression arg = arguments.get(i);
-            String argName = getExprName(arg);
-            lines.addAll(stacker.moveFromStore(argName, reg, reg));
+			saveIfNeeded(reg, lines, callerSavedRegisters, line);
+
+			if(i < arguments.size()) {
+			    IRExpression arg = arguments.get(i);
+			    String argName = getExprName(arg);
+			    lines.addAll(stacker.moveFromStore(argName, reg, reg));
+			}
         }
-        if(!stacker.isFreeRegister("%rax", line)) {
-            lines.add(new APush("%rax"));
-            callerSavedRegisters.add(0, "%rax");
-        }
+		saveIfNeeded("%rax", lines, callerSavedRegisters, line);
+		saveIfNeeded("%r10", lines, callerSavedRegisters, line);
+		saveIfNeeded("%r11", lines, callerSavedRegisters, line);
+
         lines.add(new AMov("$0", "%rax"));
 
         // Move remaining args onto stack

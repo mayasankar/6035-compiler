@@ -11,7 +11,7 @@ public class VariableDescriptor implements Named {
     int stackOffset;
     String register = "";
     boolean inStack = true;
-    IRMemberDecl decl; // TODO I tried to remove this like the previous TODO said, but I'm pretty sure it's too deeply ingrained in SemanticCheckerVisitor. -jamb
+    IRMemberDecl decl; // NOTE I tried to remove this like the previous TODO said, but I'm pretty sure it's too deeply ingrained in SemanticCheckerVisitor. -jamb
 
     public VariableDescriptor(IRMemberDecl decl) {
         this.name = decl.getName();
@@ -77,9 +77,12 @@ public class VariableDescriptor implements Named {
         return register;
     }
 
-    // TODO (mayars) fix
     @Override
     public String toString() {
         return name + " (rsp: " + stackOffset + ")";
+    }
+
+    public String registerDebugValue() {
+        return name + " (reg: " + (register.isEmpty() ? "?" : register) + ")";
     }
 }

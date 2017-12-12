@@ -1,0 +1,32 @@
+import printf;
+
+
+int image[10];
+int unsharpMask[10];
+int cols, rows;
+
+void sharpenS (int amount, int channelOne) {
+  int c, r;
+  for (c = 0; c < cols; c += 1) {
+    for (r = 0; r < rows; r += 1) {
+      image[r + c + 1] = image[r + c + 1] * (channelOne + amount * unsharpMask[r + c]) / channelOne;
+      if (image[r + c + 1] >= channelOne) {
+        image[r + c + 1] = channelOne - 1;
+      }
+    }
+  }
+}
+
+void main () {
+  int i;
+  cols = 5;
+  rows = 5;
+  for (i = 0; i < 10; i += 1) {
+    unsharpMask[i] = i;
+    image[i] = 5*i;
+  }
+  sharpenS(-4, 10);
+  for (i = 0; i < 10; i += 1) {
+    printf("%d %d\n", i, image[i]);
+  }
+}

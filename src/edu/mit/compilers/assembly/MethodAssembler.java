@@ -98,7 +98,7 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         IRExpression index = variable.getIndexExpression();
         String indexName = expressionAssembler.getExprName(index);
         String indexRegister;
-        if(!stacker.isVarStoredInRegister(indexName, line)) {
+        if(!stacker.isVarStoredInRegister(indexName, line) || indexName.startsWith("$")) {
             indexRegister = stacker.getFirstFreeRegister(line);
             lines.addAll(stacker.moveFromStore(indexName, indexRegister, indexRegister));
         } else {

@@ -25,4 +25,6 @@ public interface CFGLocationAssigner {
     public String getMaxSize(String variable);
 
     public int getNumAllocs();
+
+    public void debugPrint();
 }

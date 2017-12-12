@@ -70,7 +70,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 	// usually both registers should be %r10; don't use %r11; if not an array nor global, indexRegister doesn't matter
 	public List<AssemblyLine> moveFromStore(String variableName, String targetRegister, String indexRegister) {
 		List<AssemblyLine> lines = new ArrayList<>();
-		if(variableName.startsWith("$")) { 
+		if(variableName.startsWith("$")) {
 			lines.add(new AMov(variableName, targetRegister));
 			return lines;
 		}
@@ -214,4 +214,7 @@ public class VariableStackAssigner implements CFGLocationAssigner {
     public String getSecondFreeRegister(CFGLine line) {
         return "%r11";
     }
+
+    @Override
+    public void debugPrint() {}
 }

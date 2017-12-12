@@ -38,20 +38,22 @@ public class RegisterAllocation implements Optimization {
 	        CFG cfg = cp.getMethodCFG(method);
 	        doLivenessAnalysis(cfg, cp.getGlobalNames());
 	        for(VariableDescriptor variable: cp.getLocalVariablesForMethod(method)) {
-	            graph.addVariable(variable.getName());
+				if(!variable.isArray()) {
+	            	graph.addVariable(variable.getName());
+				}
 	        }
 	        for(CFGLine line: cfg.getAllLines()) {
 	            Set<String> conflicts = line.getLivenessOut();
 	            for(String var: conflicts) {
 	                for(String var2: conflicts) {
-	                    if(!var.equals(var2)) {
+	                    if(!var.equals(var2) && !var.isArray() && !var2.isArray()) {
 	                        graph.addConflict(var, var2);
 	                    }
 	                }
 	            }
 	        }
 	    }
-		System.out.println(graph.toString());
+
 	    Map<String, Integer> coloring = graph.colorGraph();
 	    CFGLocationAssigner stacker = new RegisterAllocatedAssigner(cp, coloring);
         if (debug) { stacker.debugPrint(); }
