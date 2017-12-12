@@ -51,6 +51,7 @@ public class RegisterAllocation implements Optimization {
 	            }
 	        }
 	    }
+		if (debug) { System.out.println(graph.toString()); }
 	    Map<String, Integer> coloring = graph.colorGraph();
 	    CFGLocationAssigner stacker = new RegisterAllocatedAssigner(cp, coloring);
         if (debug) { stacker.debugPrint(); }

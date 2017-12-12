@@ -1,0 +1,19 @@
+import printf;
+
+int a[1000000],b[100000],c[1000000];
+
+void main() {
+	int i;
+	for(i=0; i < 1000000; i++) {
+		a[i] = i;
+		c[i] = 2 * i;
+	}
+	for(i=0; i < 1000000; i++) {
+		b[i] += a[999999+ (-1) * i] * c[999999-i];
+	}
+	for(i=0; i < 1000000; i++) {
+		if(a[i] != i) {
+			printf("i: %d,a: %d\n", i, a[i]);
+		}
+	}
+}

@@ -1,0 +1,5 @@
+import printf;
+
+void main() {
+	printf("%d\n", 9*-14/10);
+}

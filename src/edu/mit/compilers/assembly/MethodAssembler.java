@@ -44,9 +44,11 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
 
     public List<AssemblyLine> assemble(CFG cfg) {
         List<AssemblyLine> prefixLines = new ArrayList<>();
+        prefixLines.add(new AWhitespace());
         prefixLines.add(new ALabel(label));
 
-        List<AssemblyLine> lines = stacker.pullInArguments(decl);
+        List<AssemblyLine> lines = stacker.pushCallerSave();
+        lines.addAll(stacker.pullInArguments(decl));
 
 		lines.addAll(cfg.getStart().getCorrespondingBlock().accept(this));
 
@@ -58,12 +60,14 @@ public class MethodAssembler implements CFGLine.CFGVisitor<List<AssemblyLine>> {
         // if it has void return, or if a return statement tells it to jump here, leave
         lines.add(new AWhitespace());
         lines.add(new ALabel(label + "_end"));
+        lines.addAll(stacker.popCallerSave());
 
         if (label.equals("main")) { // makes sure exit code is 0
             lines.add(new AMov("$0", "%rax"));
         }
         lines.add(new ACommand("leave"));
         lines.add(new ACommand("ret"));
+        lines.add(new AWhitespace());
 
         // String literals
         Map<String, String> stringLabels = expressionAssembler.getStringLabels();

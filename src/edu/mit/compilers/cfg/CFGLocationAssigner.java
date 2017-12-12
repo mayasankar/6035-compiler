@@ -26,5 +26,8 @@ public interface CFGLocationAssigner {
 
     public int getNumAllocs();
 
+    public List<AssemblyLine> pushCallerSave();
+    public List<AssemblyLine> popCallerSave();
+
     public void debugPrint();
 }

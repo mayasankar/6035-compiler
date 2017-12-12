@@ -1,0 +1,11 @@
+import printf;
+
+void main() {
+	int a,b,c,d;
+	a = 0;
+	b = 1;
+	c = a+b;
+	d = c;
+	a = d+2;
+    printf("%d,%d\n", a, d);
+}
