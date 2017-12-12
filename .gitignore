@@ -6,3 +6,6 @@ dist/*
 assembly_1.txt
 assembly_2.txt
 input.dcf
+outfile.s
+tests/codegen-hidden/test.sh
+.gitignore

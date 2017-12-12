@@ -19,7 +19,9 @@ public class Optimizer {
         while (anyChanges) {
             anyChanges = false;
             for (int i = 1; i <= 4; i++) {
-                anyChanges = anyChanges || optimizations[i].optimize(cfgProgram, debug);
+                if (opts[i] && i!=2) {
+                    anyChanges = anyChanges || optimizations[i].optimize(cfgProgram, debug);
+                }
             }
         }
         // RA, AS
