@@ -218,11 +218,11 @@ public class VariableStackAssigner implements CFGLocationAssigner {
 
     @Override
     public List<AssemblyLine> pushCallerSave() {
-        return Arrays.asList();
+        return new ArrayList<>();
     }
     @Override
     public List<AssemblyLine> popCallerSave() {
-        return Arrays.asList();
+        return new ArrayList<>();
     }
 
     @Override
