@@ -32,6 +32,13 @@ public class SymbolTable<T extends SymbolTable<T,D>, D extends Named> {
 		return ret;
 	}
 
+    public void removeIndex(int index) {
+        D v = orderedChildren.get(index);
+        childMap.remove(v.getName());
+        orderedChildren.remove(index);
+        // TODO reprocess descriptors?
+    }
+
 	// overriden in subclasses; used to increment stack pointer in VariableTable
 	protected int processDescriptor(D v) { return 0; }
 

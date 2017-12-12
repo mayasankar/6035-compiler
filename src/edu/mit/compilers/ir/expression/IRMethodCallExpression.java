@@ -25,6 +25,15 @@ public class IRMethodCallExpression extends IRExpression {
         for (IRExpression expr : other.arguments) { myArgs.add(expr.copy()); }
         this.arguments = Collections.unmodifiableList(myArgs);
         this.functionName = other.functionName;
+        this.type = other.type;
+    }
+
+    public IRMethodCallExpression(IRMethodCallExpression other, int paramIndexToRemove) {
+        List<IRExpression> myArgs = new ArrayList<>(other.arguments);
+        myArgs.remove(paramIndexToRemove);
+        this.arguments = Collections.unmodifiableList(myArgs);
+        this.functionName = other.functionName;
+        this.type = other.type;
     }
 
     @Override
