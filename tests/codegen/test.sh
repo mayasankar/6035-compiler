@@ -1,7 +1,7 @@
 #!/bin/bash
 
 runcompiler() {
-    $(git rev-parse --show-toplevel)/run.sh --opt=dce --target=assembly -o $2 $1
+    $(git rev-parse --show-toplevel)/run.sh --target=assembly -o $2 $1
 }
 
 exit=0;

@@ -30,6 +30,7 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     private int stringCount;
 
     private String exprName = null;
+	private boolean lookup = true;
 
     public String freeRegister;
     public String freeRegister2;
@@ -46,12 +47,14 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     public Map<String, String> getStringLabels() { return stringLabels; }
 
     public String getExprName(IRExpression expr) {
+		lookup = false;
         expr.accept(this); // makes sure strings are kept track of
         if(exprName == null) {
             throw new RuntimeException("Do not call on things which are not depth 0.");
         }
         String ans = exprName;
         exprName = null;
+		lookup = true;
         return ans;
 
     }
@@ -104,10 +107,12 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
     @Override
     public List<AssemblyLine> on(IRVariableExpression ir){ // uses only %r10 unlesss array
         List<AssemblyLine> lines = new ArrayList<>();
-        if (ir.isArray()) {
-            lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
-        }
-        lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
+		if(lookup) {        
+			if (ir.isArray()) {
+		        lines.addAll(ir.getIndexExpression().accept(this)); // puts index into freeRegister
+		    }
+		    lines.addAll(stacker.moveFromStore(ir.getName(), freeRegister, freeRegister));
+		}
 
         exprName = ir.getName();
 		return lines;

@@ -1,0 +1,9 @@
+import printf;
+int array[10];
+void main ( ) {
+  int j;
+  //for ( j = 0; j < 10; j++ ) {
+    //printf ( "boo ");
+  //}
+  printf ( "%d\n", array[j] );
+}
