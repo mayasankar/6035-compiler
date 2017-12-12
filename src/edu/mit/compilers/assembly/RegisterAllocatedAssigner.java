@@ -80,20 +80,24 @@ public class RegisterAllocatedAssigner implements CFGLocationAssigner {
         List<String> paramRegs = Arrays.asList("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9");
         List<AssemblyLine> lines = new ArrayList<>();
         List<IRMemberDecl> parameters = decl.getParameters().getVariableList();
+		Map<Integer, Integer> paramMoved = new HashMap<>();
         for(int i=0; i < parameters.size(); ++i) {
-            int paramInTempStore = -1;
+			int fake_i = (paramMoved.containsKey(i))? paramMoved.get(i): i;
             IRMemberDecl param = parameters.get(i);
-            String paramLoc = getParamLoc(i);
-            if (i == paramInTempStore) {
-                paramLoc = "%r11";
-            }
-            if (i<=5) {
+            String paramLoc = getParamLoc(fake_i);
+
+            if (fake_i<=5) {
                 VariableDescriptor var = getVar(param.getName());
-                if( var.inRegister() && paramRegs.indexOf(var.getRegister())>i) {
+                if( var.inRegister() && paramRegs.indexOf(var.getRegister())>fake_i) {
+					int dest = paramRegs.indexOf(var.getRegister());
+					System.out.println("Swapping registers " + fake_i + " and " + dest);
                     lines.add(new AMov(var.getRegister(), "%r11"));
-                    paramInTempStore = paramRegs.indexOf(var.getRegister());
-                }
-                lines.addAll(moveToStore(param.getName(), paramLoc, "%r10"));
+                    lines.add(new AMov(paramLoc, var.getRegister()));
+                    lines.add(new AMov("%r11", paramLoc));
+					paramMoved.put(dest, fake_i);
+                } else {
+                	lines.addAll(moveToStore(param.getName(), paramLoc, "%r10"));
+				}
             } else {
                 lines.add(new AMov(paramLoc, "%r11"));
                 lines.addAll(moveToStore(param.getName(), "%r11", "%r10"));
