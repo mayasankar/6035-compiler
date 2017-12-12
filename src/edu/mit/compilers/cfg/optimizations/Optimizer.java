@@ -10,11 +10,31 @@ public class Optimizer {
     public final static Optimization[] optimizations = new Optimization[] { new Inline(), new CSE(), new CP(), new DCE(), new DeadVariableRemover(), new RegisterAllocation(), new CodeSimplifier() };
 
     public static void optimize(CFGProgram cfgProgram, boolean[] opts, boolean debug) {
-        // TODO make it so that the cycle of optimizations is run until no more optimizing possible.
-        for (int i = 0; i < opts.length; ++i) {
-            if (! opts[i]) { continue; }
-            System.out.println(optimizationNames[i]);
-			optimizations[i].optimize(cfgProgram, debug);
+        // IL
+        if (opts[0]) {
+            optimizations[0].optimize(cfgProgram, debug);
         }
+        // CSE; NOTE would loop this but that gets a RuntimeException
+        if (opts[1]) {
+            optimizations[1].optimize(cfgProgram, debug);
+        }
+        // CP, (DCE then DVR) looping until no changes
+        boolean anyChanges = true;
+        while (anyChanges) {
+            anyChanges = false;
+            for (int i = 2; i <= 4; i++) {
+                if (opts[i]) {  // TODO re-add CP once not-broken
+                    anyChanges = anyChanges || optimizations[i].optimize(cfgProgram, debug);
+                }
+            }
+        }
+        // RA, AS
+        if (opts[5]) {
+            optimizations[5].optimize(cfgProgram, debug);
+        }
+        if (opts[6]) {
+            optimizations[6].optimize(cfgProgram, debug);
+        }
+
     }
 }
