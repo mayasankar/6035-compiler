@@ -77,7 +77,7 @@ public class CP implements Optimization {
             }
             boolean changed = true;
             while (changed) {
-                doReachingDefinitionsAnalysis(cfg, methodName.equals("main") ? cfgProgram.getGlobalVariables() : new ArrayList<VariableDescriptor>());
+                doReachingDefinitionsAnalysis(cfg, new ArrayList<VariableDescriptor>());
                 changed = propagate(cfg, globals);
                 // if (debug) {
                 //     System.out.println("CP-Optimized CFG: " + methodName);
