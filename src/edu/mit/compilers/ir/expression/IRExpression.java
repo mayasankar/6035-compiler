@@ -59,4 +59,9 @@ public abstract class IRExpression extends IRNode {
         return true;
     }
 
+    public boolean equalsExpression(IRExpression other) {
+        if (other instanceof IRVariableExpression) { return false; }
+        return this.equals(other);
+    }
+
 }
