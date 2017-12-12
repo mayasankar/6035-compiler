@@ -15,6 +15,11 @@ public class ACmp extends AssemblyLine {
 
     @Override
     public String getString() {
+        if (rreg.charAt(0) == '$') { // TODO hack
+            String freeRegister = "%r11";
+            return "mov" + rreg + ", " + freeRegister + "\n" +
+                "cmp " + lreg + ", " + freeRegister + "\n";
+        }
         return "cmp " + lreg + ", " + rreg + "\n";
     }
 
