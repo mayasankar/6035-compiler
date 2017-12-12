@@ -27,11 +27,11 @@ public class CodeSimplifier implements Optimization {
         cp.setAssemblySimplification(true);
         return false;
     }
-    
+
     // return a simplified version of codeList
     public static List<AssemblyLine> simplifyMovs(List<AssemblyLine> codeList) {
-        codeList = removeTrivialMovs(codeList);
-        codeList = simplifyPairMovs(codeList);
+        //codeList = removeTrivialMovs(codeList);
+        //codeList = simplifyPairMovs(codeList);
         //codeList = reduceMovs(codeList); NOTE: this optimization is broken on globals and also seems not to do anything useful in practice, so leave it commented
         codeList = removeTrivialMovs(codeList);
         codeList = eliminatePushPop(codeList);
