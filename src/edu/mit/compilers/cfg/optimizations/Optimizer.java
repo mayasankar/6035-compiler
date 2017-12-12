@@ -14,12 +14,16 @@ public class Optimizer {
         if (opts[0]) {
             optimizations[0].optimize(cfgProgram, debug);
         }
-        // CSE, CP, (DCE then DVR) looping until no changes
+        // CSE; NOTE would loop this but that gets a RuntimeException
+        if (opts[1]) {
+            optimizations[1].optimize(cfgProgram, debug);
+        }
+        // CP, (DCE then DVR) looping until no changes
         boolean anyChanges = true;
         while (anyChanges) {
             anyChanges = false;
-            for (int i = 1; i <= 4; i++) {
-                if (opts[i] && i!=2) {
+            for (int i = 2; i <= 4; i++) {
+                if (opts[i] && i!=2) {  // TODO re-add CP once not-broken
                     anyChanges = anyChanges || optimizations[i].optimize(cfgProgram, debug);
                 }
             }
