@@ -111,7 +111,7 @@ public class DCE implements Optimization {
         @Override
         public Boolean on(CFGAssignStatement line) {
             // if the assign statement is a[x] = a[x] or b = b then delete it
-            if (line.getVarAssigned().equals(line.getExpression())) {
+            if (line.getVarAssigned().equalsExpression(line.getExpression())) {
                 cfg.removeLine(line);
                 return true;
             }
@@ -140,10 +140,10 @@ public class DCE implements Optimization {
             if (! line.isBranch()) {
                 cfg.replaceLine(line, line.getExpression().accept(new LineReplacer(line)));
                 return true;
-            } else if (line.getExpression().equals(IRBoolLiteral.TRUE)) {
+            } else if (line.getExpression().equalsExpression(IRBoolLiteral.TRUE)) {
                 cfg.replaceLine(line, line.getTrueBranch());
                 return true;
-            } else if (line.getExpression().equals(IRBoolLiteral.FALSE)) {
+            } else if (line.getExpression().equalsExpression(IRBoolLiteral.FALSE)) {
                 cfg.replaceLine(line, line.getFalseBranch());
                 return true;
             } else {

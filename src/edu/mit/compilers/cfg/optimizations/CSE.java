@@ -156,7 +156,7 @@ public class CSE implements Optimization {
         public Boolean on(CFGAssignStatement line) {
             IRExpression oldExpr = line.getExpression();
             IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
-            if (!oldExpr.equals(newExpr)) {
+            if (!oldExpr.equalsExpression(newExpr)) {
                 line.setExpression(newExpr);
                 return true;
             }
@@ -167,7 +167,7 @@ public class CSE implements Optimization {
         public Boolean on(CFGBoundsCheck line) {
             IRExpression oldExpr = line.getExpression().getIndexExpression();
             IRExpression newExpr = reduceExpression(oldExpr, line.getAvailableExpressionsIn());
-            if (!oldExpr.equals(newExpr)) {
+            if (!oldExpr.equalsExpression(newExpr)) {
                 line.getExpression().setIndexExpression(newExpr);
                 return true;
             }

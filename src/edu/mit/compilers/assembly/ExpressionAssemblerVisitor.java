@@ -169,7 +169,6 @@ public class ExpressionAssemblerVisitor implements IRExpression.IRExpressionVisi
         for (Integer i : argsToMove) {
             permutation.put(stacker.getLocationOfVariable(getExprName(arguments.get(i)), line), i);
         }
-        System.out.println(permutation);
         outerloop: while (! argsToMove.isEmpty()) {
             for (Integer i : argsToMove) {
                 Integer paramIntersecting = permutation.get(registers[i]);
